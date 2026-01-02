@@ -49,8 +49,20 @@ export default function CustomerOnboarding() {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>Complete Your Profile</CardTitle>
-            <CardDescription>Tell us a bit more about yourself</CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>Complete Your Profile</CardTitle>
+                <CardDescription>Tell us a bit more about yourself</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/customer/my-posts")}
+              >
+                Skip for now
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

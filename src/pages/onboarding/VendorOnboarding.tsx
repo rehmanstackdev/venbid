@@ -71,8 +71,20 @@ export default function VendorOnboarding() {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>Complete Your Business Profile</CardTitle>
-            <CardDescription>Tell us about your business</CardDescription>
+            <div className="flex items-start justify-between">
+              <div>
+                <CardTitle>Complete Your Business Profile</CardTitle>
+                <CardDescription>Tell us about your business</CardDescription>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/vendor/dashboard")}
+              >
+                Skip for now
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
