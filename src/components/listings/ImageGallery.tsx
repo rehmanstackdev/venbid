@@ -1,0 +1,149 @@
+import { useState } from "react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
+
+interface ImageGalleryProps {
+  images: string[];
+  title: string;
+}
+
+export function ImageGallery({ images, title }: ImageGalleryProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  const hasMultiple = images.length > 1;
+  const displayImages = images.length > 0 ? images : ["/placeholder.svg"];
+
+  const goToPrevious = () => {
+    setCurrentIndex((prev) => (prev === 0 ? displayImages.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentIndex((prev) => (prev === displayImages.length - 1 ? 0 : prev + 1));
+  };
+
+  return (
+    <>
+      <div className="space-y-3">
+        {/* Main image */}
+        <div 
+          className="relative aspect-[16/10] rounded-lg overflow-hidden bg-muted cursor-pointer group"
+          onClick={() => setLightboxOpen(true)}
+        >
+          <img
+            src={displayImages[currentIndex]}
+            alt={`${title} - Image ${currentIndex + 1}`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          
+          {/* Navigation arrows */}
+          {hasMultiple && (
+            <>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPrevious();
+                }}
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+              <Button
+                variant="secondary"
+                size="icon"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNext();
+                }}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </>
+          )}
+
+          {/* Image counter */}
+          {hasMultiple && (
+            <div className="absolute bottom-3 right-3 bg-foreground/80 text-background text-sm px-3 py-1 rounded-full backdrop-blur-sm">
+              {currentIndex + 1} / {displayImages.length}
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnails */}
+        {hasMultiple && (
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {displayImages.map((image, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={cn(
+                  "flex-shrink-0 w-20 h-20 rounded-md overflow-hidden transition-all",
+                  index === currentIndex
+                    ? "ring-2 ring-primary ring-offset-2"
+                    : "opacity-70 hover:opacity-100"
+                )}
+              >
+                <img
+                  src={image}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="h-full w-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Lightbox */}
+      <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background/95 backdrop-blur-md border-none">
+          <div className="relative flex items-center justify-center min-h-[80vh]">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-10 text-foreground"
+              onClick={() => setLightboxOpen(false)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+
+            <img
+              src={displayImages[currentIndex]}
+              alt={`${title} - Image ${currentIndex + 1}`}
+              className="max-h-[85vh] max-w-full object-contain"
+            />
+
+            {hasMultiple && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full"
+                  onClick={goToPrevious}
+                >
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full"
+                  onClick={goToNext}
+                >
+                  <ChevronRight className="h-6 w-6" />
+                </Button>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

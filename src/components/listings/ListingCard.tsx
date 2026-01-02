@@ -1,0 +1,116 @@
+import { Heart, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Listing, formatTimeAgo } from "@/hooks/useListings";
+import { cn } from "@/lib/utils";
+import { useFavorites } from "@/hooks/useFavorites";
+
+interface ListingCardProps {
+  listing: Listing;
+  compact?: boolean;
+}
+
+export function ListingCard({ listing, compact = false }: ListingCardProps) {
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isListingFavorite = isFavorite(listing.id);
+
+  if (compact) {
+    return (
+      <Link to={`/listing/${listing.id}`}>
+        <Card className="group overflow-hidden transition-all duration-200 hover:shadow-card-hover animate-fade-in">
+          <div className="flex">
+            {/* Image */}
+            <div className="relative w-24 h-24 flex-shrink-0 overflow-hidden bg-muted">
+              <img
+                src={listing.images[0] || "/placeholder.svg"}
+                alt={listing.title}
+                className="h-full w-full object-cover"
+              />
+            </div>
+
+            {/* Content */}
+            <CardContent className="flex-1 p-3">
+              <h3 className="font-medium text-foreground text-sm line-clamp-2 mb-1 group-hover:text-primary transition-colors">
+                {listing.title}
+              </h3>
+              <p className="text-sm font-semibold text-primary mb-1">
+                ${listing.budget}
+              </p>
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                <span>{listing.city}</span>
+                <span className="mx-1">•</span>
+                <span>{formatTimeAgo(listing.createdAt)}</span>
+              </div>
+            </CardContent>
+          </div>
+        </Card>
+      </Link>
+    );
+  }
+
+  return (
+    <Link to={`/listing/${listing.id}`}>
+      <Card className="group overflow-hidden transition-all duration-200 hover:shadow-card-hover animate-fade-in">
+        {/* Image */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          <img
+            src={listing.images[0] || "/placeholder.svg"}
+            alt={listing.title}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          
+          {/* Favorite button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm",
+              "hover:bg-card hover:scale-110 transition-all",
+              isListingFavorite && "text-primary"
+            )}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite(listing.id);
+            }}
+          >
+            <Heart className={cn("h-4 w-4", isListingFavorite && "fill-current")} />
+          </Button>
+
+          {/* Category badge */}
+          <Badge 
+            variant="secondary" 
+            className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm text-foreground text-xs"
+          >
+            {listing.categoryName}
+          </Badge>
+        </div>
+
+        {/* Content */}
+        <CardContent className="p-4">
+          {/* Title */}
+          <h3 className="font-medium text-foreground line-clamp-2 mb-2 group-hover:text-primary transition-colors">
+            {listing.title}
+          </h3>
+
+          {/* Budget */}
+          <p className="text-lg font-semibold text-primary mb-2">
+            ${listing.budget}
+          </p>
+
+          {/* Location and time */}
+          <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5" />
+              <span>{listing.city} – {listing.zip}</span>
+            </div>
+            <span>{formatTimeAgo(listing.createdAt)}</span>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
+  );
+}
