@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-// import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import { mockConversations, mockMessages as initialMockMessages } from '@/data/mockMessages';
+import { chatApi } from '@/api/chat';
+import { getChatSocket, initChatSocket, joinConversation, leaveConversation } from '@/lib/chatSocket';
 
 export interface Message {
   id: string;
@@ -28,21 +28,6 @@ export interface Conversation {
   unreadCount?: number;
 }
 
-// Mock messages storage
-const mockMessagesStore: Record<string, Message[]> = {};
-
-// Initialize mock messages
-Object.keys(initialMockMessages).forEach(convId => {
-  mockMessagesStore[convId] = initialMockMessages[convId].map(msg => ({
-    id: msg.id,
-    conversation_id: msg.conversationId,
-    sender_id: msg.senderId,
-    content: msg.content,
-    created_at: msg.createdAt.toISOString(),
-    read: msg.read,
-  }));
-});
-
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -55,65 +40,62 @@ export function useConversations() {
       return;
     }
 
-    // Mock data - transform mock conversations
-    const transformedConversations: Conversation[] = mockConversations.map(conv => {
-      const messages = mockMessagesStore[conv.id] || [];
-      const lastMsg = messages[messages.length - 1];
-      const unreadCount = messages.filter(m => !m.read && m.sender_id !== user.id).length;
+    try {
+      const rooms = await chatApi.getChatRooms();
+      const transformedConversations: Conversation[] = rooms.map(room => {
+        const isCustomer = user.id === room.customerId;
+        const unreadCount = isCustomer ? room.customerUnreadCount : room.vendorUnreadCount;
+        
+        return {
+          id: room.id,
+          listing_id: room.jobId,
+          customer_id: room.customerId,
+          vendor_id: room.vendorId,
+          created_at: room.createdAt,
+          updated_at: room.updatedAt,
+          listing: {
+            title: room.job.title,
+            images: null,
+            category_name: '',
+          },
+          lastMessage: room.lastMessage ? {
+            id: '',
+            conversation_id: room.id,
+            sender_id: '',
+            content: room.lastMessage,
+            created_at: room.lastMessageAt,
+            read: unreadCount === 0,
+          } : undefined,
+          unreadCount,
+        };
+      });
       
-      return {
-        id: conv.id,
-        listing_id: conv.listingId,
-        customer_id: conv.customerId,
-        vendor_id: conv.vendorId,
-        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: conv.lastMessageAt.toISOString(),
-        listing: {
-          title: conv.listingTitle,
-          images: [conv.listingImage],
-          category_name: conv.vendorCategory,
-        },
-        lastMessage: lastMsg,
-        unreadCount,
-      };
-    });
-    
-    setConversations(transformedConversations);
-    setLoading(false);
-
-    // Commented out Supabase logic
-    // const { data, error } = await supabase
-    //   .from('conversations')
-    //   .select(`*, listing:listings(title, images, category_name)`)
-    //   .order('updated_at', { ascending: false });
-    // if (error) {
-    //   console.error('Error fetching conversations:', error);
-    //   setLoading(false);
-    //   return;
-    // }
-    // const conversationsWithMessages = await Promise.all(
-    //   (data || []).map(async (conv) => {
-    //     const { data: messages } = await supabase
-    //       .from('messages')
-    //       .select('*')
-    //       .eq('conversation_id', conv.id)
-    //       .order('created_at', { ascending: false })
-    //       .limit(1);
-    //     const { count } = await supabase
-    //       .from('messages')
-    //       .select('*', { count: 'exact', head: true })
-    //       .eq('conversation_id', conv.id)
-    //       .eq('read', false)
-    //       .neq('sender_id', user.id);
-    //     return { ...conv, lastMessage: messages?.[0], unreadCount: count || 0 };
-    //   })
-    // );
-    // setConversations(conversationsWithMessages);
-    // setLoading(false);
+      setConversations(transformedConversations);
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchConversations();
+    
+    // Initialize WebSocket
+    const token = localStorage.getItem('access_token');
+    if (user && token) {
+      const socket = initChatSocket(token);
+      
+      if (socket) {
+        socket.on('newMessage', () => {
+          fetchConversations();
+        });
+        
+        return () => {
+          socket.off('newMessage');
+        };
+      }
+    }
   }, [user]);
 
   return { conversations, loading, refetch: fetchConversations };
@@ -127,152 +109,94 @@ export function useConversationMessages(conversationId: string | null) {
   const markAsRead = async () => {
     if (!conversationId || !user) return;
     
-    // Mock mark as read
-    if (mockMessagesStore[conversationId]) {
-      mockMessagesStore[conversationId] = mockMessagesStore[conversationId].map(msg => 
-        msg.sender_id !== user.id ? { ...msg, read: true } : msg
-      );
+    try {
+      await chatApi.markAsRead(conversationId);
+    } catch (error) {
+      console.error('Error marking messages as read:', error);
     }
-    
-    // Commented out Supabase logic
-    // await supabase
-    //   .from('messages')
-    //   .update({ read: true })
-    //   .eq('conversation_id', conversationId)
-    //   .eq('read', false)
-    //   .neq('sender_id', user.id);
   };
 
-  useEffect(() => {
+  const fetchMessages = async () => {
     if (!conversationId || !user) {
       setMessages([]);
       setLoading(false);
       return;
     }
 
-    const fetchMessages = async () => {
-      // Mock data
-      const msgs = mockMessagesStore[conversationId] || [];
-      setMessages(msgs);
+    try {
+      const apiMessages = await chatApi.getMessages(conversationId);
+      const transformedMessages: Message[] = apiMessages.map(msg => ({
+        id: msg.id,
+        conversation_id: msg.conversationId,
+        sender_id: msg.senderId,
+        content: msg.content,
+        created_at: msg.createdAt,
+        read: msg.isRead,
+      }));
+      setMessages(transformedMessages);
       markAsRead();
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    } finally {
       setLoading(false);
-      
-      // Commented out Supabase logic
-      // const { data, error } = await supabase
-      //   .from('messages')
-      //   .select('*')
-      //   .eq('conversation_id', conversationId)
-      //   .order('created_at', { ascending: true });
-      // if (error) {
-      //   console.error('Error fetching messages:', error);
-      // } else {
-      //   setMessages(data || []);
-      //   markAsRead();
-      // }
-      // setLoading(false);
-    };
-
-    fetchMessages();
-
-    // Commented out Supabase realtime subscription
-    // const channel = supabase
-    //   .channel(`messages:${conversationId}`)
-    //   .on('postgres_changes', {
-    //     event: 'INSERT',
-    //     schema: 'public',
-    //     table: 'messages',
-    //     filter: `conversation_id=eq.${conversationId}`,
-    //   }, (payload) => {
-    //     setMessages((prev) => [...prev, payload.new as Message]);
-    //     if ((payload.new as Message).sender_id !== user.id) {
-    //       markAsRead();
-    //     }
-    //   })
-    //   .subscribe();
-    // return () => { supabase.removeChannel(channel); };
-  }, [conversationId, user]);
-
-  const sendMessage = async (content: string) => {
-    if (!conversationId || !user || !content.trim()) return false;
-
-    // Mock send message
-    const newMessage: Message = {
-      id: `msg-${Date.now()}`,
-      conversation_id: conversationId,
-      sender_id: user.id,
-      content: content.trim(),
-      created_at: new Date().toISOString(),
-      read: true,
-    };
-    
-    if (!mockMessagesStore[conversationId]) {
-      mockMessagesStore[conversationId] = [];
     }
-    mockMessagesStore[conversationId].push(newMessage);
-    setMessages(prev => [...prev, newMessage]);
-    
-    console.log('Mock message sent:', newMessage);
-    
-    // Commented out Supabase logic
-    // const { error } = await supabase.from('messages').insert({
-    //   conversation_id: conversationId,
-    //   sender_id: user.id,
-    //   content: content.trim(),
-    // });
-    // if (error) {
-    //   console.error('Error sending message:', error);
-    //   return false;
-    // }
-    // await supabase
-    //   .from('conversations')
-    //   .update({ updated_at: new Date().toISOString() })
-    //   .eq('id', conversationId);
-    
-    return true;
   };
 
-  return { messages, loading, sendMessage, markAsRead };
+  useEffect(() => {
+    fetchMessages();
+    
+    if (conversationId) {
+      joinConversation(conversationId);
+    }
+    
+    const socket = getChatSocket();
+    if (socket?.connected && conversationId) {
+      socket.on('newMessage', (data: any) => {
+        if (data.conversationId === conversationId) {
+          const newMsg: Message = {
+            id: data.message.id,
+            conversation_id: data.message.conversationId,
+            sender_id: data.message.senderId,
+            content: data.message.content,
+            created_at: data.message.createdAt,
+            read: data.message.isRead,
+          };
+          setMessages(prev => [...prev, newMsg]);
+          if (newMsg.sender_id !== user?.id) {
+            markAsRead();
+          }
+        }
+      });
+      
+      return () => {
+        if (conversationId) {
+          leaveConversation(conversationId);
+        }
+        socket.off('newMessage');
+      };
+    }
+  }, [conversationId, user]);
+
+  return { messages, loading, refetch: fetchMessages };
 }
 
 export function useStartConversation() {
   const { user } = useAuth();
 
-  const startConversation = async (listingId: string, customerId: string) => {
+  const startConversation = async (listingId: string, customerId: string, initialMessage: string = 'Hi, I\'m interested in this job.') => {
     if (!user) return null;
 
-    // Mock - check if conversation exists
-    const existing = mockConversations.find(
-      c => c.listingId === listingId && c.vendorId === user.id
-    );
-    
-    if (existing) {
-      return existing.id;
+    try {
+      const message = await chatApi.sendMessage({
+        jobId: listingId,
+        recipientId: customerId,
+        content: initialMessage,
+      });
+      return message.conversationId;
+    } catch (error) {
+      console.error('Error starting conversation:', error);
+      return null;
     }
-
-    // Mock - create new conversation
-    const newConvId = `conv-${Date.now()}`;
-    console.log('Mock conversation created:', { newConvId, listingId, customerId });
-    
-    // Commented out Supabase logic
-    // const { data: existing } = await supabase
-    //   .from('conversations')
-    //   .select('id')
-    //   .eq('listing_id', listingId)
-    //   .eq('vendor_id', user.id)
-    //   .single();
-    // if (existing) return existing.id;
-    // const { data, error } = await supabase
-    //   .from('conversations')
-    //   .insert({ listing_id: listingId, customer_id: customerId, vendor_id: user.id })
-    //   .select('id')
-    //   .single();
-    // if (error) {
-    //   console.error('Error creating conversation:', error);
-    //   return null;
-    // }
-    // return data.id;
-    
-    return newConvId;
   };
 
   return { startConversation };

@@ -21,6 +21,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Conversation, useConversationMessages, formatChatTime } from "@/hooks/useMessages";
+import { useSendMessage } from "@/hooks/useSendMessage";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,7 +33,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
-  const { messages, sendMessage } = useConversationMessages(conversation.id);
+  const { messages } = useConversationMessages(conversation.id);
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [showBlockDialog, setShowBlockDialog] = useState(false);
@@ -42,6 +43,11 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
 
   const isVendor = user?.id === conversation.vendor_id;
   const otherPartyId = isVendor ? conversation.customer_id : conversation.vendor_id;
+  const { sendMessage, sending } = useSendMessage(
+    conversation.id,
+    conversation.listing_id,
+    otherPartyId
+  );
   const isUserBlocked = isBlocked(otherPartyId);
   const didIBlockUser = didIBlock(otherPartyId);
 
@@ -269,7 +275,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
             />
             <Button 
               onClick={handleSend} 
-              disabled={!newMessage.trim() || isUserBlocked}
+              disabled={!newMessage.trim() || isUserBlocked || sending}
               size="icon"
             >
               <Send className="h-4 w-4" />

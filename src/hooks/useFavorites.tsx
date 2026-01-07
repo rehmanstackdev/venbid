@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-
-let mockFavoritesStore: string[] = [];
+import { favoritesApi } from "@/api/favorites";
 
 export function useFavorites() {
   const { user } = useAuth();
@@ -18,7 +17,8 @@ export function useFavorites() {
     }
 
     try {
-      setFavorites([...mockFavoritesStore]);
+      const jobs = await favoritesApi.getFavorites();
+      setFavorites(jobs.map(job => job.id));
     } catch (error) {
       console.error("Error fetching favorites:", error);
     } finally {
@@ -49,17 +49,32 @@ export function useFavorites() {
       }
 
       const isCurrentlyFavorite = favorites.includes(listingId);
-
+      
+      // Optimistic update
       if (isCurrentlyFavorite) {
         setFavorites((prev) => prev.filter((id) => id !== listingId));
-        mockFavoritesStore = mockFavoritesStore.filter((id) => id !== listingId);
       } else {
         setFavorites((prev) => [...prev, listingId]);
-        mockFavoritesStore.push(listingId);
       }
 
-      console.log('Mock favorite toggled:', { listingId, isCurrentlyFavorite });
-      return true;
+      try {
+        await favoritesApi.toggleFavorite(listingId);
+        return true;
+      } catch (error) {
+        // Revert on error
+        if (isCurrentlyFavorite) {
+          setFavorites((prev) => [...prev, listingId]);
+        } else {
+          setFavorites((prev) => prev.filter((id) => id !== listingId));
+        }
+        console.error('Error toggling favorite:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update favorite",
+          variant: "destructive",
+        });
+        return false;
+      }
     },
     [user, favorites, toast]
   );

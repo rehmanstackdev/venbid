@@ -115,9 +115,9 @@ export function ListingsSection({ selectedCategory }: ListingsSectionProps) {
   }
 
   return (
-    <div className="flex-1 p-4 lg:p-6">
+    <div className="h-full overflow-y-auto">
       {/* Section header */}
-      <div className="mb-4">
+      <div className="p-4 lg:p-6">
         <h1 className="text-2xl font-bold text-foreground">{categoryName}</h1>
         <p className="text-muted-foreground text-sm mt-1">
           {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"} available
@@ -133,33 +133,36 @@ export function ListingsSection({ selectedCategory }: ListingsSectionProps) {
       </div>
 
       {/* Search and filters */}
-      <SearchBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        minPrice={minPrice}
-        maxPrice={maxPrice}
-        onMinPriceChange={setMinPrice}
-        onMaxPriceChange={setMaxPrice}
-      />
+      <div className="px-4 lg:px-6">
+        <SearchBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          onMinPriceChange={setMinPrice}
+          onMaxPriceChange={setMaxPrice}
+        />
+      </div>
 
       {/* Content based on view mode */}
-      {viewMode === "gallery" ? (
-        <ListingGrid listings={filteredListings} />
-      ) : (
-        <div className="h-[calc(100vh-280px)] min-h-[500px]">
-          {/* Map only - like Craigslist */}
-          <ListingsMap
-            listings={mapFilteredListings || baseListings}
-            allListings={baseListings}
-            onBoundsChange={handleBoundsChange}
-            className="w-full h-full"
-          />
-        </div>
-      )}
+      <div className="px-4 lg:px-6 pb-6">
+        {viewMode === "gallery" ? (
+          <ListingGrid listings={filteredListings} />
+        ) : (
+          <div className="h-[calc(100vh-280px)] min-h-[500px]">
+            <ListingsMap
+              listings={mapFilteredListings || baseListings}
+              allListings={baseListings}
+              onBoundsChange={handleBoundsChange}
+              className="w-full h-full"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

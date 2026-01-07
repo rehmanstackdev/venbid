@@ -10,8 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { useStartConversation } from "@/hooks/useMessages";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { ChatDialog } from "@/components/messages/ChatDialog";
 
 interface MessageButtonProps {
   listingId: string;
@@ -21,11 +21,9 @@ interface MessageButtonProps {
 
 export function MessageButton({ listingId, listingTitle, customerId }: MessageButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
   const navigate = useNavigate();
   const { user, isVendor, loading: authLoading } = useAuth();
-  const { startConversation } = useStartConversation();
-  const { toast } = useToast();
   
   const isLoggedIn = !!user;
 
@@ -38,30 +36,16 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
     }
     
     if (!isVendor) {
-      toast({
-        title: 'Vendor account required',
-        description: 'Only vendors can message about job listings. Customers receive messages from vendors.',
-        variant: 'destructive',
-      });
+      toast.error('Only vendors can message about job listings.');
       return;
     }
 
     if (user?.id === customerId) {
-      toast({
-        title: 'Cannot message own listing',
-        description: 'You cannot message your own job posting.',
-        variant: 'destructive',
-      });
+      toast.error('You cannot message your own job posting.');
       return;
     }
 
-    setLoading(true);
-    const conversationId = await startConversation(listingId, customerId);
-    setLoading(false);
-
-    if (conversationId) {
-      navigate(`/vendor/messages?conversation=${conversationId}`);
-    }
+    setChatOpen(true);
   };
 
   return (
@@ -70,11 +54,19 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
         size="lg" 
         className="w-full gap-2"
         onClick={handleClick}
-        disabled={loading || user?.id === customerId}
+        disabled={user?.id === customerId}
       >
         <MessageSquare className="h-5 w-5" />
-        {loading ? "Starting chat..." : "Message about this job"}
+        Message about this job
       </Button>
+
+      <ChatDialog
+        open={chatOpen}
+        onOpenChange={setChatOpen}
+        jobId={listingId}
+        jobTitle={listingTitle}
+        customerId={customerId}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">

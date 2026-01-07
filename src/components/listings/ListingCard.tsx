@@ -69,7 +69,7 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
             className={cn(
               "absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm",
               "hover:bg-card hover:scale-110 transition-all",
-              isListingFavorite && "text-primary"
+              isListingFavorite && "text-red-500"
             )}
             onClick={(e) => {
               e.preventDefault();
@@ -77,7 +77,7 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
               toggleFavorite(listing.id);
             }}
           >
-            <Heart className={cn("h-4 w-4", isListingFavorite && "fill-current")} />
+            <Heart className={cn("h-4 w-4", isListingFavorite && "fill-red-500")} />
           </Button>
 
           {/* Category badge */}

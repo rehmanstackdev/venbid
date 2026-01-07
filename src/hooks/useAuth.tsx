@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authApi } from '@/api';
+import { initChatSocket, disconnectChatSocket } from '@/lib/chatSocket';
 
 type AppRole = 'customer' | 'vendor' | 'admin';
 
@@ -43,6 +44,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(JSON.parse(savedUser));
       setSession({ user: JSON.parse(savedUser) });
       setRoles(JSON.parse(savedRoles));
+      
+      // Initialize WebSocket connection
+      initChatSocket(token);
     }
     setLoading(false);
   }, []);
@@ -53,6 +57,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      disconnectChatSocket();
+      
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
       localStorage.removeItem('auth_token');

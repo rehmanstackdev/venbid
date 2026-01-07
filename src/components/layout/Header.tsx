@@ -14,7 +14,7 @@ import { CategorySidebar } from "./CategorySidebar";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { useConversations } from "@/hooks/useMessages";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 interface HeaderProps {
   selectedCategory: number | null;
@@ -23,11 +23,9 @@ interface HeaderProps {
 
 export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
   const { user, signOut, roles } = useAuth();
-  const { conversations } = useConversations();
+  const { unreadCount } = useUnreadMessages();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
-  const unreadMessageCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   const handleSignOut = async () => {
     await signOut();
@@ -98,9 +96,9 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
             aria-label={user ? 'Messages' : 'Sign in to view messages'}
           >
             <Mail className="h-5 w-5" />
-            {unreadMessageCount > 0 && (
+            {unreadCount > 0 && (
               <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-                {unreadMessageCount > 9 ? "9+" : unreadMessageCount}
+                {unreadCount > 9 ? "9+" : unreadCount}
               </Badge>
             )}
           </Button>

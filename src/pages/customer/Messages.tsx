@@ -37,7 +37,7 @@ export default function CustomerMessages() {
   return (
     <div className="flex h-screen bg-background">
       {/* Conversations List */}
-      <div className="w-80 border-r border-border flex flex-col">
+      <div className={`w-full md:w-80 border-r border-border flex flex-col ${selectedId ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-border">
           <h1 className="text-lg font-semibold mb-3">Messages</h1>
           {conversations.length > 0 && (
@@ -90,9 +90,9 @@ export default function CustomerMessages() {
       </div>
 
       {/* Message Window */}
-      <div className="flex-1">
+      <div className={`flex-1 ${!selectedId ? 'hidden md:flex' : 'flex'}`}>
         {selectedId ? (
-          <CustomerMessageDetail conversationId={selectedId} />
+          <CustomerMessageDetail conversationId={selectedId} onBack={() => setSelectedId(null)} />
         ) : (
           <div className="flex items-center justify-center h-full text-muted-foreground">
             <p>Select a conversation to view messages</p>

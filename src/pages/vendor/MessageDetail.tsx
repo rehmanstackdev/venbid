@@ -1,20 +1,29 @@
 import { useState, useEffect, useRef } from "react";
-import { Send } from "lucide-react";
+import { Send, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversations, useConversationMessages } from "@/hooks/useMessages";
+import { useSendMessage } from "@/hooks/useSendMessage";
 import { useAuth } from "@/hooks/useAuth";
 
-export default function VendorMessageDetail({ conversationId }: { conversationId: string }) {
+export default function VendorMessageDetail({ conversationId, onBack }: { conversationId: string; onBack?: () => void }) {
   const { conversations } = useConversations();
-  const { messages, sendMessage: send } = useConversationMessages(conversationId);
+  const { messages, refetch } = useConversationMessages(conversationId);
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const conversation = conversations.find((c) => c.id === conversationId);
+  
+  const isVendor = user?.id === conversation?.vendor_id;
+  const otherPartyId = isVendor ? conversation?.customer_id : conversation?.vendor_id;
+  const { sendMessage: send, sending } = useSendMessage(
+    conversationId,
+    conversation?.listing_id || '',
+    otherPartyId || ''
+  );
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -33,15 +42,28 @@ export default function VendorMessageDetail({ conversationId }: { conversationId
   const customerName = conversation.listing?.title?.split(' ')[0] || "Customer";
 
   const handleSend = async () => {
-    if (!message.trim()) return;
-    await send(message);
-    setMessage("");
+    if (!message.trim() || sending || !conversation) return;
+    const success = await send(message);
+    if (success) {
+      setMessage("");
+      setTimeout(() => {
+        refetch();
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 100);
+    }
   };
 
   return (
     <div className="flex flex-col h-full bg-background">
       <header className="border-b border-border bg-card p-4">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
           <Avatar className="h-10 w-10">
             <AvatarFallback>{customerName[0]}</AvatarFallback>
           </Avatar>
@@ -78,7 +100,7 @@ export default function VendorMessageDetail({ conversationId }: { conversationId
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
           />
-          <Button onClick={handleSend} size="icon">
+          <Button onClick={handleSend} size="icon" disabled={sending}>
             <Send className="h-4 w-4" />
           </Button>
         </div>

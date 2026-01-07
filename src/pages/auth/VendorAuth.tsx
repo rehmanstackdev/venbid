@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { categories } from "@/data/categories";
+import { scheduleTokenRefresh } from "@/api/client";
+import { initChatSocket } from "@/lib/chatSocket";
 
 export default function VendorAuth() {
   const navigate = useNavigate();
@@ -32,14 +34,25 @@ export default function VendorAuth() {
       localStorage.setItem("refresh_token", refreshToken);
       localStorage.setItem("user_data", JSON.stringify(user));
       localStorage.setItem("user_roles", JSON.stringify([user.role]));
+      localStorage.setItem("token_timestamp", Date.now().toString());
+      
+      scheduleTokenRefresh();
+      initChatSocket(accessToken);
       
       toast.success("Welcome back!");
       
-      // Redirect based on actual user role from API
       if (user.role === "vendor") {
-        window.location.href = "/onboarding/vendor";
+        if (user.completeProfile) {
+          window.location.href = "/vendor/dashboard";
+        } else {
+          window.location.href = "/onboarding/vendor";
+        }
       } else if (user.role === "customer") {
-        window.location.href = "/onboarding/customer";
+        if (user.completeProfile) {
+          window.location.href = "/customer/my-posts";
+        } else {
+          window.location.href = "/onboarding/customer";
+        }
       } else if (user.role === "admin") {
         window.location.href = "/admin/users";
       } else {

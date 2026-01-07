@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
+import { scheduleTokenRefresh } from "@/api/client";
+import { initChatSocket } from "@/lib/chatSocket";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
@@ -33,30 +35,25 @@ export default function CustomerAuth() {
       localStorage.setItem("refresh_token", refreshToken);
       localStorage.setItem("user_data", JSON.stringify(user));
       localStorage.setItem("user_roles", JSON.stringify([user.role]));
+      localStorage.setItem("token_timestamp", Date.now().toString());
+      
+      scheduleTokenRefresh();
+      initChatSocket(accessToken);
       
       toast.success("Welcome back!");
       
-   
       if (user.role === "customer") {
-       
-        try {
-          const profileResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/profile`, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
-          });
-          const profileData = await profileResponse.json();
-          const profile = profileData.data || profileData;
-          
-         
-          if (!profile.phone || !profile.address || !profile.city) {
-            window.location.href = "/onboarding/customer";
-          } else {
-            window.location.href = "/customer/my-posts";
-          }
-        } catch {
+        if (user.completeProfile) {
+          window.location.href = "/customer/my-posts";
+        } else {
           window.location.href = "/onboarding/customer";
         }
       } else if (user.role === "vendor") {
-        window.location.href = "/onboarding/vendor";
+        if (user.completeProfile) {
+          window.location.href = "/vendor/dashboard";
+        } else {
+          window.location.href = "/onboarding/vendor";
+        }
       } else if (user.role === "admin") {
         window.location.href = "/admin/users";
       } else {

@@ -24,6 +24,17 @@ const Messages = () => {
     }
   }, [searchParams]);
 
+  // Auto-select first conversation if conversations load and one is selected but not found
+  useEffect(() => {
+    if (!loading && conversations.length > 0 && selectedConversationId) {
+      const found = conversations.find(c => c.id === selectedConversationId);
+      if (!found) {
+        console.log('Conversation not found, available:', conversations.map(c => c.id));
+        console.log('Looking for:', selectedConversationId);
+      }
+    }
+  }, [conversations, selectedConversationId, loading]);
+
   const selectedConversation = conversations.find(
     (c) => c.id === selectedConversationId
   );

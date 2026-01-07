@@ -7,21 +7,21 @@ export default function VendorLayout() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header 
         selectedCategory={selectedCategory} 
         onSelectCategory={setSelectedCategory} 
       />
       
-      <div className="flex">
-        <aside className="hidden lg:block w-64 border-r border-border bg-card min-h-[calc(100vh-4rem)] sticky top-16">
+      <div className="flex flex-1 overflow-hidden">
+        <aside className="hidden lg:block w-64 border-r border-border bg-card overflow-y-auto">
           <CategorySidebar
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
           />
         </aside>
 
-        <main className="flex-1">
+        <main className="flex-1 overflow-y-auto">
           <Outlet context={{ selectedCategory }} />
         </main>
       </div>

@@ -12,6 +12,7 @@ export const apiClient = axios.create({
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
+let refreshTimer: NodeJS.Timeout | null = null;
 
 const processQueue = (error: any, token: string | null = null) => {
   failedQueue.forEach(prom => {
@@ -23,6 +24,80 @@ const processQueue = (error: any, token: string | null = null) => {
   });
   failedQueue = [];
 };
+
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem('refresh_token');
+  
+  if (!refreshToken) {
+    clearRefreshTimer();
+    return null;
+  }
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+      refreshToken
+    });
+    
+    const { accessToken } = response.data.data || response.data;
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('token_timestamp', Date.now().toString());
+    
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+    
+    // Schedule next refresh (13 minutes - 2 minutes before expiry)
+    scheduleTokenRefresh();
+    
+    return accessToken;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_data');
+    localStorage.removeItem('user_roles');
+    localStorage.removeItem('token_timestamp');
+    clearRefreshTimer();
+    return null;
+  }
+};
+
+const scheduleTokenRefresh = () => {
+  clearRefreshTimer();
+  // Refresh token after 13 minutes (2 minutes before 15-minute expiry)
+  refreshTimer = setTimeout(() => {
+    refreshAccessToken();
+  }, 13 * 60 * 1000);
+};
+
+const clearRefreshTimer = () => {
+  if (refreshTimer) {
+    clearTimeout(refreshTimer);
+    refreshTimer = null;
+  }
+};
+
+// Initialize token refresh on app load
+const initTokenRefresh = () => {
+  const token = localStorage.getItem('access_token');
+  const timestamp = localStorage.getItem('token_timestamp');
+  
+  if (token && timestamp) {
+    const elapsed = Date.now() - parseInt(timestamp);
+    const remaining = (15 * 60 * 1000) - elapsed;
+    
+    if (remaining > 2 * 60 * 1000) {
+      // Schedule refresh for remaining time minus 2 minutes
+      refreshTimer = setTimeout(() => {
+        refreshAccessToken();
+      }, remaining - (2 * 60 * 1000));
+    } else {
+      // Token is about to expire or already expired, refresh immediately
+      refreshAccessToken();
+    }
+  }
+};
+
+// Call on module load
+initTokenRefresh();
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
@@ -55,28 +130,16 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refresh_token');
-      
-      if (!refreshToken) {
-        isRefreshing = false;
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('user_roles');
-        return Promise.reject(error);
-      }
-
       try {
-        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-          refreshToken
-        });
+        const accessToken = await refreshAccessToken();
         
-        const { accessToken } = response.data.data || response.data;
-        localStorage.setItem('access_token', accessToken);
+        if (!accessToken) {
+          processQueue(error, null);
+          isRefreshing = false;
+          return Promise.reject(error);
+        }
         
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-        
         processQueue(null, accessToken);
         isRefreshing = false;
         
@@ -84,12 +147,6 @@ apiClient.interceptors.response.use(
       } catch (refreshError) {
         processQueue(refreshError, null);
         isRefreshing = false;
-        
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user_data');
-        localStorage.removeItem('user_roles');
-        
         return Promise.reject(refreshError);
       }
     }
@@ -97,3 +154,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export { scheduleTokenRefresh, clearRefreshTimer };
