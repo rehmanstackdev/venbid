@@ -28,6 +28,10 @@ export interface ResetPasswordRequest {
   newPassword: string;
 }
 
+export interface ResendOtpRequest {
+  email: string;
+}
+
 export interface AuthResponse {
   data: {
     accessToken: string;
@@ -38,6 +42,8 @@ export interface AuthResponse {
       name: string;
       role: string;
       completeProfile?: boolean;
+      emailVerified?: boolean;
+      isVerified?: boolean;
     };
   };
 }
@@ -65,6 +71,11 @@ export const authApi = {
 
   resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
     const response = await apiClient.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  resendVerificationOtp: async (data: ResendOtpRequest): Promise<void> => {
+    const response = await apiClient.post('/auth/resend-verification-otp', data);
     return response.data;
   },
 

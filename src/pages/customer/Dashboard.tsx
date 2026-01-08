@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
-import { FileText, MessageSquare, User, Menu, X, LogOut } from "lucide-react";
+import { FileText, MessageSquare, User, Menu, X, LogOut, Heart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 const navigation = [
   { name: "My Posts", href: "/customer/my-posts", icon: FileText },
   { name: "Messages", href: "/customer/messages", icon: MessageSquare },
+  { name: "Favorites", href: "/customer/favorites", icon: Heart },
   { name: "Profile", href: "/customer/profile", icon: User },
 ];
 
@@ -74,6 +75,12 @@ export default function CustomerDashboard() {
 
             <NotificationDropdown />
 
+            <Link to="/customer/favorites">
+              <Button variant="ghost" size="icon">
+                <Heart className="h-5 w-5" />
+              </Button>
+            </Link>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -107,9 +114,8 @@ export default function CustomerDashboard() {
       </header>
       {/* Mobile sidebar */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <div className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border">
+        <div className="fixed inset-0 z-50 lg:hidden pointer-events-none">
+          <div className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border pointer-events-auto">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <span className="text-xl font-bold text-primary">Venbid</span>
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>

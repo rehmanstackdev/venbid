@@ -50,18 +50,28 @@ export default function AdminUsers() {
       user.email.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleSuspend = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, isApproved: false } : u))
-    );
-    toast({ title: "User suspended", description: "User has been suspended successfully." });
+  const handleSuspend = async (userId: string) => {
+    try {
+      await adminApi.updateUserApproval(userId, true);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isApproved: true } : u))
+      );
+      toast({ title: "User banned", description: "User has been banned successfully." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to ban user", variant: "destructive" });
+    }
   };
 
-  const handleActivate = (userId: string) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, isApproved: true } : u))
-    );
-    toast({ title: "User activated", description: "User has been activated successfully." });
+  const handleActivate = async (userId: string) => {
+    try {
+      await adminApi.updateUserApproval(userId, false);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, isApproved: false } : u))
+      );
+      toast({ title: "User activated", description: "User has been activated successfully." });
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to activate user", variant: "destructive" });
+    }
   };
 
   const customers = filteredUsers.filter((u) => u.role === "customer");
@@ -84,8 +94,8 @@ export default function AdminUsers() {
             <TableCell className="font-medium">{user.name}</TableCell>
             <TableCell>{user.email}</TableCell>
             <TableCell>
-              <Badge variant={user.isApproved ? "default" : "destructive"}>
-                {user.isApproved ? "active" : "suspended"}
+              <Badge variant={!user.isApproved ? "default" : "destructive"}>
+                {!user.isApproved ? "active" : "banned"}
               </Badge>
             </TableCell>
             <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
@@ -97,10 +107,10 @@ export default function AdminUsers() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {user.isApproved ? (
+                  {!user.isApproved ? (
                     <DropdownMenuItem onClick={() => handleSuspend(user.id)}>
                       <Ban className="h-4 w-4 mr-2" />
-                      Suspend User
+                      Ban User
                     </DropdownMenuItem>
                   ) : (
                     <DropdownMenuItem onClick={() => handleActivate(user.id)}>

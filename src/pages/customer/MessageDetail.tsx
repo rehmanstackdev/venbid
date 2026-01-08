@@ -1,24 +1,30 @@
 import { useState, useEffect, useRef } from "react";
 import { Send, ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useConversations, useConversationMessages } from "@/hooks/useMessages";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function CustomerMessageDetail({ conversationId, onBack }: { conversationId: string; onBack?: () => void }) {
+  const navigate = useNavigate();
   const { conversations } = useConversations();
   const { messages, refetch } = useConversationMessages(conversationId);
   const { user } = useAuth();
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const conversation = conversations.find((c) => c.id === conversationId);
   
   const isCustomer = user?.id === conversation?.customer_id;
   const otherPartyId = isCustomer ? conversation?.vendor_id : conversation?.customer_id;
+  const otherPartyName = isCustomer
+    ? `${conversation?.vendor?.firstName || ''} ${conversation?.vendor?.lastName || ''}`.trim() || "Vendor"
+    : `${conversation?.customer?.firstName || ''} ${conversation?.customer?.lastName || ''}`.trim() || "Customer";
+  
   const { sendMessage: send, sending } = useSendMessage(
     conversationId,
     conversation?.listing_id || '',
@@ -26,9 +32,7 @@ export default function CustomerMessageDetail({ conversationId, onBack }: { conv
   );
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   if (!conversation) {
@@ -39,8 +43,6 @@ export default function CustomerMessageDetail({ conversationId, onBack }: { conv
     );
   }
 
-  const vendorName = conversation?.listing?.title?.split(' ')[0] || "Vendor";
-
   const handleSend = async () => {
     if (!message.trim() || sending || !conversation) return;
     const success = await send(message);
@@ -48,16 +50,13 @@ export default function CustomerMessageDetail({ conversationId, onBack }: { conv
       setMessage("");
       setTimeout(() => {
         refetch();
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
       }, 100);
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
-      <header className="border-b border-border bg-card p-4">
+    <div className="flex flex-col h-screen bg-background">
+      <header className="border-b border-border bg-card p-4 flex-shrink-0">
         <div className="flex items-center gap-3">
           {onBack && (
             <Button variant="ghost" size="icon" onClick={onBack} className="md:hidden">
@@ -65,16 +64,21 @@ export default function CustomerMessageDetail({ conversationId, onBack }: { conv
             </Button>
           )}
           <Avatar className="h-10 w-10">
-            <AvatarFallback>{vendorName[0]}</AvatarFallback>
+            <AvatarFallback>{otherPartyName[0]}</AvatarFallback>
           </Avatar>
-          <div className="flex-1">
-            <h1 className="font-semibold">{vendorName}</h1>
-            <p className="text-xs text-muted-foreground">{conversation.listing?.title}</p>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-semibold">{otherPartyName}</h1>
+            <button
+              onClick={() => navigate(`/listing/${conversation.listing_id}`)}
+              className="text-xs text-primary hover:underline truncate block text-left"
+            >
+              {conversation.listing?.title}
+            </button>
           </div>
         </div>
       </header>
 
-      <ScrollArea className="flex-1" ref={scrollRef}>
+      <div className="flex-1 overflow-y-auto" ref={scrollRef}>
         <div className="p-4 space-y-4">
           {messages.map((msg) => {
             const isOwn = msg.sender_id === user?.id;
@@ -89,16 +93,17 @@ export default function CustomerMessageDetail({ conversationId, onBack }: { conv
               </div>
             );
           })}
+          <div ref={messagesEndRef} />
         </div>
-      </ScrollArea>
+      </div>
 
-      <div className="border-t border-border bg-card p-4">
+      <div className="border-t border-border bg-card p-4 flex-shrink-0">
         <div className="flex gap-2">
           <Input
             placeholder="Type a message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
           />
           <Button onClick={handleSend} size="icon" disabled={sending}>
             <Send className="h-4 w-4" />

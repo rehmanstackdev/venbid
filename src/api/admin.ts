@@ -37,6 +37,14 @@ export const adminApi = {
     const response = await apiClient.get('/admin/users');
     return response.data.data || [];
   },
+
+  updateUserApproval: async (userId: string, isApproved: boolean): Promise<void> => {
+    await apiClient.patch(`/admin/users/${userId}/approval`, { isApproved });
+  },
+
+  updateVendorDocumentVerification: async (vendorId: string, documentVerified: boolean): Promise<void> => {
+    await apiClient.patch(`/admin/vendors/${vendorId}/document-verified`, { documentVerified });
+  },
 };
 
 export const getVendors = async (): Promise<AdminVendor[]> => {

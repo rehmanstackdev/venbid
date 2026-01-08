@@ -23,12 +23,8 @@ export default function CustomerAuth() {
     e.preventDefault();
     setIsLoading(true);
 
-    console.log('CustomerAuth: handleSignIn called', { email, password });
-
     try {
-      console.log('CustomerAuth: Calling authApi.login...');
       const response = await authApi.login({ email, password });
-      console.log('CustomerAuth: Login response:', response);
       const { accessToken, refreshToken, user } = response.data;
       
       localStorage.setItem("access_token", accessToken);
@@ -41,6 +37,15 @@ export default function CustomerAuth() {
       initChatSocket(accessToken);
       
       toast.success("Welcome back!");
+      
+      // Handle return URL from state
+      const returnTo = (location.state as any)?.returnTo;
+      const autoPublish = (location.state as any)?.autoPublish;
+      
+      if (returnTo) {
+        window.location.href = returnTo;
+        return;
+      }
       
       if (user.role === "customer") {
         if (user.completeProfile) {
@@ -60,8 +65,29 @@ export default function CustomerAuth() {
         window.location.href = "/";
       }
     } catch (error: any) {
-      console.error('CustomerAuth: Login error:', error);
-      toast.error(error.response?.data?.message || "Invalid email or password.");
+      const errorMsg = error.response?.data?.message || "";
+      
+      if (errorMsg.toLowerCase().includes("email not verified") || errorMsg.toLowerCase().includes("not verified")) {
+        toast.error("Email not verified", {
+          description: "Please verify your email to continue",
+          action: {
+            label: "Verify Now",
+            onClick: () => {
+              const returnTo = (location.state as any)?.returnTo;
+              navigate("/auth/verify-email", { 
+                state: { 
+                  email, 
+                  password, 
+                  role: "customer", 
+                  redirect: returnTo || "/customer/my-posts" 
+                } 
+              });
+            }
+          }
+        });
+      } else {
+        toast.error(errorMsg || "Invalid email or password.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,9 +100,35 @@ export default function CustomerAuth() {
     try {
       await authApi.register({ email, password, name, role: "customer" });
       toast.success("Account created! Please verify your email.");
-      navigate("/auth/verify-email", { state: { email, password, role: "customer", redirect: "/onboarding/customer" } });
+      
+      const returnTo = (location.state as any)?.returnTo;
+      navigate("/auth/verify-email", { 
+        state: { 
+          email, 
+          password, 
+          role: "customer", 
+          redirect: returnTo || "/customer/my-posts"
+        } 
+      });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Could not create account.");
+      const errorMsg = error.response?.data?.message || "";
+      
+      if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
+        toast.error("Account already exists, please sign in.");
+      } else if (errorMsg.toLowerCase().includes("already exists")) {
+        toast.info("Please verify your email to continue");
+        const returnTo = (location.state as any)?.returnTo;
+        navigate("/auth/verify-email", { 
+          state: { 
+            email, 
+            password, 
+            role: "customer", 
+            redirect: returnTo || "/customer/my-posts" 
+          } 
+        });
+      } else {
+        toast.error(errorMsg || "Could not create account.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +137,7 @@ export default function CustomerAuth() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/auth")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>

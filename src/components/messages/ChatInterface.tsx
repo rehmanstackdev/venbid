@@ -1,31 +1,22 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, ArrowLeft, MoreVertical, Flag, Ban, CheckCircle2 } from "lucide-react";
+import { Send, ArrowLeft, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Conversation, useConversationMessages, formatChatTime } from "@/hooks/useMessages";
 import { useSendMessage } from "@/hooks/useSendMessage";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBlocking } from "@/hooks/useBlocking";
+import { jobsApi, Job } from "@/api/jobs";
 
 interface ChatInterfaceProps {
   conversation: Conversation;
@@ -33,33 +24,39 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
-  const { messages } = useConversationMessages(conversation.id);
+  const { messages, refetch } = useConversationMessages(conversation.id);
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
-  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [showJobDialog, setShowJobDialog] = useState(false);
+  const [showImageDialog, setShowImageDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
+  const [jobDetails, setJobDetails] = useState<Job | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isBlocked, didIBlock, blockUser, unblockUser } = useBlocking();
+  const prevMessageCountRef = useRef(messages.length);
 
   const isVendor = user?.id === conversation.vendor_id;
   const otherPartyId = isVendor ? conversation.customer_id : conversation.vendor_id;
+  const otherPartyName = isVendor
+    ? conversation.customer?.name || "Customer"
+    : conversation.vendor?.name || "Vendor";
+  
   const { sendMessage, sending } = useSendMessage(
     conversation.id,
     conversation.listing_id,
     otherPartyId
   );
-  const isUserBlocked = isBlocked(otherPartyId);
-  const didIBlockUser = didIBlock(otherPartyId);
 
   const listingImage = conversation.listing?.images?.[0] || "/placeholder.svg";
   const listingTitle = conversation.listing?.title || "Job listing";
   const categoryName = conversation.listing?.category_name || "";
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom only on new messages
   useEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && messages.length > prevMessageCountRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
+    prevMessageCountRef.current = messages.length;
   }, [messages]);
 
   // Focus input on mount
@@ -68,11 +65,12 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
   }, [conversation.id]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || isUserBlocked) return;
+    if (!newMessage.trim()) return;
     
     const success = await sendMessage(newMessage);
     if (success) {
       setNewMessage("");
+      setTimeout(() => refetch(), 100);
     }
   };
 
@@ -83,13 +81,14 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
     }
   };
 
-  const handleBlock = async () => {
-    await blockUser(otherPartyId);
-    setShowBlockDialog(false);
-  };
-
-  const handleUnblock = async () => {
-    await unblockUser(otherPartyId);
+  const handleShowJobDetails = async () => {
+    try {
+      const job = await jobsApi.getJobById(conversation.listing_id);
+      setJobDetails(job);
+      setShowJobDialog(true);
+    } catch (error) {
+      console.error('Error fetching job details:', error);
+    }
   };
 
   // Group messages by date
@@ -118,75 +117,44 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
       {/* Header */}
-      <div className="flex items-center gap-3 p-4 border-b border-border bg-card">
+      <div className="flex items-center gap-3 p-4 border-b border-border bg-card shrink-0">
         {onBack && (
           <Button variant="ghost" size="icon" onClick={onBack} className="lg:hidden">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         )}
 
-        <Link to={`/listing/${conversation.listing_id}`}>
+        <button onClick={handleShowJobDetails}>
           <img
             src={listingImage}
             alt=""
-            className="w-10 h-10 rounded-lg object-cover"
+            className="w-10 h-10 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity"
           />
-        </Link>
+        </button>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
-              {categoryName}
-            </Badge>
-          </div>
-          <Link 
-            to={`/listing/${conversation.listing_id}`}
-            className="text-sm font-medium hover:text-primary truncate block"
+          <h2 className="text-sm font-semibold truncate">{otherPartyName}</h2>
+          <button
+            onClick={handleShowJobDetails}
+            className="text-xs text-primary hover:underline truncate block text-left"
           >
             {listingTitle}
-          </Link>
+          </button>
         </div>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <MoreVertical className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {didIBlockUser ? (
-              <DropdownMenuItem onClick={handleUnblock}>
-                <CheckCircle2 className="h-4 w-4 mr-2" />
-                Unblock user
-              </DropdownMenuItem>
-            ) : (
-              <DropdownMenuItem 
-                className="text-destructive"
-                onClick={() => setShowBlockDialog(true)}
-              >
-                <Ban className="h-4 w-4 mr-2" />
-                Block user
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem>
-              <Flag className="h-4 w-4 mr-2" />
-              Report conversation
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
-        <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-2 overscroll-contain min-h-0" ref={scrollRef}>
+        <div className="flex flex-col space-y-4">
           {messages.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="flex items-center justify-center h-full">
               <p className="text-muted-foreground">No messages yet. Start the conversation!</p>
             </div>
           ) : (
-            Object.entries(groupedMessages).map(([date, dayMessages]) => (
+            <div className="space-y-4">
+              {Object.entries(groupedMessages).map(([date, dayMessages]) => (
               <div key={date}>
                 {/* Date header */}
                 <div className="flex items-center justify-center mb-4">
@@ -233,75 +201,102 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
                   })}
                 </div>
               </div>
-            ))
+              ))}
+            </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
-      {/* Input or Blocked Message */}
-      {isUserBlocked ? (
-        <div className="p-4 border-t border-border bg-muted/50">
-          <div className="text-center py-2">
-            <Ban className="h-5 w-5 mx-auto text-muted-foreground mb-1" />
-            <p className="text-sm text-muted-foreground">
-              {didIBlockUser 
-                ? "You blocked this user. Unblock to send messages."
-                : "You can't send messages to this conversation."
-              }
-            </p>
-            {didIBlockUser && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2"
-                onClick={handleUnblock}
-              >
-                Unblock User
-              </Button>
-            )}
-          </div>
+      {/* Input */}
+      <div className="p-4 border-t border-border bg-card shrink-0">
+        <div className="flex gap-2">
+          <Input
+            ref={inputRef}
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message..."
+            className="flex-1"
+          />
+          <Button 
+            onClick={handleSend} 
+            disabled={!newMessage.trim() || sending}
+            size="icon"
+          >
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
-      ) : (
-        <div className="p-4 border-t border-border bg-card">
-          <div className="flex gap-2">
-            <Input
-              ref={inputRef}
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Type a message..."
-              className="flex-1"
-              disabled={isUserBlocked}
-            />
-            <Button 
-              onClick={handleSend} 
-              disabled={!newMessage.trim() || isUserBlocked || sending}
+      </div>
+
+      {/* Job Details Dialog */}
+      <Dialog open={showJobDialog} onOpenChange={setShowJobDialog}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Job Details</DialogTitle>
+          </DialogHeader>
+          {jobDetails && (
+            <div className="space-y-4">
+              {jobDetails.images && jobDetails.images.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {jobDetails.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Job image ${idx + 1}`}
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        setSelectedImage(img);
+                        setShowImageDialog(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-lg break-words">{jobDetails.title}</h3>
+                <Badge variant="secondary" className="mt-1">{jobDetails.category}</Badge>
+              </div>
+              <div className="w-full overflow-hidden">
+                <p className="text-sm font-medium text-muted-foreground">Description</p>
+                <p className="text-sm mt-1 break-words flex-wrap w-80">{jobDetails.description}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Budget</p>
+                <p className="text-sm mt-1">${jobDetails.budget}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Location</p>
+                <p className="text-sm mt-1 break-words">
+                  {jobDetails.showExactAddress
+                    ? `${jobDetails.street}, ${jobDetails.city}, ${jobDetails.zip}`
+                    : `${jobDetails.crossStreet}, ${jobDetails.city}, ${jobDetails.zip}`}
+                </p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Fullscreen Dialog */}
+      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              variant="ghost"
               size="icon"
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              onClick={() => setShowImageDialog(false)}
             >
-              <Send className="h-4 w-4" />
+              <X className="h-6 w-6" />
             </Button>
+            <img
+              src={selectedImage}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+            />
           </div>
-        </div>
-      )}
-
-      {/* Block Confirmation Dialog */}
-      <AlertDialog open={showBlockDialog} onOpenChange={setShowBlockDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Block this user?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Blocking this user will prevent both of you from sending messages to each other. 
-              You can unblock them later from your settings or this conversation.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleBlock} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Block User
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

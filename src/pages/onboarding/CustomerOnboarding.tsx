@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,10 @@ export default function CustomerOnboarding() {
     }
   };
 
+  const handleSkip = () => {
+    navigate("/customer/my-posts");
+  };
+
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -57,31 +61,20 @@ export default function CustomerOnboarding() {
               <Button
                 type="button"
                 variant="ghost"
-                size="sm"
-                onClick={() => navigate("/customer/my-posts")}
+                size="icon"
+                onClick={handleSkip}
+                aria-label="Skip"
               >
-                Skip for now
+                <X className="h-4 w-4" />
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <LocationSearchInput
-                value={formData.locationSearch}
-                onChange={(address, coordinates) => {
-                  setFormData({
-                    ...formData,
-                    locationSearch: address,
-                    coordinates: { lat: coordinates.lat, long: coordinates.lng },
-                  });
-                }}
-                label="Search Location"
-                placeholder="Search for your address"
-                required
-              />
-
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">
+                  Full Name <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="name"
                   type="text"
@@ -93,7 +86,9 @@ export default function CustomerOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone">
+                  Phone Number <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -104,8 +99,23 @@ export default function CustomerOnboarding() {
                 />
               </div>
 
+              <LocationSearchInput
+                value={formData.locationSearch}
+                onChange={(address, coordinates) => {
+                  setFormData({
+                    ...formData,
+                    locationSearch: address,
+                    coordinates: { lat: coordinates.lat, long: coordinates.lng },
+                  });
+                }}
+                label="Search Location"
+                placeholder="Search for your address"
+              />
+
               <div className="space-y-2">
-                <Label htmlFor="address">Address</Label>
+                <Label htmlFor="address">
+                  Address <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="address"
                   type="text"
@@ -117,7 +127,9 @@ export default function CustomerOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">
+                  City <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="city"
                   type="text"
@@ -129,7 +141,9 @@ export default function CustomerOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="state">State</Label>
+                <Label htmlFor="state">
+                  State <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="state"
                   type="text"
@@ -141,7 +155,9 @@ export default function CustomerOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="zipCode">Zip Code</Label>
+                <Label htmlFor="zipCode">
+                  Zip Code <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="zipCode"
                   type="text"
@@ -152,16 +168,26 @@ export default function CustomerOnboarding() {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  "Complete Profile"
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleSkip}
+                >
+                  Skip for now
+                </Button>
+                <Button type="submit" className="flex-1" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Complete Profile"
+                  )}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

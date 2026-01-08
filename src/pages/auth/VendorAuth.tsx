@@ -59,7 +59,28 @@ export default function VendorAuth() {
         window.location.href = "/";
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Invalid email or password.");
+      const errorMsg = error.response?.data?.message || "";
+      
+      if (errorMsg.toLowerCase().includes("email not verified") || errorMsg.toLowerCase().includes("not verified")) {
+        toast.error("Email not verified", {
+          description: "Please verify your email to continue",
+          action: {
+            label: "Verify Now",
+            onClick: () => {
+              navigate("/auth/verify-email", { 
+                state: { 
+                  email, 
+                  password, 
+                  role: "vendor", 
+                  redirect: "/onboarding/vendor" 
+                } 
+              });
+            }
+          }
+        });
+      } else {
+        toast.error(errorMsg || "Invalid email or password.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,7 +95,23 @@ export default function VendorAuth() {
       toast.success("Account created! Please verify your email.");
       navigate("/auth/verify-email", { state: { email, password, role: "vendor", redirect: "/onboarding/vendor" } });
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Could not create account.");
+      const errorMsg = error.response?.data?.message || "";
+      
+      if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
+        toast.error("Account already exists, please sign in.");
+      } else if (errorMsg.toLowerCase().includes("already exists")) {
+        toast.info("Please verify your email to continue");
+        navigate("/auth/verify-email", { 
+          state: { 
+            email, 
+            password, 
+            role: "vendor", 
+            redirect: "/onboarding/vendor" 
+          } 
+        });
+      } else {
+        toast.error(errorMsg || "Could not create account.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +120,7 @@ export default function VendorAuth() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/auth")}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>

@@ -29,6 +29,7 @@ import CustomerMessages from "./pages/customer/Messages";
 import CustomerProfile from "./pages/customer/Profile";
 import CustomerPostJob from "./pages/customer/PostJob";
 import CustomerEditJob from "./pages/customer/EditJob";
+import CustomerFavorites from "./pages/customer/Favorites";
 import AdminLayout from "./pages/admin/Layout";
 import AdminUsers from "./pages/admin/Users";
 import AdminVendors from "./pages/admin/Vendors";
@@ -59,17 +60,26 @@ const App = () => (
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding/customer" element={<CustomerOnboarding />} />
             <Route path="/onboarding/vendor" element={<VendorOnboarding />} />
+            <Route path="/post-job" element={<CustomerPostJob />} />
             <Route path="/vendor" element={
               <ProtectedRoute requireRole="vendor">
                 <VendorLayout />
               </ProtectedRoute>
             }>
               <Route path="dashboard" element={<VendorDashboard />} />
-              <Route path="messages" element={<VendorMessages />} />
-              <Route path="messages/:id" element={<VendorMessages />} />
               <Route path="profile" element={<VendorProfile />} />
               <Route path="favorites" element={<VendorFavorites />} />
             </Route>
+            <Route path="/vendor/messages" element={
+              <ProtectedRoute requireRole="vendor">
+                <VendorMessages />
+              </ProtectedRoute>
+            } />
+            <Route path="/vendor/messages/:id" element={
+              <ProtectedRoute requireRole="vendor">
+                <VendorMessages />
+              </ProtectedRoute>
+            } />
             <Route path="/admin" element={
               <ProtectedRoute requireRole="admin">
                 <AdminLayout />
@@ -85,12 +95,20 @@ const App = () => (
               </ProtectedRoute>
             }>
               <Route path="my-posts" element={<CustomerMyPosts />} />
-              <Route path="messages" element={<CustomerMessages />} />
-              <Route path="messages/:id" element={<CustomerMessages />} />
               <Route path="profile" element={<CustomerProfile />} />
-              <Route path="post-job" element={<CustomerPostJob />} />
+              <Route path="favorites" element={<CustomerFavorites />} />
               <Route path="edit-job/:id" element={<CustomerEditJob />} />
             </Route>
+            <Route path="/customer/messages" element={
+              <ProtectedRoute requireRole="customer">
+                <CustomerMessages />
+              </ProtectedRoute>
+            } />
+            <Route path="/customer/messages/:id" element={
+              <ProtectedRoute requireRole="customer">
+                <CustomerMessages />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

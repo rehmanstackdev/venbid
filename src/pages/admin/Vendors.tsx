@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { getVendors, AdminVendor } from "@/api/admin";
+import { getVendors, AdminVendor, adminApi } from "@/api/admin";
 
 export default function AdminVendors() {
   const { toast } = useToast();
@@ -60,18 +60,31 @@ export default function AdminVendors() {
     setViewDialogOpen(true);
   };
 
-  const handleSubmitReview = () => {
+  const handleSubmitReview = async () => {
     if (!selectedDoc) return;
 
-    toast({
-      title: reviewAction === "approve" ? "Vendor Approved" : "Verification Rejected",
-      description: `${selectedDoc.user.name} has been ${reviewAction === "approve" ? "approved" : "rejected"}.`,
-    });
+    try {
+      await adminApi.updateVendorDocumentVerification(
+        selectedDoc.id,
+        reviewAction === "approve"
+      );
 
-    setReviewDialogOpen(false);
-    setAdminNotes("");
-    setSelectedDoc(null);
-    fetchVendors();
+      toast({
+        title: reviewAction === "approve" ? "Vendor Approved" : "Verification Rejected",
+        description: `${selectedDoc.user.name} has been ${reviewAction === "approve" ? "approved" : "rejected"}.`,
+      });
+
+      setReviewDialogOpen(false);
+      setAdminNotes("");
+      setSelectedDoc(null);
+      fetchVendors();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update vendor verification",
+        variant: "destructive",
+      });
+    }
   };
 
   const formatDate = (date: string) => {

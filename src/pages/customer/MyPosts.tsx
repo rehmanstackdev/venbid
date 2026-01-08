@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, Filter, FileText, Trash2 } from "lucide-react";
+import { Plus, Search, Filter, FileText, Trash2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +11,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { JobDetailsDialog } from "@/components/customer/JobDetailsDialog";
 import { jobsApi, Job } from "@/api/jobs";
 import { toast } from "sonner";
+import { useFavorites } from "@/hooks/useFavorites";
+import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function CustomerMyPosts() {
   const [listings, setListings] = useState<Job[]>([]);
@@ -20,6 +32,9 @@ export default function CustomerMyPosts() {
   const [sortBy, setSortBy] = useState<string>("newest");
   const [selectedListing, setSelectedListing] = useState<Job | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   useEffect(() => {
     fetchJobs();
@@ -38,14 +53,22 @@ export default function CustomerMyPosts() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm("Are you sure you want to delete this job?")) return;
+    setJobToDelete(id);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
 
     try {
-      await jobsApi.deleteJob(id);
+      await jobsApi.deleteJob(jobToDelete);
       toast.success("Job deleted successfully");
       fetchJobs();
     } catch (error) {
       toast.error("Failed to delete job");
+    } finally {
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
     }
   };
 
@@ -105,7 +128,7 @@ export default function CustomerMyPosts() {
           <h1 className="text-2xl font-bold">My Posts</h1>
           <p className="text-muted-foreground">Manage your job listings</p>
         </div>
-        <Link to="/customer/post-job">
+        <Link to="/post-job">
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Post New Job
@@ -169,7 +192,7 @@ export default function CustomerMyPosts() {
           {filteredListings.map((listing) => (
             <Card
               key={listing.id}
-              className="hover:shadow-md transition-shadow h-full overflow-hidden cursor-pointer"
+              className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer relative flex flex-col"
               onClick={() => {
                 setSelectedListing(listing);
                 setDialogOpen(true);
@@ -177,16 +200,33 @@ export default function CustomerMyPosts() {
             >
                 {/* Thumbnail */}
                 {listing.images && listing.images.length > 0 && (
-                  <div className="w-full h-40 bg-muted">
+                  <div className="w-full h-40 bg-muted relative">
                     <img
                       src={listing.images[0]}
                       alt={listing.title}
                       className="w-full h-full object-cover"
                     />
+                    {/* Favorite button */}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={cn(
+                        "absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm",
+                        "hover:bg-card hover:scale-110 transition-all z-10",
+                        isFavorite(listing.id) && "text-red-500"
+                      )}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleFavorite(listing.id);
+                      }}
+                    >
+                      <Heart className={cn("h-4 w-4", isFavorite(listing.id) && "fill-red-500")} />
+                    </Button>
                   </div>
                 )}
                 
-                <CardContent className="p-4">
+                <CardContent className="p-4 flex flex-col flex-1">
                   {/* Badges */}
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
                     <Badge variant="secondary" className="text-xs">{getCategoryName(listing.category)}</Badge>
@@ -205,12 +245,15 @@ export default function CustomerMyPosts() {
                   </div>
                   
                   {/* Title */}
-                  <h3 className="font-semibold text-base mb-2 line-clamp-2">{listing.title}</h3>
+                  <h3 className="font-semibold text-base mb-2 line-clamp-1">{listing.title}</h3>
                   
                   {/* Description */}
-                  <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                  <p className="text-muted-foreground text-sm line-clamp-1 mb-3">
                     {listing.description}
                   </p>
+                  
+                  {/* Budget */}
+                  <div className="text-lg font-bold text-primary mb-3">${listing.budget}</div>
                   
                   {/* Location & Time */}
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
@@ -219,24 +262,21 @@ export default function CustomerMyPosts() {
                     <span className="whitespace-nowrap">{formatTimeAgo(listing.createdAt)}</span>
                   </div>
                   
-                  {/* Budget & Actions */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="text-xl font-bold text-primary">${listing.budget}</div>
-                    <div className="flex gap-2">
-                      <Link to={`/customer/edit-job/${listing.id}`} onClick={(e) => e.stopPropagation()}>
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                      </Link>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={(e) => handleDelete(listing.id, e)}
-                        className="text-destructive hover:text-destructive"
-                      >
-                        <Trash2 className="h-4 w-4" />
+                  {/* Actions - at bottom */}
+                  <div className="flex gap-2 mt-auto">
+                    <Link to={`/customer/edit-job/${listing.id}`} onClick={(e) => e.stopPropagation()} className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        Edit
                       </Button>
-                    </div>
+                    </Link>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => handleDelete(listing.id, e)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -249,6 +289,23 @@ export default function CustomerMyPosts() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Job</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this job? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

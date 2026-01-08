@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Users, Briefcase } from "lucide-react";
+import { Users, Briefcase, ArrowLeft } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,12 @@ export default function RoleSelection() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
+        <div className="mb-4">
+          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome to Venbid</h1>
           <p className="text-muted-foreground">Choose how you want to use Venbid</p>

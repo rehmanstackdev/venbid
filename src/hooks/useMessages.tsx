@@ -24,6 +24,12 @@ export interface Conversation {
     images: string[] | null;
     category_name: string;
   };
+  customer?: {
+    name: string;
+  };
+  vendor?: {
+    name: string;
+  };
   lastMessage?: Message;
   unreadCount?: number;
 }
@@ -57,6 +63,12 @@ export function useConversations() {
             title: room.job.title,
             images: null,
             category_name: '',
+          },
+          customer: {
+            name: room.customer.name,
+          },
+          vendor: {
+            name: room.vendor.name,
           },
           lastMessage: room.lastMessage ? {
             id: '',

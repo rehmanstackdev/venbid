@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Loader2, ShieldAlert } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { LoginReminder } from './LoginReminder';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -24,7 +25,7 @@ export function ProtectedRoute({ children, requireRole }: ProtectedRouteProps) {
   }
 
   if (!user) {
-    return <Navigate to="/auth/customer" replace />;
+    return <LoginReminder />;
   }
 
   if (requireRole && !roles.includes(requireRole)) {

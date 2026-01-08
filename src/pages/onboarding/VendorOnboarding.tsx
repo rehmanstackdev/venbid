@@ -71,20 +71,8 @@ export default function VendorOnboarding() {
       <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle>Complete Your Business Profile</CardTitle>
-                <CardDescription>Tell us about your business</CardDescription>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate("/vendor/dashboard")}
-              >
-                Skip for now
-              </Button>
-            </div>
+            <CardTitle>Complete Your Business Profile</CardTitle>
+            <CardDescription>Tell us about your business to start receiving job requests</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -202,7 +190,8 @@ export default function VendorOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="documents">Verification Documents (max 5 files, 10MB each)</Label>
+                <Label htmlFor="documents">Verification Documents (optional)</Label>
+                <p className="text-xs text-muted-foreground">Upload business license, insurance, or certifications (max 5 files, 10MB each)</p>
                 <div className="border-2 border-dashed rounded-lg p-4">
                   <input
                     id="documents"

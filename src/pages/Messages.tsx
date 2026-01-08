@@ -122,7 +122,7 @@ const Messages = () => {
               onBack={() => setSelectedConversationId(null)}
             />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-center p-6">
+            <div className="flex flex-col items-center justify-center h-full text-center p-6 ">
               <div className="rounded-full bg-muted p-6 mb-4">
                 <MessageSquare className="h-10 w-10 text-muted-foreground" />
               </div>

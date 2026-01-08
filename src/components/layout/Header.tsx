@@ -1,4 +1,4 @@
-import { Heart, Mail, User, Menu, LogOut, Shield } from "lucide-react";
+import { Heart, Mail, User, Menu, LogOut, Shield, Plus } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { LoginReminderDialog } from "@/components/auth/LoginReminderDialog";
+import { useState } from "react";
 
 interface HeaderProps {
   selectedCategory: number | null;
@@ -26,6 +28,7 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
   const { unreadCount } = useUnreadMessages();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
@@ -40,7 +43,7 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
       <div className="flex h-16 items-center justify-between">
         <div className="flex items-center">
-          <Sheet>
+          <Sheet modal={false}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="lg:hidden ml-4">
                 <Menu className="h-5 w-5" />
@@ -82,16 +85,23 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 pr-4">
+          <Link to="/post-job">
+            <Button variant="default" size="sm" className="hidden md:flex gap-2">
+              <Plus className="h-4 w-4" />
+              Post a Job
+            </Button>
+          </Link>
+
           <Button
             variant="ghost"
             size="icon"
             className="relative"
             onClick={() => {
               if (!user) {
-                navigate(`/auth`);
+                setShowLoginDialog(true);
                 return;
               }
-              navigate('/vendor/messages');
+              navigate(roles.includes('customer') ? '/customer/messages' : '/vendor/messages');
             }}
             aria-label={user ? 'Messages' : 'Sign in to view messages'}
           >
@@ -103,13 +113,21 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
             )}
           </Button>
 
-          <NotificationDropdown />
+          <NotificationDropdown onLoginRequired={() => setShowLoginDialog(true)} />
 
-          <Link to="/vendor/favorites">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Heart className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              if (!user) {
+                setShowLoginDialog(true);
+                return;
+              }
+              navigate(roles.includes('customer') ? '/customer/favorites' : '/vendor/favorites');
+            }}
+          >
+            <Heart className="h-5 w-5" />
+          </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -122,33 +140,59 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
                 <>
                   <div className="px-2 py-1.5 text-sm">
                     <p className="font-medium truncate">{user.email}</p>
+                    <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link to="/post-job">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Post a Job
+                    </Link>
+                  </DropdownMenuItem>
                   {roles.includes('customer') && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/customer/my-posts">Customer Dashboard</Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/customer/my-posts">My Posts</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/customer/messages">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Messages
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/customer/favorites">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Favorites
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/customer/profile">My Profile</Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
                   {roles.includes('vendor') && (
-                    <DropdownMenuItem asChild>
-                      <Link to="/vendor/dashboard">Vendor Dashboard</Link>
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/vendor/dashboard">Dashboard</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/vendor/messages">
+                          <Mail className="h-4 w-4 mr-2" />
+                          Messages
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/vendor/favorites">
+                          <Heart className="h-4 w-4 mr-2" />
+                          Favorites
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link to="/vendor/profile">My Profile</Link>
+                      </DropdownMenuItem>
+                    </>
                   )}
-                  <DropdownMenuItem asChild>
-                    <Link to="/vendor/profile">My Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/vendor/messages">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Messages
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/vendor/favorites">
-                      <Heart className="h-4 w-4 mr-2" />
-                      Favorites
-                    </Link>
-                  </DropdownMenuItem>
                   {roles.includes('admin') && (
                     <>
                       <DropdownMenuSeparator />
@@ -168,14 +212,14 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
                 </>
               ) : (
                 <>
+                  <DropdownMenuItem asChild className="md:hidden">
+                    <Link to="/post-job">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Post a Job
+                    </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link to="/auth">Sign In</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/auth/customer">Sign Up as Customer</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/auth/vendor">Sign Up as Vendor</Link>
                   </DropdownMenuItem>
                 </>
               )}
@@ -183,6 +227,8 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
           </DropdownMenu>
         </div>
       </div>
+
+      <LoginReminderDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
     </header>
   );
 }

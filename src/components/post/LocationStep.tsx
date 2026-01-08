@@ -18,9 +18,11 @@ interface LocationStepProps {
   location: LocationDetails;
   onChange: (location: LocationDetails) => void;
   errors: Partial<Record<keyof LocationDetails, string>>;
+  phone?: string;
+  onPhoneChange?: (phone: string) => void;
 }
 
-export function LocationStep({ location, onChange, errors }: LocationStepProps) {
+export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange }: LocationStepProps) {
   const [zipValid, setZipValid] = useState<boolean | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
@@ -54,6 +56,23 @@ export function LocationStep({ location, onChange, errors }: LocationStepProps) 
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        {/* Phone */}
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="phone">
+            Phone Number <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="phone"
+            type="tel"
+            placeholder="e.g., (312) 555-0123"
+            value={phone}
+            onChange={(e) => onPhoneChange?.(e.target.value)}
+          />
+          <p className="text-xs text-muted-foreground">
+            Service providers will use this to contact you
+          </p>
+        </div>
+
         {/* Street */}
         <div className="space-y-2">
           <Label htmlFor="street">Street Address (optional)</Label>

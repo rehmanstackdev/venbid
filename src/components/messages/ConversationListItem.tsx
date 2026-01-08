@@ -17,7 +17,9 @@ export function ConversationListItem({
   currentUserId,
 }: ConversationListItemProps) {
   const isVendor = currentUserId === conversation.vendor_id;
-  const otherUserName = isVendor ? "Customer" : "Vendor";
+  const otherUserName = isVendor 
+    ? conversation.customer?.name || "Customer"
+    : conversation.vendor?.name || "Vendor";
   const hasUnread = (conversation.unreadCount || 0) > 0;
   
   return (
@@ -41,7 +43,7 @@ export function ConversationListItem({
             "font-medium text-sm truncate",
             hasUnread && "font-semibold"
           )}>
-            {conversation.listing?.title || "Job listing"}
+            {otherUserName}
           </span>
           {conversation.lastMessage && (
             <span className="text-xs text-muted-foreground flex-shrink-0">
@@ -50,13 +52,9 @@ export function ConversationListItem({
           )}
         </div>
         
-        {conversation.listing && (
-          <div className="flex items-center gap-1.5">
-            <Badge variant="outline" className="text-xs px-1.5 py-0">
-              {conversation.listing.category_name}
-            </Badge>
-          </div>
-        )}
+        <p className="text-xs text-muted-foreground truncate">
+          {conversation.listing?.title || "Job listing"}
+        </p>
         
         {conversation.lastMessage && (
           <p className={cn(

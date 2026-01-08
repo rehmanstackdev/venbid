@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Check, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { CategoryStep } from "@/components/post/CategoryStep";
@@ -12,6 +12,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { jobsApi, JobCategory } from "@/api/jobs";
 import { categories } from "@/data/categories";
+import { useAuth } from "@/hooks/useAuth";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/jobDraft";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const STEPS = [
   { id: 1, title: "Category", description: "Select service type" },
@@ -22,8 +25,11 @@ const STEPS = [
 
 export default function PostJob() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phone, setPhone] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [details, setDetails] = useState<JobDetails>({
@@ -32,13 +38,51 @@ export default function PostJob() {
     budget: "",
     images: [],
   });
-  const [location, setLocation] = useState<LocationDetails>({
+  const [locationData, setLocationData] = useState<LocationDetails>({
     street: "",
     crossStreet: "",
     city: "",
     zip: "",
     showExactAddress: false,
   });
+
+  // Load draft on mount
+  useEffect(() => {
+    const draft = loadDraft();
+    if (draft) {
+      setSelectedCategory(draft.selectedCategory);
+      setDetails(draft.details);
+      setLocationData(draft.location);
+      if (draft.phone) setPhone(draft.phone);
+      
+      // Check for step and autoPublish in URL
+      const params = new URLSearchParams(location.search);
+      const step = params.get('step');
+      const autoPublish = params.get('autoPublish');
+      
+      if (step) {
+        setCurrentStep(parseInt(step));
+      }
+      
+      if (autoPublish === 'true' && user) {
+        toast.info('Your job is ready to publish!');
+      } else {
+        toast.info('Draft restored');
+      }
+    }
+  }, [location.search, user]);
+
+  // Auto-save draft
+  useEffect(() => {
+    if (selectedCategory || details.title || locationData.zip) {
+      saveDraft({
+        selectedCategory,
+        details,
+        location: locationData,
+        phone,
+      });
+    }
+  }, [selectedCategory, details, locationData, phone]);
 
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
   const [locationErrors, setLocationErrors] = useState<Partial<Record<keyof LocationDetails, string>>>({});
@@ -80,10 +124,14 @@ export default function PostJob() {
 
       case 3:
         const lErrors: Partial<Record<keyof LocationDetails, string>> = {};
-        if (!location.zip.trim()) {
+        if (!locationData.zip.trim()) {
           lErrors.zip = "ZIP code is required";
-        } else if (!isValidIllinoisZip(location.zip)) {
+        } else if (!isValidIllinoisZip(locationData.zip)) {
           lErrors.zip = "Please enter a valid Illinois ZIP code";
+        }
+        if (!phone.trim()) {
+          toast.error("Phone number is required");
+          return false;
         }
         setLocationErrors(lErrors);
         if (Object.keys(lErrors).length > 0) {
@@ -108,6 +156,13 @@ export default function PostJob() {
   };
 
   const handlePublish = async () => {
+    // Check if user is logged in
+    if (!user) {
+      toast.info('Please sign in to publish your job');
+      navigate('/auth/customer', { state: { returnTo: '/post-job', autoPublish: true } });
+      return;
+    }
+
     if (!selectedCategory) return;
 
     setIsSubmitting(true);
@@ -118,32 +173,28 @@ export default function PostJob() {
       const imageFiles = details.images
         .map((img: any) => img.file)
         .filter((file): file is File => file instanceof File);
-      
-      console.log('Images to upload:', imageFiles.length, imageFiles);
 
-      const job = await jobsApi.createJob({
+      await jobsApi.createJob({
         title: details.title,
         description: details.description,
         category: category.slug as JobCategory,
         budget: parseFloat(details.budget.split('-')[0]),
-        city: location.city,
-        zip: location.zip,
-        street: location.street,
-        crossStreet: location.crossStreet,
-        showExactAddress: location.showExactAddress,
+        city: locationData.city,
+        zip: locationData.zip,
+        street: locationData.street,
+        crossStreet: locationData.crossStreet,
+        showExactAddress: locationData.showExactAddress,
         images: imageFiles,
       });
 
-      console.log('Job created:', job);
-      console.log('Images in response:', job.images);
-
+      clearDraft();
       toast.success("Your job has been posted!", {
-        description: "Service providers can now see and respond to your listing.",
+        description: "Service providers can now see and respond to your listing."
       });
+      
       navigate("/customer/my-posts");
     } catch (error: any) {
-      console.error('Job creation error:', error);
-      toast.error(error.response?.data?.message || "Failed to post your job. Please try again.");
+      toast.error(error.response?.data?.message || "Failed to post your job");
     } finally {
       setIsSubmitting(false);
     }
@@ -153,7 +204,7 @@ export default function PostJob() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-4">
-          <Link to="/customer/my-posts">
+          <Link to={user ? "/customer/my-posts" : "/"}>
             <Button variant="ghost" size="icon">
               <ArrowLeft className="h-5 w-5" />
             </Button>
@@ -164,6 +215,11 @@ export default function PostJob() {
               Step {currentStep} of {STEPS.length}: {STEPS[currentStep - 1].title}
             </p>
           </div>
+          {!user && (
+            <Button variant="outline" size="sm" onClick={() => navigate('/auth/customer')}>
+              Sign In
+            </Button>
+          )}
         </div>
       </header>
 
@@ -221,18 +277,30 @@ export default function PostJob() {
 
         {currentStep === 3 && (
           <LocationStep
-            location={location}
-            onChange={setLocation}
+            location={locationData}
+            onChange={setLocationData}
             errors={locationErrors}
+            phone={phone}
+            onPhoneChange={setPhone}
           />
         )}
 
         {currentStep === 4 && selectedCategory && (
-          <PreviewStep
-            categoryId={selectedCategory}
-            details={details}
-            location={location}
-          />
+          <>
+            {!user && (
+              <Alert className="mb-4">
+                <Mail className="h-4 w-4" />
+                <AlertDescription>
+                  You'll need to sign in to publish this job. Your progress is saved.
+                </AlertDescription>
+              </Alert>
+            )}
+            <PreviewStep
+              categoryId={selectedCategory}
+              details={details}
+              location={locationData}
+            />
+          </>
         )}
 
         <div className="flex justify-between mt-8 pt-6 border-t border-border">

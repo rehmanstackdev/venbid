@@ -1,4 +1,4 @@
-import { Bell, Check, Trash2, X } from 'lucide-react';
+import { Bell, Check, Trash2, X, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useAuth } from '@/hooks/useAuth';
+import { useConversations } from '@/hooks/useMessages';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -90,11 +91,54 @@ function NotificationItem({
   );
 }
 
-export function NotificationDropdown() {
-  const { user } = useAuth();
+function MessageNotificationItem({
+  conversation,
+  onClick,
+}: {
+  conversation: any;
+  onClick: (conversationId: string) => void;
+}) {
+  return (
+    <div
+      className="p-3 border-l-4 border-l-blue-500 bg-blue-500/10 cursor-pointer transition-colors hover:bg-accent/50"
+      onClick={() => onClick(conversation.id)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-4 w-4 text-blue-500" />
+            <p className="text-sm font-semibold truncate">
+              {conversation.listing?.title || 'New Message'}
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+            {conversation.lastMessage?.content || 'No messages yet'}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {conversation.lastMessage?.created_at
+              ? formatDistanceToNow(new Date(conversation.lastMessage.created_at), { addSuffix: true })
+              : ''}
+          </p>
+        </div>
+        {conversation.unreadCount > 0 && (
+          <Badge className="h-5 px-2 text-[10px]">
+            {conversation.unreadCount}
+          </Badge>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export function NotificationDropdown({ onLoginRequired }: { onLoginRequired?: () => void }) {
+  const { user, roles } = useAuth();
   const navigate = useNavigate();
   const { notifications, loading, unreadCount, markAsRead, markAllAsRead, deleteNotification } =
     useNotifications();
+  const { conversations } = useConversations();
+
+  const unreadConversations = conversations.filter(c => c.unreadCount && c.unreadCount > 0);
+  const totalUnread = unreadCount + unreadConversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   const handleNotificationClick = (notification: Notification) => {
     if (!notification.read) {
@@ -105,9 +149,19 @@ export function NotificationDropdown() {
     }
   };
 
+  const handleMessageClick = (conversationId: string) => {
+    const basePath = roles.includes('vendor') ? '/vendor/messages' : '/customer/messages';
+    navigate(`${basePath}/${conversationId}`);
+  };
+
   if (!user) {
     return (
-      <Button variant="ghost" size="icon" className="relative" onClick={() => navigate('/auth')}>
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="relative" 
+        onClick={() => onLoginRequired ? onLoginRequired() : navigate('/auth')}
+      >
         <Bell className="h-5 w-5" />
       </Button>
     );
@@ -118,9 +172,9 @@ export function NotificationDropdown() {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {totalUnread > 0 && (
             <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-[10px]">
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {totalUnread > 9 ? '9+' : totalUnread}
             </Badge>
           )}
         </Button>
@@ -144,13 +198,20 @@ export function NotificationDropdown() {
             <div className="p-4 text-center text-sm text-muted-foreground">
               Loading...
             </div>
-          ) : notifications.length === 0 ? (
+          ) : notifications.length === 0 && unreadConversations.length === 0 ? (
             <div className="p-8 text-center">
               <Bell className="h-8 w-8 mx-auto text-muted-foreground/50 mb-2" />
               <p className="text-sm text-muted-foreground">No notifications yet</p>
             </div>
           ) : (
             <div className="divide-y">
+              {unreadConversations.map((conversation) => (
+                <MessageNotificationItem
+                  key={conversation.id}
+                  conversation={conversation}
+                  onClick={handleMessageClick}
+                />
+              ))}
               {notifications.map((notification) => (
                 <NotificationItem
                   key={notification.id}

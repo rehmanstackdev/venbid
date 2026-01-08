@@ -1,27 +1,29 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { MessageSquare, Search, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { MessageSquare, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useConversations } from "@/hooks/useMessages";
 import { useAuth } from "@/hooks/useAuth";
 import { ConversationListItem } from "@/components/messages/ConversationListItem";
-import CustomerMessageDetail from "./MessageDetail";
+import { ChatInterface } from "@/components/messages/ChatInterface";
+import { cn } from "@/lib/utils";
 
 export default function CustomerMessages() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { conversations, loading } = useConversations();
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(id || null);
 
-  const filteredConversations = conversations.filter((conv) => {
-    if (!searchQuery) return true;
-    const searchLower = searchQuery.toLowerCase();
-    const listingTitle = conv.listing?.title?.toLowerCase() || '';
-    const lastMsg = conv.lastMessage?.content?.toLowerCase() || '';
-    return listingTitle.includes(searchLower) || lastMsg.includes(searchLower);
-  });
+  useEffect(() => {
+    if (id) {
+      setSelectedId(id);
+    }
+  }, [id]);
+
+  const selectedConversation = conversations.find((c) => c.id === selectedId);
+  const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
 
   if (loading) {
     return (
@@ -35,69 +37,92 @@ export default function CustomerMessages() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      {/* Conversations List */}
-      <div className={`w-full md:w-80 border-r border-border flex flex-col ${selectedId ? 'hidden md:flex' : 'flex'}`}>
-        <div className="p-4 border-b border-border">
-          <h1 className="text-lg font-semibold mb-3">Messages</h1>
-          {conversations.length > 0 && (
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-9"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Header */}
+      <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
+        <div className="container flex h-14 items-center gap-4">
+          <Link to="/customer/my-posts">
+            <Button variant="ghost" size="icon">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <h1 className="font-semibold">Messages</h1>
+            {totalUnread > 0 && (
+              <p className="text-xs text-muted-foreground">
+                {totalUnread} unread {totalUnread === 1 ? "message" : "messages"}
+              </p>
+            )}
+          </div>
         </div>
-        <ScrollArea className="flex-1">
-          {filteredConversations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center p-6">
-              <div className="rounded-full bg-primary/10 p-4 mb-3">
-                <MessageSquare className="h-8 w-8 text-primary" />
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 flex">
+        {/* Conversation list */}
+        <aside
+          className={cn(
+            "w-full lg:w-96 border-r border-border bg-card",
+            selectedId && "hidden lg:block"
+          )}
+        >
+          <ScrollArea className="h-[calc(100vh-3.5rem)]">
+            {conversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-64 text-center p-6">
+                <div className="rounded-full bg-muted p-4 mb-3">
+                  <MessageSquare className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="font-medium mb-1">No conversations yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  When vendors message you about your listings, they'll appear here
+                </p>
               </div>
-              <h3 className="font-semibold mb-1">
-                {searchQuery ? "No results found" : "No conversations yet"}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {searchQuery ? "Try different keywords" : "Start a conversation"}
+            ) : (
+              <div className="divide-y divide-border">
+                {conversations.map((conversation) => (
+                  <ConversationListItem
+                    key={conversation.id}
+                    conversation={conversation}
+                    isSelected={selectedId === conversation.id}
+                    onSelect={() => {
+                      setSelectedId(conversation.id);
+                      navigate(`/customer/messages/${conversation.id}`);
+                    }}
+                    currentUserId={user?.id || ""}
+                  />
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+        </aside>
+
+        {/* Chat area */}
+        <main
+          className={cn(
+            "flex-1 bg-background",
+            !selectedId && "hidden lg:flex"
+          )}
+        >
+          {selectedConversation ? (
+            <ChatInterface
+              conversation={selectedConversation}
+              onBack={() => {
+                setSelectedId(null);
+                navigate('/customer/messages');
+              }}
+            />
+          ) : (
+            <div className="flex flex-col items-center justify-center h-[-webkit-fill-available] w-[-webkit-fill-available] text-center p-6">
+              <div className="rounded-full bg-muted p-6 mb-4">
+                <MessageSquare className="h-10 w-10 text-muted-foreground" />
+              </div>
+              <h2 className="text-lg font-medium mb-1">Select a conversation</h2>
+              <p className="text-muted-foreground text-sm">
+                Choose a conversation from the list to start messaging
               </p>
             </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {filteredConversations.map((conversation) => (
-                <ConversationListItem
-                  key={conversation.id}
-                  conversation={conversation}
-                  isSelected={selectedId === conversation.id}
-                  onSelect={() => setSelectedId(conversation.id)}
-                  currentUserId={user?.id || ""}
-                />
-              ))}
-            </div>
           )}
-        </ScrollArea>
-      </div>
-
-      {/* Message Window */}
-      <div className={`flex-1 ${!selectedId ? 'hidden md:flex' : 'flex'}`}>
-        {selectedId ? (
-          <CustomerMessageDetail conversationId={selectedId} onBack={() => setSelectedId(null)} />
-        ) : (
-          <div className="flex items-center justify-center h-full text-muted-foreground">
-            <p>Select a conversation to view messages</p>
-          </div>
-        )}
+        </main>
       </div>
     </div>
   );

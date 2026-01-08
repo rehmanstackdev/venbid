@@ -4,9 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
+
+const maskEmail = (email: string) => {
+  const [localPart, domain] = email.split('@');
+  if (!localPart || !domain) return email;
+  
+  const maskedLocal = localPart.length > 2 
+    ? localPart[0] + localPart[1] + '*'.repeat(Math.min(localPart.length - 2, 7))
+    : localPart[0] + '*';
+  
+  const [domainName, tld] = domain.split('.');
+  const maskedDomain = domainName.length > 1
+    ? domainName[0] + '*'.repeat(Math.min(domainName.length - 1, 2))
+    : domainName;
+  
+  return `${maskedLocal}@${maskedDomain}.${tld}`;
+};
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -17,6 +33,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,13 +71,34 @@ export default function ResetPassword() {
     }
   };
 
+  const handleResendOtp = async () => {
+    if (!email) {
+      toast.error("Email not found");
+      return;
+    }
+
+    setResending(true);
+    try {
+      await authApi.resendVerificationOtp({ email });
+      toast.success("OTP sent successfully!");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResending(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle>Reset Password</CardTitle>
           <CardDescription>
-            Enter the OTP sent to {email} and your new password
+            Enter the OTP sent to {maskEmail(email || '')} and your new password
+            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              <span>Code expires in 10 minutes</span>
+            </div>
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -77,6 +115,17 @@ export default function ResetPassword() {
                 className="text-center text-lg tracking-widest"
                 required
               />
+              <div className="text-right">
+                <Button 
+                  type="button" 
+                  variant="link" 
+                  className="text-sm px-0" 
+                  onClick={handleResendOtp}
+                  disabled={resending}
+                >
+                  {resending ? "Sending..." : "Resend OTP"}
+                </Button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
