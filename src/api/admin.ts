@@ -45,6 +45,10 @@ export const adminApi = {
   updateVendorDocumentVerification: async (vendorId: string, documentVerified: boolean): Promise<void> => {
     await apiClient.patch(`/admin/vendors/${vendorId}/document-verified`, { documentVerified });
   },
+
+  deleteJob: async (jobId: string): Promise<void> => {
+    await apiClient.delete(`/admin/listings/${jobId}`);
+  },
 };
 
 export const getVendors = async (): Promise<AdminVendor[]> => {

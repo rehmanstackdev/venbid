@@ -1,16 +1,9 @@
 import { useState, useEffect } from "react";
-import { Search, MoreVertical, CheckCircle, XCircle, Edit, Eye } from "lucide-react";
+import { Search, Trash2, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Dialog,
   DialogContent,
@@ -24,19 +17,19 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { jobsApi, Job } from "@/api/jobs";
+import { adminApi } from "@/api/admin";
 import { categories } from "@/data/categories";
-
-type JobWithStatus = Job & { adminStatus: "pending" | "approved" | "rejected" };
 
 export default function AdminListings() {
   const { toast } = useToast();
-  const [listings, setListings] = useState<JobWithStatus[]>([]);
+  const [listings, setListings] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedListing, setSelectedListing] = useState<JobWithStatus | null>(null);
-  const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [action, setAction] = useState<"approve" | "reject">("approve");
-  const [adminNotes, setAdminNotes] = useState("");
+  const [selectedListing, setSelectedListing] = useState<Job | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchListings();
@@ -45,7 +38,7 @@ export default function AdminListings() {
   const fetchListings = async () => {
     try {
       const jobs = await jobsApi.getAllJobs();
-      setListings(jobs.map(job => ({ ...job, adminStatus: "approved" as const })));
+      setListings(jobs);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load listings", variant: "destructive" });
     } finally {
@@ -59,36 +52,38 @@ export default function AdminListings() {
       listing.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAction = (listing: JobWithStatus, actionType: "approve" | "reject") => {
+  const handleAction = (listing: Job, actionType: "delete" | "view") => {
     setSelectedListing(listing);
-    setAction(actionType);
-    setActionDialogOpen(true);
+    if (actionType === "delete") {
+      setDeleteDialogOpen(true);
+    } else {
+      setViewDialogOpen(true);
+    }
   };
 
-  const handleSubmitAction = () => {
+  const handleDelete = async () => {
     if (!selectedListing) return;
 
-    setListings((prev) =>
-      prev.map((l) =>
-        l.id === selectedListing.id ? { ...l, adminStatus: action === "approve" ? "approved" : "rejected" } : l
-      )
-    );
-
-    toast({
-      title: action === "approve" ? "Listing Approved" : "Listing Rejected",
-      description: `"${selectedListing.title}" has been ${action === "approve" ? "approved" : "rejected"}.`,
-    });
-
-    setActionDialogOpen(false);
-    setAdminNotes("");
-    setSelectedListing(null);
+    setDeleting(true);
+    try {
+      await adminApi.deleteJob(selectedListing.id);
+      setListings((prev) => prev.filter((l) => l.id !== selectedListing.id));
+      toast({
+        title: "Job Deleted",
+        description: `"${selectedListing.title}" has been deleted.`,
+      });
+      setDeleteDialogOpen(false);
+      setSelectedListing(null);
+    } catch (error) {
+      toast({ title: "Error", description: "Failed to delete job", variant: "destructive" });
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  const pendingListings = filteredListings.filter((l) => l.adminStatus === "pending");
-  const approvedListings = filteredListings.filter((l) => l.adminStatus === "approved");
-  const rejectedListings = filteredListings.filter((l) => l.adminStatus === "rejected");
+  const pendingListings = filteredListings;
 
-  const ListingCard = ({ listing }: { listing: JobWithStatus }) => {
+  const ListingCard = ({ listing }: { listing: Job }) => {
     const categoryName = categories.find(c => c.slug === listing.category)?.name || listing.category;
     
     return (
@@ -96,47 +91,17 @@ export default function AdminListings() {
       <CardHeader>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
-              <CardTitle className="text-base truncate">{listing.title}</CardTitle>
-              <Badge
-                variant={
-                  listing.adminStatus === "approved"
-                    ? "default"
-                    : listing.adminStatus === "rejected"
-                    ? "destructive"
-                    : "secondary"
-                }
-              >
-                {listing.adminStatus}
-              </Badge>
-            </div>
+            <CardTitle className="text-base truncate mb-2">{listing.title}</CardTitle>
             <p className="text-sm text-muted-foreground line-clamp-2">{listing.description}</p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Eye className="h-4 w-4 mr-2" />
-                View Details
-              </DropdownMenuItem>
-              {listing.adminStatus === "pending" && (
-                <>
-                  <DropdownMenuItem onClick={() => handleAction(listing, "approve")}>
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Approve
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAction(listing, "reject")}>
-                    <XCircle className="h-4 w-4 mr-2" />
-                    Reject
-                  </DropdownMenuItem>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon" onClick={() => handleAction(listing, "view")}>
+              <Eye className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => handleAction(listing, "delete")}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -190,23 +155,17 @@ export default function AdminListings() {
         <p className="text-muted-foreground">Approve, reject, or modify job listings</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
-            <div className="text-2xl font-bold">{pendingListings.length}</div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Jobs</CardTitle>
+            <div className="text-2xl font-bold">{listings.length}</div>
           </CardHeader>
         </Card>
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Approved</CardTitle>
-            <div className="text-2xl font-bold text-green-600">{approvedListings.length}</div>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Rejected</CardTitle>
-            <div className="text-2xl font-bold text-red-600">{rejectedListings.length}</div>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Filtered Results</CardTitle>
+            <div className="text-2xl font-bold">{filteredListings.length}</div>
           </CardHeader>
         </Card>
       </div>
@@ -225,84 +184,99 @@ export default function AdminListings() {
         </CardHeader>
       </Card>
 
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({filteredListings.length})</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({pendingListings.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approvedListings.length})</TabsTrigger>
-          <TabsTrigger value="rejected">Rejected ({rejectedListings.length})</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {filteredListings.map((listing) => (
+          <ListingCard key={listing.id} listing={listing} />
+        ))}
+      </div>
 
-        <TabsContent value="all" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="pending" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {pendingListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="approved" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {approvedListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="rejected" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {rejectedListings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-
-      <Dialog open={actionDialogOpen} onOpenChange={setActionDialogOpen}>
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {action === "approve" ? "Approve Listing" : "Reject Listing"}
-            </DialogTitle>
+            <DialogTitle>Delete Job</DialogTitle>
             <DialogDescription>
-              {action === "approve"
-                ? `Approve "${selectedListing?.title}"?`
-                : `Reject "${selectedListing?.title}"?`}
+              Are you sure you want to delete "{selectedListing?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="notes">Admin Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                placeholder="Add notes about this decision..."
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                rows={4}
-              />
-            </div>
-          </div>
-
           <DialogFooter>
-            <Button variant="outline" onClick={() => setActionDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
               Cancel
             </Button>
-            <Button
-              variant={action === "approve" ? "default" : "destructive"}
-              onClick={handleSubmitAction}
-            >
-              {action === "approve" ? "Approve Listing" : "Reject Listing"}
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete Job"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+        <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Job Details</DialogTitle>
+          </DialogHeader>
+          {selectedListing && (
+            <div className="space-y-4">
+              {selectedListing.images && selectedListing.images.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedListing.images.map((img, idx) => (
+                    <img
+                      key={idx}
+                      src={img}
+                      alt={`Job image ${idx + 1}`}
+                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => setFullscreenImage(img)}
+                    />
+                  ))}
+                </div>
+              )}
+              <div>
+                <h3 className="font-semibold text-lg break-words">{selectedListing.title}</h3>
+                <Badge variant="secondary" className="mt-1">
+                  {categories.find(c => c.slug === selectedListing.category)?.name || selectedListing.category}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Description</p>
+                <p className="text-sm mt-1 break-words">{selectedListing.description}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Budget</p>
+                <p className="text-sm mt-1">${selectedListing.budget}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Location</p>
+                <p className="text-sm mt-1 break-words">
+                  {selectedListing.showExactAddress
+                    ? `${selectedListing.street}, ${selectedListing.city}, ${selectedListing.zip}`
+                    : `${selectedListing.crossStreet}, ${selectedListing.city}, ${selectedListing.zip}`}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Posted</p>
+                <p className="text-sm mt-1">{new Date(selectedListing.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              onClick={() => setFullscreenImage(null)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <img
+              src={fullscreenImage || ""}
+              alt="Full size"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -22,10 +22,8 @@ export default function AdminVendors() {
   const [vendors, setVendors] = useState<AdminVendor[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDoc, setSelectedDoc] = useState<AdminVendor | null>(null);
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
-  const [reviewAction, setReviewAction] = useState<"approve" | "reject">("approve");
-  const [adminNotes, setAdminNotes] = useState("");
+  const [approvingId, setApprovingId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchVendors();
@@ -49,34 +47,14 @@ export default function AdminVendors() {
   const pendingCount = vendors.filter((v) => !v.documentVerified).length;
   const approvedCount = vendors.filter((v) => v.documentVerified).length;
 
-  const handleReview = (vendor: AdminVendor, action: "approve" | "reject") => {
-    setSelectedDoc(vendor);
-    setReviewAction(action);
-    setReviewDialogOpen(true);
-  };
-
-  const handleView = (vendor: AdminVendor) => {
-    setSelectedDoc(vendor);
-    setViewDialogOpen(true);
-  };
-
-  const handleSubmitReview = async () => {
-    if (!selectedDoc) return;
-
+  const handleApprove = async (vendor: AdminVendor) => {
+    setApprovingId(vendor.id);
     try {
-      await adminApi.updateVendorDocumentVerification(
-        selectedDoc.id,
-        reviewAction === "approve"
-      );
-
+      await adminApi.updateVendorDocumentVerification(vendor.id, true);
       toast({
-        title: reviewAction === "approve" ? "Vendor Approved" : "Verification Rejected",
-        description: `${selectedDoc.user.name} has been ${reviewAction === "approve" ? "approved" : "rejected"}.`,
+        title: "Vendor Approved",
+        description: `${vendor.user.name} has been approved.`,
       });
-
-      setReviewDialogOpen(false);
-      setAdminNotes("");
-      setSelectedDoc(null);
       fetchVendors();
     } catch (error) {
       toast({
@@ -84,7 +62,14 @@ export default function AdminVendors() {
         description: "Failed to update vendor verification",
         variant: "destructive",
       });
+    } finally {
+      setApprovingId(null);
     }
+  };
+
+  const handleView = (vendor: AdminVendor) => {
+    setSelectedDoc(vendor);
+    setViewDialogOpen(true);
   };
 
   const formatDate = (date: string) => {
@@ -135,7 +120,7 @@ export default function AdminVendors() {
           </div>
           <div>
             <p className="text-muted-foreground">Documents</p>
-            <p className="font-medium">{vendor.verificationDocuments.length} file(s)</p>
+            <p className="font-medium">{vendor.verificationDocuments?.length || 0} file(s)</p>
           </div>
           <div>
             <p className="text-muted-foreground">Submitted</p>
@@ -145,7 +130,7 @@ export default function AdminVendors() {
 
         <div>
           <p className="text-sm text-muted-foreground mb-2">Verification Documents</p>
-          {vendor.verificationDocuments.length > 0 ? (
+          {vendor.verificationDocuments && vendor.verificationDocuments.length > 0 ? (
             <div className="relative group">
               <img
                 src={vendor.verificationDocuments[0]}
@@ -168,20 +153,14 @@ export default function AdminVendors() {
         </div>
 
         {!vendor.documentVerified && (
-          <div className="flex gap-2">
-            <Button className="flex-1 gap-2" onClick={() => handleReview(vendor, "approve")}>
-              <CheckCircle className="h-4 w-4" />
-              Approve
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1 gap-2"
-              onClick={() => handleReview(vendor, "reject")}
-            >
-              <XCircle className="h-4 w-4" />
-              Reject
-            </Button>
-          </div>
+          <Button 
+            className="w-full gap-2" 
+            onClick={() => handleApprove(vendor)}
+            disabled={approvingId === vendor.id}
+          >
+            <CheckCircle className="h-4 w-4" />
+            {approvingId === vendor.id ? "Approving..." : "Approve"}
+          </Button>
         )}
       </CardContent>
     </Card>
@@ -247,46 +226,6 @@ export default function AdminVendors() {
           </div>
         </TabsContent>
       </Tabs>
-
-      <Dialog open={reviewDialogOpen} onOpenChange={setReviewDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {reviewAction === "approve" ? "Approve Vendor" : "Reject Verification"}
-            </DialogTitle>
-            <DialogDescription>
-              {reviewAction === "approve"
-                ? `Approve ${selectedDoc?.user.name} as a verified vendor?`
-                : `Reject ${selectedDoc?.user.name}'s verification request?`}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="notes">Admin Notes (Optional)</Label>
-              <Textarea
-                id="notes"
-                placeholder="Add notes about this decision..."
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                rows={4}
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setReviewDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant={reviewAction === "approve" ? "default" : "destructive"}
-              onClick={handleSubmitReview}
-            >
-              {reviewAction === "approve" ? "Approve Vendor" : "Reject Request"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
         <DialogContent className="max-w-3xl">
