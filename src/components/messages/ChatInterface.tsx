@@ -135,7 +135,14 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         </button>
 
         <div className="flex-1 min-w-0">
-          <h2 className="text-sm font-semibold truncate">{otherPartyName}</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-semibold truncate">{otherPartyName}</h2>
+            {!isVendor && conversation.vendor?.isApproved !== undefined && (
+              <Badge variant={conversation.vendor.isApproved ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                {conversation.vendor.isApproved ? "Verified" : "Unverified"}
+              </Badge>
+            )}
+          </div>
           <button
             onClick={handleShowJobDetails}
             className="text-xs text-primary hover:underline truncate block text-left"

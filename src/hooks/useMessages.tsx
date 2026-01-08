@@ -29,6 +29,7 @@ export interface Conversation {
   };
   vendor?: {
     name: string;
+    isApproved?: boolean;
   };
   lastMessage?: Message;
   unreadCount?: number;
@@ -69,6 +70,7 @@ export function useConversations() {
           },
           vendor: {
             name: room.vendor.name,
+            isApproved: room.vendor.isApproved,
           },
           lastMessage: room.lastMessage ? {
             id: '',

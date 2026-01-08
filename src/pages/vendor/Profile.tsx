@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { vendorApi } from '@/api/vendor';
@@ -18,6 +19,7 @@ export default function VendorProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [documents, setDocuments] = useState<File[]>([]);
+  const [isApproved, setIsApproved] = useState(false);
   const [profile, setProfile] = useState({
     name: '',
     email: user?.email || '',
@@ -38,6 +40,7 @@ export default function VendorProfile() {
       try {
         const data = await vendorApi.getProfile();
         const coords = data.coordinates || { lat: 0, long: 0 };
+        setIsApproved(data.isApproved || false);
         setProfile(prev => ({
           ...prev,
           name: data.name || '',
@@ -192,8 +195,15 @@ export default function VendorProfile() {
 
             {/* Account Type */}
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
-              <p className="text-sm text-muted-foreground">Account Type</p>
-              <p className="font-medium">Vendor</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">Account Type</p>
+                  <p className="font-medium">Vendor</p>
+                </div>
+                <Badge variant={isApproved ? "default" : "secondary"}>
+                  {isApproved ? "Approved" : "Unapproved"}
+                </Badge>
+              </div>
             </div>
 
             {/* Email (read-only) */}
