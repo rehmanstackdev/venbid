@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Eye, EyeOff, Clock } from "lucide-react";
+import { Loader2, Eye, EyeOff, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 
@@ -92,7 +92,17 @@ export default function ResetPassword() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Reset Password</CardTitle>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle>Reset Password</CardTitle>
+          </div>
           <CardDescription>
             Enter the OTP sent to {maskEmail(email || '')} and your new password
             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">

@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Clock } from "lucide-react";
+import { Loader2, Clock, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { loadDraft } from "@/lib/jobDraft";
@@ -125,7 +125,17 @@ export default function VerifyEmail() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Verify Your Email</CardTitle>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="h-8 w-8"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle>Verify Your Email</CardTitle>
+          </div>
           <CardDescription>
             We've sent a 6-digit code to {maskEmail(email || '')}
             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
