@@ -56,7 +56,7 @@ export default function EditJob() {
           title: job.title,
           description: job.description,
           budget: job.budget.toString(),
-          images: job.images || [],
+          images: job.images ? job.images.map(url => ({ url, file: null })) : [],
         });
         setLocation({
           street: job.street || "",
@@ -147,8 +147,8 @@ export default function EditJob() {
       if (!category) throw new Error('Invalid category');
 
       const imageFiles = details.images
-        .map((img: any) => img.file)
-        .filter((file): file is File => file instanceof File);
+        .filter((img: any) => img.file instanceof File)
+        .map((img: any) => img.file);
 
       await jobsApi.updateJob(id, {
         title: details.title,

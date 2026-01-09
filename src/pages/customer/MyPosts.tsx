@@ -36,6 +36,8 @@ export default function CustomerMyPosts() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [completingJob, setCompletingJob] = useState<string | null>(null);
+  const [completeDialogOpen, setCompleteDialogOpen] = useState(false);
+  const [jobToComplete, setJobToComplete] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("active");
   const { isFavorite, toggleFavorite } = useFavorites();
 
@@ -77,15 +79,24 @@ export default function CustomerMyPosts() {
 
   const handleComplete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setCompletingJob(id);
+    setJobToComplete(id);
+    setCompleteDialogOpen(true);
+  };
+
+  const confirmComplete = async () => {
+    if (!jobToComplete) return;
+
+    setCompletingJob(jobToComplete);
     try {
-      await jobsApi.completeJob(id, true);
+      await jobsApi.completeJob(jobToComplete, true);
       toast.success("Job marked as complete");
       fetchJobs();
     } catch (error) {
       toast.error("Failed to complete job");
     } finally {
       setCompletingJob(null);
+      setCompleteDialogOpen(false);
+      setJobToComplete(null);
     }
   };
 
@@ -352,6 +363,23 @@ export default function CustomerMyPosts() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={completeDialogOpen} onOpenChange={setCompleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Mark Job as Complete</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to mark this job as complete? This will move it to the completed jobs tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmComplete} disabled={completingJob === jobToComplete}>
+              {completingJob === jobToComplete ? "Completing..." : "Mark Complete"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
