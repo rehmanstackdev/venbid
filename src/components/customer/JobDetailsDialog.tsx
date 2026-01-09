@@ -1,8 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, DollarSign, Edit, ChevronLeft, ChevronRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { MapPin, Calendar, DollarSign, ChevronLeft, ChevronRight } from "lucide-react";
 import { categories } from "@/data/categories";
 import { useState } from "react";
 
@@ -19,6 +17,7 @@ interface JobDetailsDialogProps {
     crossStreet?: string;
     images?: string[];
     status: string;
+    isComplete?: boolean;
     createdAt: string;
   } | null;
   open: boolean;
@@ -169,14 +168,6 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
             <Calendar className="h-4 w-4" />
             Posted {formatTimeAgo(listing.createdAt)}
           </div>
-
-          {/* Edit Button */}
-          <Link to={`/customer/edit-job/${listing.id}`}>
-            <Button className="w-full gap-2 text-sm sm:text-base">
-              <Edit className="h-4 w-4" />
-              Edit Job Post
-            </Button>
-          </Link>
         </div>
       </DialogContent>
     </Dialog>
