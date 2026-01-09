@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Camera, Save, Loader2, Upload, X } from 'lucide-react';
+import { Save, Loader2, Upload, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { vendorApi } from '@/api/vendor';
@@ -19,7 +19,10 @@ export default function VendorProfile() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [documents, setDocuments] = useState<File[]>([]);
-  const [isApproved, setIsApproved] = useState(false);
+  const [documentVerified, setDocumentVerified] = useState(false);
+  const [existingDocuments, setExistingDocuments] = useState<string[]>([]);
+  const [viewImageDialog, setViewImageDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string>("");
   const [profile, setProfile] = useState({
     name: '',
     email: user?.email || '',
@@ -32,25 +35,32 @@ export default function VendorProfile() {
     companyName: '',
     coordinates: { lat: 0, long: 0 },
     locationSearch: '',
-    avatarUrl: null as string | null,
   });
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await vendorApi.getProfile();
-        const coords = data.coordinates || { lat: 0, long: 0 };
-        setIsApproved(data.isApproved || false);
+        const response = await vendorApi.getProfile();
+        console.log('Vendor profile response:', response);
+        const data = response.data || response;
+        const vendorData = data.vendor || data;
+        const userData = data.user || data;
+        
+        const coords = userData.coordinates || { lat: 0, long: 0 };
+        setDocumentVerified(vendorData.documentVerified || false);
+        setExistingDocuments(vendorData.verificationDocuments || []);
+        console.log('Existing documents:', vendorData.verificationDocuments);
+        
         setProfile(prev => ({
           ...prev,
-          name: data.name || '',
-          phone: data.phone || '',
-          serviceCategory: data.serviceCategory || '',
-          city: data.city || '',
-          state: data.state || '',
-          zipCode: data.zipCode || '',
-          address: data.address || '',
-          companyName: data.companyName || '',
+          name: userData.name || '',
+          phone: userData.phone || '',
+          serviceCategory: vendorData.serviceCategory || '',
+          city: userData.city || '',
+          state: userData.state || '',
+          zipCode: userData.zipCode || '',
+          address: userData.address || '',
+          companyName: vendorData.companyName || '',
           coordinates: coords,
           locationSearch: '',
         }));
@@ -104,6 +114,7 @@ export default function VendorProfile() {
         description: 'Your profile has been saved successfully.',
       });
       setDocuments([]);
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -113,32 +124,6 @@ export default function VendorProfile() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({ title: 'Invalid file', description: 'Please select an image file.', variant: 'destructive' });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({ title: 'File too large', description: 'Please select an image under 5MB.', variant: 'destructive' });
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setProfile(prev => ({ ...prev, avatarUrl: previewUrl }));
-    toast({ title: 'Avatar updated', description: 'Your profile picture has been updated.' });
-  };
-
-  const getInitials = () => {
-    if (profile.name) {
-      return profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    }
-    return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
   if (isFetching) {
@@ -165,34 +150,6 @@ export default function VendorProfile() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-6">
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile.avatarUrl || undefined} alt="Profile" />
-                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                    {getInitials()}
-                  </AvatarFallback>
-                </Avatar>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors cursor-pointer"
-                >
-                  <Camera className="h-4 w-4" />
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Click to upload a new photo
-              </p>
-            </div>
-
             {/* Account Type */}
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
               <div className="flex items-center justify-between">
@@ -200,8 +157,8 @@ export default function VendorProfile() {
                   <p className="text-sm text-muted-foreground">Account Type</p>
                   <p className="font-medium">Vendor</p>
                 </div>
-                <Badge variant={isApproved ? "default" : "secondary"}>
-                  {isApproved ? "Approved" : "Unapproved"}
+                <Badge variant={documentVerified ? "default" : "secondary"}>
+                  {documentVerified ? "Verified" : "Unverified"}
                 </Badge>
               </div>
             </div>
@@ -344,7 +301,33 @@ export default function VendorProfile() {
 
             {/* Verification Documents */}
             <div className="space-y-2">
-              <Label htmlFor="documents">Verification Documents (max 5 files, 10MB each)</Label>
+              <Label>Verification Documents</Label>
+              {existingDocuments.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                  {existingDocuments.map((doc, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={doc}
+                        alt={`Document ${index + 1}`}
+                        className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => {
+                          setSelectedImage(doc);
+                          setViewImageDialog(true);
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => setExistingDocuments(existingDocuments.filter((_, i) => i !== index))}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="border-2 border-dashed rounded-lg p-4">
                 <input
                   id="documents"
@@ -400,6 +383,27 @@ export default function VendorProfile() {
           </form>
         </CardContent>
       </Card>
+
+      {/* Image Viewer Dialog */}
+      <Dialog open={viewImageDialog} onOpenChange={setViewImageDialog}>
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              onClick={() => setViewImageDialog(false)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <img
+              src={selectedImage}
+              alt="Document"
+              className="max-w-full max-h-full object-contain"
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

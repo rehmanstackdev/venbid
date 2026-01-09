@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CheckCircle, XCircle, Clock, FileText, User, Eye } from "lucide-react";
+import { CheckCircle, XCircle, Clock, FileText, User, Eye, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -228,19 +228,25 @@ export default function AdminVendors() {
       </Tabs>
 
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Document Preview</DialogTitle>
-            <DialogDescription>{selectedDoc?.user.name} - {selectedDoc?.companyName}</DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            {selectedDoc?.verificationDocuments[0] && (
-              <img
-                src={selectedDoc.verificationDocuments[0]}
-                alt="Document"
-                className="w-full rounded-lg border"
-              />
-            )}
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 right-4 z-50 h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
+            onClick={() => setViewDialogOpen(false)}
+          >
+            <X className="h-5 w-5" />
+          </Button>
+          <div className="w-full h-full overflow-auto p-4">
+            <div className="min-h-full flex items-center justify-center">
+              {selectedDoc?.verificationDocuments && selectedDoc.verificationDocuments.length > 0 && (
+                <img
+                  src={selectedDoc.verificationDocuments[0]}
+                  alt="Document"
+                  className="max-w-full h-auto"
+                />
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>

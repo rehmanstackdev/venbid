@@ -1,5 +1,5 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, User, Heart, Share2, Flag, Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, User, Heart, Share2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -11,16 +11,7 @@ import { MessageButton } from "@/components/listings/MessageButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+
 import { useAuth } from "@/hooks/useAuth";
 
 const ListingDetail = () => {
@@ -29,9 +20,7 @@ const ListingDetail = () => {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { user } = useAuth();
   const isListingFavorite = id ? isFavorite(id) : false;
-  const [reportDialogOpen, setReportDialogOpen] = useState(false);
-  const [reportReason, setReportReason] = useState("");
-  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+
   const listing = listings.find((l) => l.id === id);
   const isOwner = user && listing && user.id === listing.userId;
 
@@ -40,23 +29,7 @@ const ListingDetail = () => {
     toast.success("Link copied to clipboard");
   };
 
-  const handleReport = async () => {
-    if (!user) {
-      toast.error("Please sign in to report this listing");
-      return;
-    }
-    if (!reportReason.trim()) {
-      toast.error("Please provide a reason for reporting");
-      return;
-    }
-    setIsSubmittingReport(true);
-    
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSubmittingReport(false);
-    setReportDialogOpen(false);
-    setReportReason("");
-    toast.success("Report submitted. We'll review this listing.");
-  };
+
 
   if (loading) {
     return (
@@ -116,9 +89,6 @@ const ListingDetail = () => {
             </Button>
             <Button variant="ghost" size="icon" onClick={handleCopyLink}>
               <Share2 className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => setReportDialogOpen(true)}>
-              <Flag className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -232,37 +202,7 @@ const ListingDetail = () => {
         </div>
       </main>
 
-      {/* Report Dialog */}
-      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Report this listing</DialogTitle>
-            <DialogDescription>
-              Help us keep Venbid safe by reporting suspicious or inappropriate content.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <Label htmlFor="report-reason">Why are you reporting this listing?</Label>
-              <Textarea
-                id="report-reason"
-                placeholder="Please describe the issue..."
-                value={reportReason}
-                onChange={(e) => setReportReason(e.target.value)}
-                rows={4}
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setReportDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleReport} disabled={isSubmittingReport}>
-                {isSubmittingReport ? "Submitting..." : "Submit Report"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 };

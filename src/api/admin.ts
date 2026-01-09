@@ -47,7 +47,7 @@ export const adminApi = {
   },
 
   deleteJob: async (jobId: string): Promise<void> => {
-    await apiClient.delete(`/admin/listings/${jobId}`);
+    await apiClient.delete(`/admin/jobs/${jobId}`);
   },
 };
 

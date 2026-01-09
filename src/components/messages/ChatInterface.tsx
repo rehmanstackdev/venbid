@@ -137,9 +137,9 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-semibold truncate">{otherPartyName}</h2>
-            {!isVendor && conversation.vendor?.isApproved !== undefined && (
-              <Badge variant={conversation.vendor.isApproved ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
-                {conversation.vendor.isApproved ? "Verified" : "Unverified"}
+            {!isVendor && conversation.vendor?.documentVerified !== undefined && (
+              <Badge variant={conversation.vendor.documentVerified ? "default" : "secondary"} className="text-[10px] px-1.5 py-0">
+                {conversation.vendor.documentVerified ? "Verified" : "Unverified"}
               </Badge>
             )}
           </div>

@@ -130,24 +130,9 @@ export const vendorApi = {
   },
 
   // Get vendor profile
-  getProfile: async (): Promise<VendorProfile> => {
+  getProfile: async (): Promise<any> => {
     const response = await apiClient.get('/vendors/profile');
-    const data = response.data.data || response.data;
-    // Backend returns nested user and vendor objects
-    if (data.user && data.vendor) {
-      return {
-        name: data.user.name || '',
-        phone: data.user.phone || '',
-        serviceCategory: data.vendor.serviceCategory || '',
-        city: data.user.city || '',
-        state: data.user.state || '',
-        zipCode: data.user.zipCode || '',
-        address: data.user.address || '',
-        companyName: data.vendor.companyName || '',
-        coordinates: data.user.coordinates,
-      };
-    }
-    return data;
+    return response.data;
   },
 
   // Update vendor profile

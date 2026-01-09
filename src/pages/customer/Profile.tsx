@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Camera, Save, Loader2 } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { customerApi } from '@/api/customer';
 import { LocationSearchInput } from '@/components/location/LocationSearchInput';
@@ -25,7 +24,6 @@ export default function CustomerProfile() {
     zipCode: '',
     coordinates: { lat: 0, long: 0 },
     locationSearch: '',
-    avatarUrl: null as string | null,
   });
 
   useEffect(() => {
@@ -71,6 +69,7 @@ export default function CustomerProfile() {
         title: 'Profile updated',
         description: 'Your profile has been saved successfully.',
       });
+      window.location.reload();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -80,43 +79,6 @@ export default function CustomerProfile() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: 'Invalid file',
-        description: 'Please select an image file.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: 'File too large',
-        description: 'Please select an image under 5MB.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setProfile(prev => ({ ...prev, avatarUrl: previewUrl }));
-    toast({
-      title: 'Avatar updated',
-      description: 'Your profile picture has been updated.',
-    });
-  };
-
-  const getInitials = () => {
-    if (profile.name) {
-      return profile.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    }
-    return user?.email?.charAt(0).toUpperCase() || 'U';
   };
 
   if (isFetching) {
@@ -143,34 +105,6 @@ export default function CustomerProfile() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSave} className="space-y-6">
-            {/* Avatar */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="relative">
-                <Avatar className="h-24 w-24">
-                  <AvatarImage src={profile.avatarUrl || undefined} alt="Profile" />
-                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
-                    {getInitials()}
-                  </AvatarFallback>
-                </Avatar>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-md hover:bg-primary/90 transition-colors cursor-pointer"
-                >
-                  <Camera className="h-4 w-4" />
-                  <input
-                    id="avatar-upload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Click to upload a new photo
-              </p>
-            </div>
-
             {/* Account Type */}
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm text-muted-foreground">Account Type</p>
