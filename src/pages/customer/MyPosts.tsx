@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, Filter, FileText, Trash2, Heart } from "lucide-react";
+import { Plus, Search, Filter, FileText, Trash2, Heart, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { categories } from "@/data/categories";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobDetailsDialog } from "@/components/customer/JobDetailsDialog";
@@ -34,6 +35,8 @@ export default function CustomerMyPosts() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [completingJob, setCompletingJob] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("active");
   const { isFavorite, toggleFavorite } = useFavorites();
 
   useEffect(() => {
@@ -72,6 +75,20 @@ export default function CustomerMyPosts() {
     }
   };
 
+  const handleComplete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCompletingJob(id);
+    try {
+      await jobsApi.completeJob(id, true);
+      toast.success("Job marked as complete");
+      fetchJobs();
+    } catch (error) {
+      toast.error("Failed to complete job");
+    } finally {
+      setCompletingJob(null);
+    }
+  };
+
   const formatTimeAgo = (date: string) => {
     const now = new Date();
     const past = new Date(date);
@@ -89,20 +106,114 @@ export default function CustomerMyPosts() {
     return categories.find(c => c.slug === slug)?.name || slug;
   };
 
+  const activeJobs = listings.filter(job => !job.isComplete);
+  const completedJobs = listings.filter(job => job.isComplete);
+
   const filteredListings = listings
     .filter((listing) => {
       const matchesSearch = listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         listing.description.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = categoryFilter === "all" || listing.category === categoryFilter;
-      return matchesSearch && matchesCategory;
+      const matchesTab = activeTab === "active" ? !listing.isComplete : listing.isComplete;
+      return matchesSearch && matchesCategory && matchesTab;
     })
     .sort((a, b) => {
       if (sortBy === "newest") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       if (sortBy === "oldest") return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      if (sortBy === "budget-high") return b.budget - a.budget;
-      if (sortBy === "budget-low") return a.budget - b.budget;
+      if (sortBy === "budget-high") return Number(b.budget) - Number(a.budget);
+      if (sortBy === "budget-low") return Number(a.budget) - Number(b.budget);
       return 0;
     });
+
+  const JobCard = ({ listing }: { listing: Job }) => (
+    <Card
+      className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer relative flex flex-col"
+      onClick={() => {
+        setSelectedListing(listing);
+        setDialogOpen(true);
+      }}
+    >
+      {listing.images && listing.images.length > 0 && (
+        <div className="w-full h-40 bg-muted relative">
+          <img
+            src={listing.images[0]}
+            alt={listing.title}
+            className="w-full h-full object-cover"
+          />
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm",
+              "hover:bg-card hover:scale-110 transition-all z-10",
+              isFavorite(listing.id) && "text-red-500"
+            )}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              toggleFavorite(listing.id);
+            }}
+          >
+            <Heart className={cn("h-4 w-4", isFavorite(listing.id) && "fill-red-500")} />
+          </Button>
+        </div>
+      )}
+      
+      <CardContent className="p-4 flex flex-col flex-1">
+        <div className="flex items-center gap-2 mb-2 flex-wrap">
+          <Badge variant="secondary" className="text-xs">{getCategoryName(listing.category)}</Badge>
+          {listing.isComplete && (
+            <Badge variant="outline" className="text-xs text-green-600">
+              Completed
+            </Badge>
+          )}
+        </div>
+        
+        <h3 className="font-semibold text-base mb-2 line-clamp-1">{listing.title}</h3>
+        
+        <p className="text-muted-foreground text-sm line-clamp-1 mb-3">
+          {listing.description}
+        </p>
+        
+        <div className="text-lg font-bold text-primary mb-3">${listing.budget}</div>
+        
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
+          <span className="truncate">{listing.city || listing.zip}</span>
+          <span>•</span>
+          <span className="whitespace-nowrap">{formatTimeAgo(listing.createdAt)}</span>
+        </div>
+        
+        <div className="flex gap-2 mt-auto">
+          {!listing.isComplete && (
+            <Link to={`/customer/edit-job/${listing.id}`} onClick={(e) => e.stopPropagation()} className="flex-1">
+              <Button variant="outline" size="sm" className="w-full">
+                Edit
+              </Button>
+            </Link>
+          )}
+          {!listing.isComplete && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={(e) => handleComplete(listing.id, e)}
+              disabled={completingJob === listing.id}
+              className="text-green-600 hover:text-green-600"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={(e) => handleDelete(listing.id, e)}
+            className="text-destructive hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -122,7 +233,6 @@ export default function CustomerMyPosts() {
 
   return (
     <div className="p-6">
-      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold">My Posts</h1>
@@ -136,7 +246,6 @@ export default function CustomerMyPosts() {
         </Link>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -174,115 +283,56 @@ export default function CustomerMyPosts() {
         </Select>
       </div>
 
-      {/* Listings */}
-      {filteredListings.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <div className="rounded-full bg-muted p-4 mb-4">
-              <FileText className="h-8 w-8 text-muted-foreground" />
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
+          <TabsTrigger value="active">Active ({activeJobs.length})</TabsTrigger>
+          <TabsTrigger value="completed">Completed ({completedJobs.length})</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="active">
+          {filteredListings.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="rounded-full bg-muted p-4 mb-4">
+                  <FileText className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No active posts found</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Try adjusting your filters
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredListings.map((listing) => (
+                <JobCard key={listing.id} listing={listing} />
+              ))}
             </div>
-            <h3 className="text-lg font-semibold mb-2">No posts found</h3>
-            <p className="text-muted-foreground text-center mb-4">
-              Try adjusting your filters
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredListings.map((listing) => (
-            <Card
-              key={listing.id}
-              className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer relative flex flex-col"
-              onClick={() => {
-                setSelectedListing(listing);
-                setDialogOpen(true);
-              }}
-            >
-                {/* Thumbnail */}
-                {listing.images && listing.images.length > 0 && (
-                  <div className="w-full h-40 bg-muted relative">
-                    <img
-                      src={listing.images[0]}
-                      alt={listing.title}
-                      className="w-full h-full object-cover"
-                    />
-                    {/* Favorite button */}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className={cn(
-                        "absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm",
-                        "hover:bg-card hover:scale-110 transition-all z-10",
-                        isFavorite(listing.id) && "text-red-500"
-                      )}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleFavorite(listing.id);
-                      }}
-                    >
-                      <Heart className={cn("h-4 w-4", isFavorite(listing.id) && "fill-red-500")} />
-                    </Button>
-                  </div>
-                )}
-                
-                <CardContent className="p-4 flex flex-col flex-1">
-                  {/* Badges */}
-                  <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <Badge variant="secondary" className="text-xs">{getCategoryName(listing.category)}</Badge>
-                    <Badge
-                      variant={
-                        listing.status === "active"
-                          ? "default"
-                          : listing.status === "completed"
-                          ? "outline"
-                          : "secondary"
-                      }
-                      className="text-xs"
-                    >
-                      {listing.status}
-                    </Badge>
-                  </div>
-                  
-                  {/* Title */}
-                  <h3 className="font-semibold text-base mb-2 line-clamp-1">{listing.title}</h3>
-                  
-                  {/* Description */}
-                  <p className="text-muted-foreground text-sm line-clamp-1 mb-3">
-                    {listing.description}
-                  </p>
-                  
-                  {/* Budget */}
-                  <div className="text-lg font-bold text-primary mb-3">${listing.budget}</div>
-                  
-                  {/* Location & Time */}
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                    <span className="truncate">{listing.city || listing.zip}</span>
-                    <span>•</span>
-                    <span className="whitespace-nowrap">{formatTimeAgo(listing.createdAt)}</span>
-                  </div>
-                  
-                  {/* Actions - at bottom */}
-                  <div className="flex gap-2 mt-auto">
-                    <Link to={`/customer/edit-job/${listing.id}`} onClick={(e) => e.stopPropagation()} className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                        Edit
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={(e) => handleDelete(listing.id, e)}
-                      className="text-destructive hover:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-          ))}
-        </div>
-      )}
+          )}
+        </TabsContent>
+
+        <TabsContent value="completed">
+          {filteredListings.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <div className="rounded-full bg-muted p-4 mb-4">
+                  <CheckCircle className="h-8 w-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">No completed jobs</h3>
+                <p className="text-muted-foreground text-center mb-4">
+                  Completed jobs will appear here
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {filteredListings.map((listing) => (
+                <JobCard key={listing.id} listing={listing} />
+              ))}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       <JobDetailsDialog
         listing={selectedListing}

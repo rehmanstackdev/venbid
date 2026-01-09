@@ -40,29 +40,29 @@ export default function CustomerAuth() {
       
       // Handle return URL from state
       const returnTo = (location.state as any)?.returnTo;
-      const autoPublish = (location.state as any)?.autoPublish;
       
       if (returnTo) {
         window.location.href = returnTo;
         return;
       }
       
+      // Use window.location.href to force page reload and ensure auth state is loaded
       if (user.role === "customer") {
         if (user.completeProfile) {
-          navigate("/customer/my-posts");
+          window.location.href = "/customer/my-posts";
         } else {
-          navigate("/onboarding/customer");
+          window.location.href = "/onboarding/customer";
         }
       } else if (user.role === "vendor") {
         if (user.completeProfile) {
-          navigate("/vendor/dashboard");
+          window.location.href = "/vendor/dashboard";
         } else {
-          navigate("/onboarding/vendor");
+          window.location.href = "/onboarding/vendor";
         }
       } else if (user.role === "admin") {
-        navigate("/admin/users");
+        window.location.href = "/admin/users";
       } else {
-        navigate("/");
+        window.location.href = "/";
       }
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";

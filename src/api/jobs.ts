@@ -39,6 +39,7 @@ export interface Job {
   showExactAddress: boolean;
   images: string[];
   status?: string;
+  isComplete?: boolean;
   createdBy?: {
     id: string;
     email: string;
@@ -143,5 +144,10 @@ export const jobsApi = {
 
   deleteJob: async (id: string): Promise<void> => {
     await apiClient.delete(`/jobs/${id}`);
+  },
+
+  completeJob: async (id: string, isComplete: boolean): Promise<Job> => {
+    const response = await apiClient.patch(`/jobs/${id}/complete-status`, { isComplete });
+    return response.data.data || response.data;
   },
 };

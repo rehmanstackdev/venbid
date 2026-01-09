@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,7 @@ import { categories } from "@/data/categories";
 export default function AdminListings() {
   const { toast } = useToast();
   const [listings, setListings] = useState<Job[]>([]);
+  const [completedListings, setCompletedListings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedListing, setSelectedListing] = useState<Job | null>(null);
@@ -30,6 +32,7 @@ export default function AdminListings() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
 
   useEffect(() => {
     fetchListings();
@@ -39,6 +42,8 @@ export default function AdminListings() {
     try {
       const jobs = await jobsApi.getAllJobs();
       setListings(jobs);
+      const completed = await adminApi.getCompletedJobs();
+      setCompletedListings(completed);
     } catch (error) {
       toast({ title: "Error", description: "Failed to load listings", variant: "destructive" });
     } finally {
@@ -47,6 +52,12 @@ export default function AdminListings() {
   };
 
   const filteredListings = listings.filter(
+    (listing) =>
+      listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      listing.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredCompletedListings = completedListings.filter(
     (listing) =>
       listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -152,10 +163,10 @@ export default function AdminListings() {
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Listings Management</h1>
-        <p className="text-muted-foreground">Approve, reject, or modify job listings</p>
+        <p className="text-muted-foreground">Manage job listings</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Jobs</CardTitle>
@@ -164,8 +175,16 @@ export default function AdminListings() {
         </Card>
         <Card>
           <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Completed Jobs</CardTitle>
+            <div className="text-2xl font-bold">{completedListings.length}</div>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">Filtered Results</CardTitle>
-            <div className="text-2xl font-bold">{filteredListings.length}</div>
+            <div className="text-2xl font-bold">
+              {activeTab === "all" ? filteredListings.length : filteredCompletedListings.length}
+            </div>
           </CardHeader>
         </Card>
       </div>
@@ -184,11 +203,28 @@ export default function AdminListings() {
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredListings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
-        ))}
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="all">All Jobs</TabsTrigger>
+          <TabsTrigger value="completed">Completed</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="all">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="completed">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredCompletedListings.map((listing) => (
+              <ListingCard key={listing.id} listing={listing} />
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>

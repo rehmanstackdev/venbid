@@ -49,6 +49,11 @@ export const adminApi = {
   deleteJob: async (jobId: string): Promise<void> => {
     await apiClient.delete(`/admin/jobs/${jobId}`);
   },
+
+  getCompletedJobs: async (): Promise<any[]> => {
+    const response = await apiClient.get('/admin/jobs/completed');
+    return response.data.data || [];
+  },
 };
 
 export const getVendors = async (): Promise<AdminVendor[]> => {
