@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Clock, ArrowLeft } from "lucide-react";
+import { Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { loadDraft } from "@/lib/jobDraft";
@@ -122,20 +122,36 @@ export default function VerifyEmail() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => navigate(-1)}
-              className="h-8 w-8"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
+    <div className="min-h-screen bg-background">
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="hover:bg-transparent"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-red-500"
+          >
+            <path d="m12 19-7-7 7-7" />
+            <path d="M19 12H5" />
+          </svg>
+        </Button>
+      </div>
+
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
             <CardTitle>Verify Your Email</CardTitle>
-          </div>
           <CardDescription>
             We've sent a 6-digit code to {maskEmail(email || '')}
             <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
@@ -166,20 +182,26 @@ export default function VerifyEmail() {
                 "Verify Email"
               )}
             </Button>
-            <div className="text-right">
-              <Button 
-                type="button" 
-                variant="link" 
-                className="text-sm px-0" 
-                onClick={handleResendOtp}
-                disabled={resending}
-              >
-                {resending ? "Sending..." : "Resend OTP"}
-              </Button>
-            </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full text-sm bg-red-50 hover:bg-red-100 border-red-200 text-red-600 hover:text-red-700"
+              onClick={handleResendOtp}
+              disabled={resending}
+            >
+              {resending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                "Resend OTP"
+              )}
+            </Button>
           </form>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }

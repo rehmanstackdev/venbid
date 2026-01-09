@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -49,20 +49,20 @@ export default function CustomerAuth() {
       
       if (user.role === "customer") {
         if (user.completeProfile) {
-          window.location.href = "/customer/my-posts";
+          navigate("/customer/my-posts");
         } else {
-          window.location.href = "/onboarding/customer";
+          navigate("/onboarding/customer");
         }
       } else if (user.role === "vendor") {
         if (user.completeProfile) {
-          window.location.href = "/vendor/dashboard";
+          navigate("/vendor/dashboard");
         } else {
-          window.location.href = "/onboarding/vendor";
+          navigate("/onboarding/vendor");
         }
       } else if (user.role === "admin") {
-        window.location.href = "/admin/users";
+        navigate("/admin/users");
       } else {
-        window.location.href = "/";
+        navigate("/");
       }
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";
@@ -135,14 +135,35 @@ export default function CustomerAuth() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/auth")}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
+    <div className="min-h-screen bg-background">
+      <div className="absolute top-4 left-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate("/auth")}
+          className="hover:bg-transparent"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-red-500"
+          >
+            <path d="m12 19-7-7 7-7" />
+            <path d="M19 12H5" />
+          </svg>
         </Button>
+      </div>
 
-        <Card>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card>
           <CardHeader>
             <CardTitle>Customer Account</CardTitle>
             <CardDescription>Sign in or create a customer account</CardDescription>
@@ -265,6 +286,7 @@ export default function CustomerAuth() {
             </Tabs>
           </CardContent>
         </Card>
+        </div>
       </div>
     </div>
   );

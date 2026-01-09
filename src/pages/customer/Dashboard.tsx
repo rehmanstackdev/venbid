@@ -102,7 +102,12 @@ export default function CustomerDashboard() {
                     Messages
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                  <Link to="/customer/favorites">
+                    <Heart className="h-4 w-4 mr-2" />
+                    Favorites
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
                   Sign Out

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -106,15 +106,6 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background/95 backdrop-blur-md border-none">
           <div className="relative flex items-center justify-center min-h-[80vh]">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-10 text-foreground"
-              onClick={() => setLightboxOpen(false)}
-            >
-              <X className="h-6 w-6" />
-            </Button>
-
             <img
               src={displayImages[currentIndex]}
               alt={`${title} - Image ${currentIndex + 1}`}
