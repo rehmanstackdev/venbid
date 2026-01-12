@@ -33,6 +33,11 @@ function MapUpdater({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export function LocationMap({ lat, lng, showExactAddress = false, className }: LocationMapProps) {
+  // Return null if coordinates are invalid
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
+    return null;
+  }
+  
   // Convert 5 miles to meters (5 * 1609.34)
   const fiveMilesInMeters = 8046.72;
   

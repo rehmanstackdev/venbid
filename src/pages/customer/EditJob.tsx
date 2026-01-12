@@ -41,6 +41,13 @@ export default function EditJob() {
     showExactAddress: false,
   });
 
+  // Store original values for change detection
+  const [originalData, setOriginalData] = useState<{
+    category: number | null;
+    details: JobDetails;
+    location: LocationDetails;
+  } | null>(null);
+
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
   const [locationErrors, setLocationErrors] = useState<Partial<Record<keyof LocationDetails, string>>>({});
 
@@ -51,19 +58,34 @@ export default function EditJob() {
         const job = await jobsApi.getJobById(id);
         const category = categories.find(c => c.slug === job.category);
         
-        setSelectedCategory(category?.id || null);
-        setDetails({
+        const jobDetails = {
           title: job.title,
           description: job.description,
-          budget: job.budget.toString(),
-          images: job.images ? job.images.map(url => ({ url, file: null })) : [],
-        });
-        setLocation({
+          budget: Math.floor(job.budget).toString(),
+          images: job.images ? job.images.map((url, index) => ({
+            id: `existing-${index}`,
+            file: null as any,
+            preview: url,
+            isFeatured: index === 0,
+          })) : [],
+        };
+        const jobLocation = {
           street: job.street || "",
           crossStreet: job.crossStreet || "",
           city: job.city || "",
           zip: job.zip,
           showExactAddress: job.showExactAddress || false,
+        };
+        
+        setSelectedCategory(category?.id || null);
+        setDetails(jobDetails);
+        setLocation(jobLocation);
+        
+        // Store original data
+        setOriginalData({
+          category: category?.id || null,
+          details: jobDetails,
+          location: jobLocation,
         });
       } catch (error) {
         toast.error("Failed to load job");
@@ -125,6 +147,27 @@ export default function EditJob() {
       default:
         return true;
     }
+  };
+
+  // Check if any changes were made
+  const hasChanges = () => {
+    if (!originalData) return false;
+    
+    if (selectedCategory !== originalData.category) return true;
+    if (details.title !== originalData.details.title) return true;
+    if (details.description !== originalData.details.description) return true;
+    if (details.budget !== originalData.details.budget) return true;
+    if (location.street !== originalData.location.street) return true;
+    if (location.crossStreet !== originalData.location.crossStreet) return true;
+    if (location.city !== originalData.location.city) return true;
+    if (location.zip !== originalData.location.zip) return true;
+    if (location.showExactAddress !== originalData.location.showExactAddress) return true;
+    
+    // Check if images changed (new files added or removed)
+    if (details.images.length !== originalData.details.images.length) return true;
+    if (details.images.some((img: any) => img.file instanceof File)) return true;
+    
+    return false;
   };
 
   const handleNext = () => {
@@ -258,6 +301,7 @@ export default function EditJob() {
             categoryId={selectedCategory}
             details={details}
             location={location}
+            onUpdateImages={(images) => setDetails({ ...details, images })}
           />
         )}
 
@@ -277,7 +321,7 @@ export default function EditJob() {
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           ) : (
-            <Button onClick={handleUpdate} disabled={isSubmitting}>
+            <Button onClick={handleUpdate} disabled={isSubmitting || !hasChanges()}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

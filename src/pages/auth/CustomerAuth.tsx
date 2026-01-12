@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,14 +10,29 @@ import { toast } from "sonner";
 import { authApi } from "@/api/auth";
 import { scheduleTokenRefresh } from "@/api/client";
 import { initChatSocket } from "@/lib/chatSocket";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === "customer") {
+        navigate("/customer/my-posts", { replace: true });
+      } else if (user.role === "vendor") {
+        navigate("/vendor/dashboard", { replace: true });
+      } else if (user.role === "admin") {
+        navigate("/admin/users", { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,9 +127,27 @@ export default function CustomerAuth() {
       });
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";
+      const errorData = error.response?.data;
       
-      if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
-        toast.error("Account already exists, please sign in.");
+      // Handle specific error cases
+      if (errorMsg.toLowerCase().includes("email already exists") || 
+          errorMsg.toLowerCase().includes("user already exists") ||
+          errorMsg.toLowerCase().includes("already registered")) {
+        toast.error("Email already exists", {
+          description: "This email is already registered. Please sign in instead.",
+          action: {
+            label: "Sign In",
+            onClick: () => {
+              // Switch to sign in tab
+              const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
+              signInTab?.click();
+            }
+          }
+        });
+      } else if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
+        toast.error("Account already exists", {
+          description: "Please sign in to continue."
+        });
       } else if (errorMsg.toLowerCase().includes("already exists")) {
         toast.info("Please verify your email to continue");
         const returnTo = (location.state as any)?.returnTo;
@@ -126,8 +159,18 @@ export default function CustomerAuth() {
             redirect: returnTo || "/customer/my-posts" 
           } 
         });
+      } else if (errorMsg.toLowerCase().includes("password")) {
+        toast.error("Invalid password", {
+          description: errorMsg || "Password must be at least 6 characters"
+        });
+      } else if (errorMsg.toLowerCase().includes("email") && errorMsg.toLowerCase().includes("invalid")) {
+        toast.error("Invalid email address", {
+          description: "Please enter a valid email address"
+        });
       } else {
-        toast.error(errorMsg || "Could not create account.");
+        toast.error("Could not create account", {
+          description: errorMsg || "Please try again later"
+        });
       }
     } finally {
       setIsLoading(false);
@@ -140,7 +183,7 @@ export default function CustomerAuth() {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate("/auth")}
+          onClick={() => navigate(-1)}
           className="hover:bg-transparent"
         >
           <svg

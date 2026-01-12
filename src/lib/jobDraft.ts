@@ -13,6 +13,10 @@ export interface JobDraft {
     zip: string;
     showExactAddress: boolean;
   };
+  coordinates?: {
+    lat: number;
+    lng: number;
+  } | null;
   phone?: string;
   timestamp: number;
 }

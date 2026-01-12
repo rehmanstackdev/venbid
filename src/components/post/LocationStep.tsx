@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { isValidIllinoisZip, getZipCoordinates } from "@/data/illinoisZips";
 import { LocationMap } from "@/components/map/LocationMap";
-import { MapPin, AlertCircle, CheckCircle2 } from "lucide-react";
+import { MapPin, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
+import { geocodeZipCode } from "@/lib/geocoding";
 
 export interface LocationDetails {
   street: string;
@@ -20,11 +20,13 @@ interface LocationStepProps {
   errors: Partial<Record<keyof LocationDetails, string>>;
   phone?: string;
   onPhoneChange?: (phone: string) => void;
+  onCoordinatesChange?: (coords: { lat: number; lng: number } | null) => void;
 }
 
-export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange }: LocationStepProps) {
+export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange, onCoordinatesChange }: LocationStepProps) {
   const [zipValid, setZipValid] = useState<boolean | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [geocoding, setGeocoding] = useState(false);
 
   const handleChange = <K extends keyof LocationDetails>(key: K, value: LocationDetails[K]) => {
     onChange({ ...location, [key]: value });
@@ -32,19 +34,67 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
 
   // Validate ZIP and get coordinates
   useEffect(() => {
-    if (location.zip.length === 5) {
-      const valid = isValidIllinoisZip(location.zip);
-      setZipValid(valid);
-      if (valid) {
-        setCoordinates(getZipCoordinates(location.zip));
-      } else {
-        setCoordinates(null);
-      }
+    const zipPattern = /^\d{5}(-\d{4})?$/;
+    
+    if (location.zip.length >= 5 && zipPattern.test(location.zip)) {
+      setZipValid(true);
+      setGeocoding(true);
+      
+      // Build search query with city if available for better accuracy
+      const searchQuery = location.city 
+        ? `${location.zip}, ${location.city}`
+        : location.zip;
+      
+      // Geocode with full context
+      fetch(
+        `https://nominatim.openstreetmap.org/search?` +
+        `format=json&q=${encodeURIComponent(searchQuery)}&` +
+        `addressdetails=1&limit=5`
+      )
+        .then(res => res.json())
+        .then(data => {
+          if (data && data.length > 0) {
+            // Find best match with highest importance
+            const bestResult = data.reduce((best: any, current: any) => {
+              if (!best) return current;
+              const currentImportance = parseFloat(current.importance || 0);
+              const bestImportance = parseFloat(best.importance || 0);
+              return currentImportance > bestImportance ? current : best;
+            }, null);
+            
+            if (bestResult) {
+              const coords = {
+                lat: parseFloat(bestResult.lat),
+                lng: parseFloat(bestResult.lon)
+              };
+              setCoordinates(coords);
+              onCoordinatesChange?.(coords);
+            } else {
+              setCoordinates(null);
+              onCoordinatesChange?.(null);
+            }
+          } else {
+            setCoordinates(null);
+            onCoordinatesChange?.(null);
+          }
+          setGeocoding(false);
+        })
+        .catch(err => {
+          console.error('Geocoding error:', err);
+          setCoordinates(null);
+          onCoordinatesChange?.(null);
+          setGeocoding(false);
+        });
+    } else if (location.zip.length > 0) {
+      setZipValid(false);
+      setCoordinates(null);
+      setGeocoding(false);
     } else {
       setZipValid(null);
       setCoordinates(null);
+      setGeocoding(false);
     }
-  }, [location.zip]);
+  }, [location.zip, location.city]);
 
   return (
     <div className="space-y-6">
@@ -97,13 +147,18 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
 
         {/* City */}
         <div className="space-y-2">
-          <Label htmlFor="city">City (optional)</Label>
+          <Label htmlFor="city">
+            City <span className="text-muted-foreground text-xs">(recommended)</span>
+          </Label>
           <Input
             id="city"
             placeholder="e.g., Chicago"
             value={location.city}
             onChange={(e) => handleChange("city", e.target.value)}
           />
+          <p className="text-xs text-muted-foreground">
+            Helps locate your ZIP code accurately
+          </p>
         </div>
 
         {/* ZIP */}
@@ -116,13 +171,17 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
               id="zip"
               placeholder="e.g., 60601"
               value={location.zip}
-              onChange={(e) => handleChange("zip", e.target.value.replace(/\D/g, "").slice(0, 5))}
-              maxLength={5}
+              onChange={(e) => handleChange("zip", e.target.value)}
               className={errors.zip ? "border-destructive pr-10" : "pr-10"}
             />
-            {location.zip.length === 5 && (
+            {geocoding && (
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                {zipValid ? (
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {!geocoding && location.zip.length >= 5 && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {zipValid && coordinates ? (
                   <CheckCircle2 className="h-5 w-5 text-verified" />
                 ) : (
                   <AlertCircle className="h-5 w-5 text-destructive" />
@@ -134,11 +193,11 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
             <p className="text-xs text-destructive">{errors.zip}</p>
           ) : zipValid === false ? (
             <p className="text-xs text-destructive">
-              Please enter a valid Illinois ZIP code
+              Please enter a valid ZIP code
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">
-              Illinois ZIP codes only (service area)
+              Enter your ZIP code
             </p>
           )}
         </div>

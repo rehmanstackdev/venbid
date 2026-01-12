@@ -79,7 +79,7 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
 
         {/* Thumbnails */}
         {hasMultiple && (
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-2 overflow-x-auto my-5 p-2">
             {displayImages.map((image, index) => (
               <button
                 key={index}
@@ -87,7 +87,7 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
                 className={cn(
                   "flex-shrink-0 w-20 h-20 rounded-md overflow-hidden transition-all",
                   index === currentIndex
-                    ? "ring-2 ring-primary ring-offset-2"
+                    ? "ring-2 ring-primary ring-offset-1"
                     : "opacity-70 hover:opacity-100"
                 )}
               >

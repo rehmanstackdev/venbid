@@ -24,6 +24,11 @@ export interface CreateJobRequest {
   crossStreet: string;
   showExactAddress: boolean;
   images: File[];
+  phone?: string;
+  coordinates?: {
+    lat: number;
+    long: number;
+  };
 }
 
 export interface Job {
@@ -78,6 +83,10 @@ export const jobsApi = {
     formData.append('street', data.street);
     formData.append('crossStreet', data.crossStreet);
     formData.append('showExactAddress', data.showExactAddress.toString());
+    if (data.phone) formData.append('phone', data.phone);
+    if (data.coordinates) {
+      formData.append('coordinates', JSON.stringify(data.coordinates));
+    }
     
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {

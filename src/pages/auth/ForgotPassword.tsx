@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,10 +37,10 @@ export default function ForgotPassword() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <Link to="/auth/customer" className="mb-2 inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+          <Button onClick={() => navigate(-1)} className="mb-2 inline-flex items-center text-sm text-muted-foreground hover:text-foreground" variant="link">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to login
-          </Link>
+          </Button>
           <CardTitle>Forgot Password</CardTitle>
           <CardDescription>
             Enter your email to receive a password reset code

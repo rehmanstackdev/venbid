@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Check, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -7,7 +7,6 @@ import { CategoryStep } from "@/components/post/CategoryStep";
 import { DetailsStep, JobDetails } from "@/components/post/DetailsStep";
 import { LocationStep, LocationDetails } from "@/components/post/LocationStep";
 import { PreviewStep } from "@/components/post/PreviewStep";
-import { isValidIllinoisZip } from "@/data/illinoisZips";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { jobsApi, JobCategory } from "@/api/jobs";
@@ -45,6 +44,7 @@ export default function PostJob() {
     zip: "",
     showExactAddress: false,
   });
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   // Load draft on mount
   useEffect(() => {
@@ -54,6 +54,7 @@ export default function PostJob() {
       setDetails(draft.details);
       setLocationData(draft.location);
       if (draft.phone) setPhone(draft.phone);
+      if (draft.coordinates) setCoordinates(draft.coordinates);
       
       // Check for step and autoPublish in URL
       const params = new URLSearchParams(location.search);
@@ -79,10 +80,11 @@ export default function PostJob() {
         selectedCategory,
         details,
         location: locationData,
+        coordinates,
         phone,
       });
     }
-  }, [selectedCategory, details, locationData, phone]);
+  }, [selectedCategory, details, locationData, coordinates, phone]);
 
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
   const [locationErrors, setLocationErrors] = useState<Partial<Record<keyof LocationDetails, string>>>({});
@@ -102,22 +104,27 @@ export default function PostJob() {
         const dErrors: Partial<Record<keyof JobDetails, string>> = {};
         if (!details.title.trim()) {
           dErrors.title = "Title is required";
+          toast.error("Please fill the Job Title field");
         } else if (details.title.length < 10) {
           dErrors.title = "Title must be at least 10 characters";
+          toast.error("Job Title must be at least 10 characters");
         }
         if (!details.description.trim()) {
           dErrors.description = "Description is required";
+          toast.error("Please fill the Description field");
         } else if (details.description.length < 20) {
           dErrors.description = "Description must be at least 20 characters";
+          toast.error("Description must be at least 20 characters");
         }
         if (!details.budget.trim()) {
           dErrors.budget = "Budget is required";
+          toast.error("Please fill the Budget field");
         } else if (!/^\d+(-\d+)?$/.test(details.budget)) {
           dErrors.budget = "Enter a valid amount (e.g., 100 or 100-200)";
+          toast.error("Please enter a valid budget amount");
         }
         setDetailErrors(dErrors);
         if (Object.keys(dErrors).length > 0) {
-          toast.error("Please fix the errors before continuing");
           return false;
         }
         return true;
@@ -126,16 +133,17 @@ export default function PostJob() {
         const lErrors: Partial<Record<keyof LocationDetails, string>> = {};
         if (!locationData.zip.trim()) {
           lErrors.zip = "ZIP code is required";
-        } else if (!isValidIllinoisZip(locationData.zip)) {
-          lErrors.zip = "Please enter a valid Illinois ZIP code";
+          toast.error("Please fill the ZIP Code field");
+        } else if (!/^\d{5}(-\d{4})?$/.test(locationData.zip)) {
+          lErrors.zip = "Please enter a valid ZIP code";
+          toast.error("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)");
         }
         if (!phone.trim()) {
-          toast.error("Phone number is required");
+          toast.error("Please fill the Phone Number field");
           return false;
         }
         setLocationErrors(lErrors);
         if (Object.keys(lErrors).length > 0) {
-          toast.error("Please fix the errors before continuing");
           return false;
         }
         return true;
@@ -174,7 +182,7 @@ export default function PostJob() {
         .map((img: any) => img.file)
         .filter((file): file is File => file instanceof File);
 
-      await jobsApi.createJob({
+      const jobData: any = {
         title: details.title,
         description: details.description,
         category: category.slug as JobCategory,
@@ -185,7 +193,18 @@ export default function PostJob() {
         crossStreet: locationData.crossStreet,
         showExactAddress: locationData.showExactAddress,
         images: imageFiles,
-      });
+        phone: phone,
+      };
+
+      // Add coordinates if available
+      if (coordinates) {
+        jobData.coordinates = {
+          lat: coordinates.lat,
+          long: coordinates.lng
+        };
+      }
+
+      await jobsApi.createJob(jobData);
 
       clearDraft();
       toast.success("Your job has been posted!", {
@@ -204,11 +223,9 @@ export default function PostJob() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-4">
-          <Link to={user ? "/customer/my-posts" : "/"}>
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex-1">
             <h1 className="font-semibold">Post a Job</h1>
             <p className="text-xs text-muted-foreground">
@@ -282,6 +299,7 @@ export default function PostJob() {
             errors={locationErrors}
             phone={phone}
             onPhoneChange={setPhone}
+            onCoordinatesChange={setCoordinates}
           />
         )}
 
@@ -299,6 +317,8 @@ export default function PostJob() {
               categoryId={selectedCategory}
               details={details}
               location={locationData}
+              coordinates={coordinates}
+              onUpdateImages={(images) => setDetails({ ...details, images })}
             />
           </>
         )}

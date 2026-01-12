@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { X, Upload, Star, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -80,8 +81,89 @@ export function ImageUpload({
     onChange(updated);
   };
 
+  const featuredImage = images.find(img => img.isFeatured);
+  const otherImages = images.filter(img => !img.isFeatured);
+
   return (
     <div className="space-y-4">
+      {/* Featured Image */}
+      {featuredImage && (
+        <div>
+          <Label className="text-sm font-medium mb-2 block">Featured Image</Label>
+          <div className="relative aspect-video rounded-lg overflow-hidden group border-2 border-primary">
+            <img
+              src={featuredImage.preview}
+              alt="Featured"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+              <Star className="h-3 w-3 fill-current" />
+              Featured
+            </div>
+            <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => removeImage(featuredImage.id)}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Remove
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* All Images */}
+      {images.length > 0 && (
+        <div>
+          <Label className="text-sm font-medium mb-2 block">All Images ({images.length})</Label>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+            {images.map((image) => (
+              <div
+                key={image.id}
+                className={cn(
+                  "relative aspect-square rounded-lg overflow-hidden group border-2",
+                  image.isFeatured ? "border-primary" : "border-border"
+                )}
+              >
+                <img
+                  src={image.preview}
+                  alt="Preview"
+                  className="h-full w-full object-cover"
+                />
+                {image.isFeatured && (
+                  <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-0.5">
+                    <Star className="h-2.5 w-2.5 fill-current" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                  {!image.isFeatured && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="h-7 text-[10px] w-full"
+                      onClick={() => setFeatured(image.id)}
+                    >
+                      <Star className="h-2.5 w-2.5 mr-1" />
+                      Set Featured
+                    </Button>
+                  )}
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-7 w-7"
+                    onClick={() => removeImage(image.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Dropzone */}
       <div
         {...getRootProps()}
@@ -110,58 +192,6 @@ export function ImageUpload({
           </p>
         </div>
       </div>
-
-      {/* Image previews */}
-      {images.length > 0 && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {images.map((image) => (
-            <div
-              key={image.id}
-              className={cn(
-                "relative aspect-square rounded-lg overflow-hidden group border-2",
-                image.isFeatured ? "border-primary" : "border-transparent"
-              )}
-            >
-              <img
-                src={image.preview}
-                alt="Upload preview"
-                className="h-full w-full object-cover"
-              />
-
-              {/* Featured badge */}
-              {image.isFeatured && (
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-current" />
-                  Featured
-                </div>
-              )}
-
-              {/* Hover overlay */}
-              <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                {!image.isFeatured && (
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="h-8 text-xs"
-                    onClick={() => setFeatured(image.id)}
-                  >
-                    <Star className="h-3 w-3 mr-1" />
-                    Set Featured
-                  </Button>
-                )}
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => removeImage(image.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

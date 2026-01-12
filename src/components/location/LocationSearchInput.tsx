@@ -1,7 +1,15 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2 } from 'lucide-react';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+
+interface LocationResult {
+  place_id: string;
+  display_name: string;
+  lat: string;
+  lon: string;
+}
 
 interface LocationSearchInputProps {
   value: string;
@@ -20,88 +28,78 @@ export function LocationSearchInput({
   required = false,
   coordinates,
 }: LocationSearchInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const [inputValue, setInputValue] = useState('');
-  const geocodedRef = useRef(false);
+  const [inputValue, setInputValue] = useState(value || '');
+  const [results, setResults] = useState<LocationResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
+  // Reverse geocode coordinates to address on mount
   useEffect(() => {
-    if (coordinates?.lat && coordinates?.lng && !geocodedRef.current) {
-      const waitForGoogle = setInterval(() => {
-        if (typeof google !== 'undefined' && google.maps && google.maps.Geocoder) {
-          clearInterval(waitForGoogle);
-          geocodedRef.current = true;
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode(
-            { location: { lat: coordinates.lat, lng: coordinates.lng } },
-            (results, status) => {
-              if (status === 'OK' && results?.[0]) {
-                setInputValue(results[0].formatted_address);
-              }
-            }
-          );
-        }
-      }, 100);
-      return () => clearInterval(waitForGoogle);
-    }
-  }, [coordinates]);
-
-  useEffect(() => {
-    if (!inputRef.current) return;
-
-    const loadGoogleMaps = () => {
-      if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-        initAutocomplete();
-        return;
-      }
-
-      if (document.querySelector('script[src*="maps.googleapis.com"]')) {
-        const checkGoogle = setInterval(() => {
-          if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-            clearInterval(checkGoogle);
-            initAutocomplete();
+    if (coordinates?.lat && coordinates?.lng && !inputValue) {
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?` +
+        `format=json&lat=${coordinates.lat}&lon=${coordinates.lng}`
+      )
+        .then(res => res.json())
+        .then(data => {
+          if (data.display_name) {
+            setInputValue(data.display_name);
           }
-        }, 100);
-        return;
+        })
+        .catch(err => console.error('Reverse geocoding error:', err));
+    }
+  }, [coordinates, inputValue]);
+
+  // Search for locations
+  useEffect(() => {
+    if (inputValue.length < 3) {
+      setResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?` +
+          `format=json&q=${encodeURIComponent(inputValue)}&` +
+          `limit=5&addressdetails=1`,
+          {
+            headers: {
+              'Accept': 'application/json',
+            }
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error('Geocoding service unavailable');
+        }
+        
+        const data = await response.json();
+        setResults(data);
+        setShowResults(true);
+      } catch (error) {
+        console.error('Geocoding error:', error);
+        setResults([]);
+        setShowResults(false);
+      } finally {
+        setLoading(false);
       }
+    }, 1000); // Increased debounce to 1 second
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAP_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => initAutocomplete();
-      document.head.appendChild(script);
-    };
+    return () => clearTimeout(timer);
+  }, [inputValue]);
 
-    const initAutocomplete = () => {
-      if (!inputRef.current) return;
-
-      autocompleteRef.current = new google.maps.places.Autocomplete(inputRef.current, {
-        componentRestrictions: { country: 'us' },
-        fields: ['address_components', 'geometry', 'formatted_address'],
-      });
-
-      autocompleteRef.current.addListener('place_changed', () => {
-        const place = autocompleteRef.current?.getPlace();
-        if (!place || !place.geometry) return;
-
-        const lat = place.geometry.location?.lat() || 0;
-        const lng = place.geometry.location?.lng() || 0;
-        const address = place.formatted_address || '';
-
-        setInputValue(address);
-        onChange(address, { lat, lng });
-      });
-    };
-
-    loadGoogleMaps();
-
-    return () => {
-      if (autocompleteRef.current) {
-        google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-    };
-  }, [onChange]);
+  const handleSelect = (result: LocationResult) => {
+    const address = result.display_name;
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    
+    setInputValue(address);
+    setShowResults(false);
+    onChange(address, { lat, lng });
+  };
 
   return (
     <div className="space-y-2">
@@ -110,17 +108,38 @@ export function LocationSearchInput({
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
         <Input
-          ref={inputRef}
           id="location-search"
           type="text"
           placeholder={placeholder}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
+          onFocus={() => results.length > 0 && setShowResults(true)}
           className="pl-10"
           required={required}
         />
+        {loading && (
+          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+        )}
+        {showResults && results.length > 0 && (
+          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[60vh] overflow-hidden">
+            <CommandList className="max-h-[60vh]">
+              <CommandGroup>
+                {results.map((result) => (
+                  <CommandItem
+                    key={result.place_id}
+                    onSelect={() => handleSelect(result)}
+                    className="cursor-pointer"
+                  >
+                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                    {result.display_name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        )}
       </div>
     </div>
   );

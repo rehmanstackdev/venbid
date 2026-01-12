@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { MessageSquare, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,11 +41,9 @@ export default function VendorMessages() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-4">
-          <Link to="/vendor/dashboard">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex-1">
             <h1 className="font-semibold">Messages</h1>
             {totalUnread > 0 && (

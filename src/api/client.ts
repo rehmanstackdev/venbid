@@ -50,12 +50,28 @@ const refreshAccessToken = async () => {
     return accessToken;
   } catch (error) {
     console.error('Token refresh failed:', error);
+    
+    // Clear all auth data
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_data');
     localStorage.removeItem('user_roles');
     localStorage.removeItem('token_timestamp');
     clearRefreshTimer();
+    
+    // Show toast and redirect to home
+    if (typeof window !== 'undefined') {
+      // Dynamically import toast to avoid circular dependencies
+      import('sonner').then(({ toast }) => {
+        toast.error('Session expired', {
+          description: 'Please sign in again to continue'
+        });
+      });
+      
+      // Redirect to home page
+      window.location.href = '/';
+    }
+    
     return null;
   }
 };

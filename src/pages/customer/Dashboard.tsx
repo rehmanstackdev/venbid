@@ -46,22 +46,39 @@ export default function CustomerDashboard() {
     <div className="min-h-screen bg-background">
       {/* Top Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-        <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="lg:hidden" 
+              className="lg:hidden ml-4" 
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <Link to="/" className="text-2xl font-bold text-primary">
-              Venbid
+            <Link to="/" className="hidden lg:flex items-center w-64 pl-6 shrink-0">
+              <span className="text-3xl font-bold text-primary">Venbid</span>
             </Link>
+            <Link to="/" className="flex lg:hidden items-center pl-2">
+              <span className="text-2xl font-bold text-primary">Venbid</span>
+            </Link>
+            <nav className="hidden sm:flex items-center gap-6 pl-6">
+              <Link 
+                to="/" 
+                className="text-base font-semibold text-foreground hover:text-primary transition-colors"
+              >
+                Home
+              </Link>
+              <Link 
+                to="/about" 
+                className="text-base font-semibold text-foreground hover:text-primary transition-colors"
+              >
+                About
+              </Link>
+            </nav>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pr-4">
             <Link to="/customer/messages">
               <Button variant="ghost" size="icon" className="relative">
                 <MessageSquare className="h-5 w-5" />

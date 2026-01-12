@@ -50,71 +50,69 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
   const hasMultipleImages = hasImages && listing.images!.length > 1;
 
   const nextImage = () => {
-    if (hasImages) {
-      setCurrentImageIndex((prev) => (prev + 1) % listing.images!.length);
-    }
+    if (hasImages) setCurrentImageIndex((prev) => (prev + 1) % listing.images!.length);
   };
 
   const prevImage = () => {
-    if (hasImages) {
-      setCurrentImageIndex((prev) => (prev - 1 + listing.images!.length) % listing.images!.length);
-    }
+    if (hasImages) setCurrentImageIndex((prev) => (prev - 1 + listing.images!.length) % listing.images!.length);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] max-w-5xl max-h-[92vh] overflow-y-auto p-3 sm:p-6 rounded-xl">
         <DialogHeader>
-          <DialogTitle className="text-base sm:text-lg md:text-xl pr-8 break-words">{listing.title}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg md:text-xl pr-8 break-words">
+            {listing.title}
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Images Carousel */}
+        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+          {/* LEFT: Image Viewer */}
           {hasImages && (
-            <div className="relative">
-              <div className="relative aspect-video bg-muted rounded-lg overflow-hidden">
+            <div>
+              <div className="relative w-full bg-black rounded-xl overflow-hidden max-h-[60vh] sm:max-h-[450px]">
                 <img
                   src={listing.images![currentImageIndex]}
                   alt={`${listing.title} ${currentImageIndex + 1}`}
                   className="w-full h-full object-contain"
                 />
-                
+
                 {hasMultipleImages && (
                   <>
                     <button
                       onClick={prevImage}
-                      className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-colors"
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 backdrop-blur text-white rounded-full p-2 sm:p-3 shadow-lg"
                     >
-                      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <ChevronLeft className="h-5 w-5" />
                     </button>
+
                     <button
                       onClick={nextImage}
-                      className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full p-1.5 sm:p-2 transition-colors"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 backdrop-blur text-white rounded-full p-2 sm:p-3 shadow-lg"
                     >
-                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <ChevronRight className="h-5 w-5" />
                     </button>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
                       {currentImageIndex + 1} / {listing.images!.length}
                     </div>
                   </>
                 )}
               </div>
-              
+
               {hasMultipleImages && (
-                <div className="flex gap-1.5 sm:gap-2 mt-2 overflow-x-auto pb-2">
+                <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                   {listing.images!.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}
-                      className={`flex-shrink-0 w-12 h-12 sm:w-16 sm:h-16 rounded border-2 overflow-hidden transition-all ${
-                        idx === currentImageIndex ? "border-primary" : "border-transparent opacity-60 hover:opacity-100"
+                      className={`w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden transition-all ${
+                        idx === currentImageIndex
+                          ? "border-primary"
+                          : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <img
-                        src={img}
-                        alt={`Thumbnail ${idx + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={img} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -122,51 +120,41 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
             </div>
           )}
 
-          {/* Badges */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary">{getCategoryName(listing.category)}</Badge>
-            <Badge
-              variant={
-                listing.status === "active"
-                  ? "default"
-                  : listing.status === "completed"
-                  ? "outline"
-                  : "secondary"
-              }
-            >
-              {listing.status}
-            </Badge>
-          </div>
-
-          {/* Budget */}
-          <div className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl font-bold text-primary">
-            <DollarSign className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
-            {listing.budget}
-          </div>
-
-          {/* Description */}
-          <div>
-            <h3 className="font-semibold mb-2 text-sm sm:text-base">Description</h3>
-            <p className="text-muted-foreground whitespace-pre-wrap text-sm sm:text-base break-words">{listing.description}</p>
-          </div>
-
-          {/* Location */}
-          <div>
-            <h3 className="font-semibold mb-2 flex items-center gap-2 text-sm sm:text-base">
-              <MapPin className="h-4 w-4" />
-              Location
-            </h3>
-            <div className="text-muted-foreground space-y-1 text-sm sm:text-base break-words">
-              {listing.street && <p>{listing.street}</p>}
-              {listing.crossStreet && <p>Near {listing.crossStreet}</p>}
-              <p>{listing.city ? `${listing.city}, ` : ""}IL {listing.zip}</p>
+          {/* RIGHT: Job Details */}
+          <div className="space-y-4">
+            <div className="flex gap-2 flex-wrap">
+              <Badge variant="secondary">{getCategoryName(listing.category)}</Badge>
+              <Badge>{listing.status}</Badge>
             </div>
-          </div>
 
-          {/* Posted Date */}
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-            <Calendar className="h-4 w-4" />
-            Posted {formatTimeAgo(listing.createdAt)}
+            <div className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-primary">
+              <DollarSign className="h-5 w-5" />
+              {listing.budget}
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2">Description</h3>
+              <p className="text-muted-foreground whitespace-pre-wrap break-words break-all max-w-full overflow-hidden">
+                {listing.description}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="font-semibold mb-2 flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                Location
+              </h3>
+              <div className="text-muted-foreground space-y-1">
+                {listing.street && <p>{listing.street}</p>}
+                {listing.crossStreet && <p>Near {listing.crossStreet}</p>}
+                <p>{listing.city ? `${listing.city}, ` : ""}IL {listing.zip}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              Posted {formatTimeAgo(listing.createdAt)}
+            </div>
           </div>
         </div>
       </DialogContent>

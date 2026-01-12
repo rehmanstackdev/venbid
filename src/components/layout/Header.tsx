@@ -85,12 +85,15 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2 pr-4">
-          <Link to="/post-job">
-            <Button variant="default" size="sm" className="hidden md:flex gap-2">
-              <Plus className="h-4 w-4" />
-              Post a Job
-            </Button>
-          </Link>
+          {/* Show Post a Job button only for customers or non-logged-in users */}
+          {(!user || roles.includes('customer')) && (
+            <Link to="/post-job">
+              <Button variant="default" size="sm" className="hidden md:flex gap-2">
+                <Plus className="h-4 w-4" />
+                Post a Job
+              </Button>
+            </Link>
+          )}
 
           <Button
             variant="ghost"
@@ -143,12 +146,15 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
                     <p className="text-xs text-muted-foreground">{user.role}</p>
                   </div>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild className="md:hidden">
-                    <Link to="/post-job">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post a Job
-                    </Link>
-                  </DropdownMenuItem>
+                  {/* Show Post a Job in mobile menu only for customers */}
+                  {roles.includes('customer') && (
+                    <DropdownMenuItem asChild className="md:hidden">
+                      <Link to="/post-job">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Post a Job
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                   {roles.includes('customer') && (
                     <>
                       <DropdownMenuItem asChild>

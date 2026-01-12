@@ -2,9 +2,25 @@ import { useNavigate } from "react-router-dom";
 import { Users, Briefcase } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 export default function RoleSelection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === "customer") {
+        navigate("/customer/my-posts", { replace: true });
+      } else if (user.role === "vendor") {
+        navigate("/vendor/dashboard", { replace: true });
+      } else if (user.role === "admin") {
+        navigate("/admin/users", { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen bg-background">

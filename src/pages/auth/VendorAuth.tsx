@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,15 +12,30 @@ import { authApi } from "@/api/auth";
 import { categories } from "@/data/categories";
 import { scheduleTokenRefresh } from "@/api/client";
 import { initChatSocket } from "@/lib/chatSocket";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function VendorAuth() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [serviceCategory, setServiceCategory] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      if (user.role === "vendor") {
+        navigate("/vendor/dashboard", { replace: true });
+      } else if (user.role === "customer") {
+        navigate("/customer/my-posts", { replace: true });
+      } else if (user.role === "admin") {
+        navigate("/admin/users", { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,8 +112,24 @@ export default function VendorAuth() {
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";
       
-      if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
-        toast.error("Account already exists, please sign in.");
+      // Handle specific error cases
+      if (errorMsg.toLowerCase().includes("email already exists") || 
+          errorMsg.toLowerCase().includes("user already exists") ||
+          errorMsg.toLowerCase().includes("already registered")) {
+        toast.error("Email already exists", {
+          description: "This email is already registered. Please sign in instead.",
+          action: {
+            label: "Sign In",
+            onClick: () => {
+              const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
+              signInTab?.click();
+            }
+          }
+        });
+      } else if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
+        toast.error("Account already exists", {
+          description: "Please sign in to continue."
+        });
       } else if (errorMsg.toLowerCase().includes("already exists")) {
         toast.info("Please verify your email to continue");
         navigate("/auth/verify-email", { 
@@ -109,8 +140,18 @@ export default function VendorAuth() {
             redirect: "/onboarding/vendor" 
           } 
         });
+      } else if (errorMsg.toLowerCase().includes("password")) {
+        toast.error("Invalid password", {
+          description: errorMsg || "Password must be at least 6 characters"
+        });
+      } else if (errorMsg.toLowerCase().includes("email") && errorMsg.toLowerCase().includes("invalid")) {
+        toast.error("Invalid email address", {
+          description: "Please enter a valid email address"
+        });
       } else {
-        toast.error(errorMsg || "Could not create account.");
+        toast.error("Could not create account", {
+          description: errorMsg || "Please try again later"
+        });
       }
     } finally {
       setIsLoading(false);
@@ -120,7 +161,7 @@ export default function VendorAuth() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate("/auth")}>
+        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
