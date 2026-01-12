@@ -53,10 +53,17 @@ export default function VendorOnboarding() {
 
     try {
       const { locationSearch, ...profileData } = formData;
-      await vendorApi.updateProfile({
+      
+      // Only include coordinates if they are valid (not 0,0)
+      const dataToSend = {
         ...profileData,
+        coordinates: profileData.coordinates.lat !== 0 && profileData.coordinates.long !== 0 
+          ? profileData.coordinates 
+          : undefined,
         verificationDocument: documents.length > 0 ? documents : undefined,
-      });
+      };
+      
+      await vendorApi.updateProfile(dataToSend);
       toast.success("Profile completed! Welcome to Venbid.");
       navigate("/vendor/dashboard");
     } catch (error: any) {

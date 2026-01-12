@@ -64,7 +64,7 @@ export interface Job {
 export const jobsApi = {
   getPublicJobs: async (): Promise<Job[]> => {
     try {
-      const response = await apiClient.get('/jobs/public');
+      const response = await apiClient.get('/jobs');
       return response.data.data || response.data || [];
     } catch (error) {
       console.error('Error fetching public jobs:', error);
