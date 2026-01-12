@@ -147,6 +147,9 @@ export const vendorApi = {
       if (data.zipCode) formData.append('zipCode', data.zipCode);
       if (data.address) formData.append('address', data.address);
       if (data.companyName) formData.append('companyName', data.companyName);
+      if (data.coordinates && data.coordinates.lat !== 0) {
+        formData.append('coordinates', JSON.stringify(data.coordinates));
+      }
       data.verificationDocument.forEach(file => {
         formData.append('verificationDocument', file);
       });
