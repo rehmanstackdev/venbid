@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -134,15 +135,7 @@ export default function CustomerAuth() {
           errorMsg.toLowerCase().includes("user already exists") ||
           errorMsg.toLowerCase().includes("already registered")) {
         toast.error("Email already exists", {
-          description: "This email is already registered. Please sign in instead.",
-          action: {
-            label: "Sign In",
-            onClick: () => {
-              // Switch to sign in tab
-              const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
-              signInTab?.click();
-            }
-          }
+          description: "This email is already registered. Please sign in instead."
         });
       } else if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
         toast.error("Account already exists", {

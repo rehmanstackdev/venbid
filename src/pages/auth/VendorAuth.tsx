@@ -119,14 +119,7 @@ export default function VendorAuth() {
           errorMsg.toLowerCase().includes("user already exists") ||
           errorMsg.toLowerCase().includes("already registered")) {
         toast.error("Email already exists", {
-          description: "This email is already registered. Please sign in instead.",
-          action: {
-            label: "Sign In",
-            onClick: () => {
-              const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
-              signInTab?.click();
-            }
-          }
+          description: "This email is already registered. Please sign in instead."
         });
       } else if (errorMsg.toLowerCase().includes("already exists") && errorMsg.toLowerCase().includes("verified")) {
         toast.error("Account already exists", {
