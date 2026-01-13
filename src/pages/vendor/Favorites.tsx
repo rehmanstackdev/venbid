@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listings/ListingCard";
@@ -12,6 +12,7 @@ import { getZipCoordinates } from "@/data/illinoisZips";
 import { Listing } from "@/hooks/useListings";
 
 const Favorites = () => {
+  const navigate = useNavigate();
   const { loading: favoritesLoading, refetch } = useFavorites();
   const [favoriteJobs, setFavoriteJobs] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,11 +71,9 @@ const Favorites = () => {
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
           <div className="container flex h-14 items-center gap-4">
-            <Link to="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
             <h1 className="font-semibold">Favorites</h1>
           </div>
         </header>
@@ -93,11 +92,9 @@ const Favorites = () => {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-4">
-          <Link to="/">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <h1 className="font-semibold">Favorites</h1>
           <span className="text-sm text-muted-foreground">
             ({favoriteJobs.length})

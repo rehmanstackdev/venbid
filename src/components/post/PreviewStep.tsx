@@ -189,7 +189,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
           {/* Description */}
           <div>
             <h4 className="font-medium mb-2">Description</h4>
-            <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+            <p className="text-muted-foreground whitespace-pre-wrap break-words break-all max-w-full overflow-hidden">
               {details.description || "No description provided"}
             </p>
           </div>
