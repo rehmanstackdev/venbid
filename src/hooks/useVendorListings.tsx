@@ -29,7 +29,7 @@ export function useVendorListings() {
   const fetchListings = useCallback(async () => {
     try {
       setLoading(true);
-      const params: { category?: string; lat?: number; long?: number } = {};
+      const params: { lat?: number; long?: number } = {};
       
       const userStr = localStorage.getItem('user_data');
       if (userStr) {
@@ -37,9 +37,6 @@ export function useVendorListings() {
         if (userData.coordinates) {
           params.lat = userData.coordinates.lat;
           params.long = userData.coordinates.long;
-        }
-        if (userData.serviceCategory) {
-          params.category = userData.serviceCategory;
         }
       }
       
