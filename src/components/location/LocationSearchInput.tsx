@@ -64,7 +64,7 @@ export function LocationSearchInput({
         const response = await fetch(
           `https://nominatim.openstreetmap.org/search?` +
           `format=json&q=${encodeURIComponent(inputValue)}&` +
-          `limit=5&addressdetails=1`,
+          `limit=7&addressdetails=1`,
           {
             headers: {
               'Accept': 'application/json',
@@ -123,8 +123,8 @@ export function LocationSearchInput({
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
         {showResults && results.length > 0 && (
-          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[300px] overflow-hidden">
-            <CommandList className="max-h-[300px]">
+          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[400px] overflow-hidden">
+            <CommandList className="max-h-[400px]">
               <CommandGroup>
                 {results.map((result) => (
                   <CommandItem
@@ -132,10 +132,10 @@ export function LocationSearchInput({
                     onSelect={() => {
                       handleSelect(result);
                     }}
-                    className="cursor-pointer"
+                    className="cursor-pointer py-3"
                   >
                     <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" />
-                    <span className="line-clamp-2">{result.display_name}</span>
+                    <span className="line-clamp-2 text-sm">{result.display_name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
