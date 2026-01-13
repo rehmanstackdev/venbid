@@ -30,6 +30,10 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
 
   const handleChange = <K extends keyof LocationDetails>(key: K, value: LocationDetails[K]) => {
     onChange({ ...location, [key]: value });
+    if (key === 'zip' && errors.zip) {
+      const { zip, ...rest } = errors;
+      onChange({ ...location, [key]: value });
+    }
   };
 
   // Validate ZIP and get coordinates

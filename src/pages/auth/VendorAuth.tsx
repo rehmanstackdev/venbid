@@ -43,11 +43,13 @@ export default function VendorAuth() {
 
     try {
       const response = await authApi.login({ email, password });
-      const { accessToken, refreshToken, user } = response.data;
+      const { accessToken, refreshToken, user, vendor } = response.data;
+      
+      const userData = vendor ? { ...user, serviceCategory: vendor.serviceCategory } : user;
       
       localStorage.setItem("access_token", accessToken);
       localStorage.setItem("refresh_token", refreshToken);
-      localStorage.setItem("user_data", JSON.stringify(user));
+      localStorage.setItem("user_data", JSON.stringify(userData));
       localStorage.setItem("user_roles", JSON.stringify([user.role]));
       localStorage.setItem("token_timestamp", Date.now().toString());
       

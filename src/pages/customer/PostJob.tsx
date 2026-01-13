@@ -134,7 +134,7 @@ export default function PostJob() {
         if (!locationData.zip.trim()) {
           lErrors.zip = "ZIP code is required";
           toast.error("Please fill the ZIP Code field");
-        } else if (!/^\d{5}(-\d{4})?$/.test(locationData.zip)) {
+        } else if (!/^\d{5}(-\d{4})?$/.test(locationData.zip.trim())) {
           lErrors.zip = "Please enter a valid ZIP code";
           toast.error("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)");
         }

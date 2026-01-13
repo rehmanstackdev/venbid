@@ -24,7 +24,7 @@ export function ListingGrid({ listings }: ListingGridProps) {
             />
           </svg>
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-1">No listings found</h3>
+        <h3 className="text-lg font-medium text-foreground mb-1">No listings found in your area</h3>
         <p className="text-muted-foreground">Try adjusting your filters or check back later</p>
       </div>
     );

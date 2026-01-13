@@ -31,12 +31,15 @@ export function useVendorListings() {
       setLoading(true);
       const params: { category?: string; lat?: number; long?: number } = {};
       
-      const userStr = localStorage.getItem('user');
+      const userStr = localStorage.getItem('user_data');
       if (userStr) {
         const userData = JSON.parse(userStr);
         if (userData.coordinates) {
           params.lat = userData.coordinates.lat;
           params.long = userData.coordinates.long;
+        }
+        if (userData.serviceCategory) {
+          params.category = userData.serviceCategory;
         }
       }
       
