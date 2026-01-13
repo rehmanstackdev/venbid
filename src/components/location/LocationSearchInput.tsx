@@ -32,6 +32,7 @@ export function LocationSearchInput({
   const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Reverse geocode coordinates to address on mount
@@ -53,7 +54,7 @@ export function LocationSearchInput({
 
   // Search for locations
   useEffect(() => {
-    if (inputValue.length < 3) {
+    if (inputValue.length < 3 || !hasInteracted) {
       setResults([]);
       setShowResults(false);
       return;
@@ -118,8 +119,14 @@ export function LocationSearchInput({
           type="text"
           placeholder={placeholder}
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onFocus={() => results.length > 0 && setShowResults(true)}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            setHasInteracted(true);
+          }}
+          onFocus={() => {
+            setHasInteracted(true);
+            results.length > 0 && setShowResults(true);
+          }}
           onBlur={() => setTimeout(() => setShowResults(false), 200)}
           className="pl-10"
           required={required}
