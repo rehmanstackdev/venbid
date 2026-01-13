@@ -1,8 +1,8 @@
 import { useOutletContext } from "react-router-dom";
-import { ListingsSection } from "@/components/listings/ListingsSection";
+import { VendorListingsSection } from "@/components/listings/VendorListingsSection";
 
 export default function VendorDashboard() {
   const { selectedCategory } = useOutletContext<{ selectedCategory: number | null }>();
 
-  return <ListingsSection selectedCategory={selectedCategory} />;
+  return <VendorListingsSection selectedCategory={selectedCategory} />;
 }

@@ -109,8 +109,8 @@ export const jobsApi = {
     return job;
   },
 
-  getAllJobs: async (): Promise<Job[]> => {
-    const response = await apiClient.get('/jobs');
+  getAllJobs: async (params?: { category?: string; lat?: number; long?: number }): Promise<Job[]> => {
+    const response = await apiClient.get('/jobs', { params });
     return response.data.data || response.data || [];
   },
 

@@ -12,8 +12,8 @@ import VerifyReset from "@/pages/auth/VerifyReset";
 import ResetPassword from "@/pages/auth/ResetPassword";
 import VendorOnboarding from "@/pages/onboarding/VendorOnboarding";
 import CustomerOnboarding from "@/pages/onboarding/CustomerOnboarding";
-import VendorLayout from "@/pages/vendor/Layout";
-import VendorDashboard from "@/pages/vendor/Dashboard";
+import PublicLayout from "@/pages/public/Layout";
+import PublicDashboard from "@/pages/public/Dashboard";
 import CustomerPostJob from "@/pages/customer/PostJob";
 import { AdminRoutes } from "./adminRoutes";
 import { VendorRoutes } from "./vendorRoutes";
@@ -23,8 +23,8 @@ export function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<VendorLayout />}>
-        <Route index element={<VendorDashboard />} />
+      <Route path="/" element={<PublicLayout />}>
+        <Route index element={<PublicDashboard />} />
       </Route>
       <Route path="/about" element={<About />} />
       <Route path="/listing/:id" element={<ListingDetail />} />
