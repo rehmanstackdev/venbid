@@ -123,17 +123,19 @@ export function LocationSearchInput({
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
         {showResults && results.length > 0 && (
-          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[60vh] overflow-hidden">
-            <CommandList className="max-h-[60vh]">
+          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[300px] overflow-hidden">
+            <CommandList className="max-h-[300px]">
               <CommandGroup>
                 {results.map((result) => (
                   <CommandItem
                     key={result.place_id}
-                    onSelect={() => handleSelect(result)}
+                    onSelect={() => {
+                      handleSelect(result);
+                    }}
                     className="cursor-pointer"
                   >
-                    <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
-                    {result.display_name}
+                    <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" />
+                    <span className="line-clamp-2">{result.display_name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
