@@ -33,7 +33,7 @@ export function LoginReminderDialog({ open, onOpenChange }: LoginReminderDialogP
         </DialogHeader>
         <div className="space-y-3 pt-4">
           <Button 
-            className="w-full gap-2" 
+            className="w-full gap-2"
             size="lg"
             onClick={handleNavigate}
           >

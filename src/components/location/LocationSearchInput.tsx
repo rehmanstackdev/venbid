@@ -123,8 +123,8 @@ export function LocationSearchInput({
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
         )}
         {showResults && results.length > 0 && (
-          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[400px] overflow-hidden">
-            <CommandList className="max-h-[400px]">
+          <Command className="absolute top-full mt-1 w-full z-50 border rounded-md bg-popover shadow-md max-h-[50vh] overflow-hidden">
+            <CommandList className="max-h-[50vh] overflow-y-auto">
               <CommandGroup>
                 {results.map((result) => (
                   <CommandItem
