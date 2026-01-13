@@ -64,6 +64,15 @@ export default function VendorOnboarding() {
       };
       
       await vendorApi.updateProfile(dataToSend);
+      
+      // Update localStorage with coordinates
+      const userStr = localStorage.getItem('user_data');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        userData.coordinates = profileData.coordinates;
+        localStorage.setItem('user_data', JSON.stringify(userData));
+      }
+      
       toast.success("Profile completed! Welcome to Venbid.");
       navigate("/vendor/dashboard");
     } catch (error: any) {
