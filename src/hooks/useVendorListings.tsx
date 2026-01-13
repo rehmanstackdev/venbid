@@ -34,10 +34,9 @@ export function useVendorListings() {
       const userStr = localStorage.getItem('user');
       if (userStr) {
         const userData = JSON.parse(userStr);
-        if (userData.zipCode) {
-          const coords = getZipCoordinates(userData.zipCode);
-          params.lat = coords.lat;
-          params.long = coords.lng;
+        if (userData.coordinates) {
+          params.lat = userData.coordinates.lat;
+          params.long = userData.coordinates.long;
         }
       }
       
