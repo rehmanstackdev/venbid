@@ -82,28 +82,7 @@ export default function CustomerAuth() {
       }
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";
-      
-      if (errorMsg.toLowerCase().includes("email not verified") || errorMsg.toLowerCase().includes("not verified")) {
-        toast.error("Email not verified", {
-          description: "Please verify your email to continue",
-          action: {
-            label: "Verify Now",
-            onClick: () => {
-              const returnTo = (location.state as any)?.returnTo;
-              navigate("/auth/verify-email", { 
-                state: { 
-                  email, 
-                  password, 
-                  role: "customer", 
-                  redirect: returnTo || "/customer/my-posts" 
-                } 
-              });
-            }
-          }
-        });
-      } else {
-        toast.error(errorMsg || "Invalid email or password.");
-      }
+      toast.error(errorMsg || "Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
@@ -130,7 +109,7 @@ export default function CustomerAuth() {
       const errorMsg = error.response?.data?.message || "";
       const errorData = error.response?.data;
       
-      // Handle specific error cases
+      
       if (errorMsg.toLowerCase().includes("email already exists") || 
           errorMsg.toLowerCase().includes("user already exists") ||
           errorMsg.toLowerCase().includes("already registered")) {
@@ -144,7 +123,7 @@ export default function CustomerAuth() {
       } else if (errorMsg.toLowerCase().includes("already exists")) {
         toast.info("Please verify your email to continue");
         const returnTo = (location.state as any)?.returnTo;
-        navigate("/auth/verify-email", { 
+        navigate("/auth/request-verification", { 
           state: { 
             email, 
             password, 

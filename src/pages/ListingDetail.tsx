@@ -98,7 +98,7 @@ const ListingDetail = () => {
       <main className="container py-6">
         <div className="grid lg:grid-cols-3 gap-8">
 
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 lg:overflow-y-auto">
 
             <ImageGallery images={listing.images} title={listing.title} />
 
@@ -156,9 +156,9 @@ const ListingDetail = () => {
           </div>
 
 
-          <div className="space-y-4">
+          <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
 
-            <div className="bg-card border border-border rounded-lg p-5 sticky top-20">
+            <div className="bg-card border border-border rounded-lg p-5">
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-1">Budget</p>
                 <p className="text-3xl font-bold text-primary">${listing.budget}</p>

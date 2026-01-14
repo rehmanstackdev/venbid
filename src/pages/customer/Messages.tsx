@@ -40,13 +40,13 @@ export default function CustomerMessages() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-        <div className="container flex h-14 items-center gap-4">
+        <div className="flex h-14 items-center gap-4 px-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div className="flex-1">
             <h1 className="font-semibold">Messages</h1>
-            {totalUnread > 0 && (
+            {!selectedId && totalUnread > 0 && (
               <p className="text-xs text-muted-foreground">
                 {totalUnread} unread {totalUnread === 1 ? "message" : "messages"}
               </p>

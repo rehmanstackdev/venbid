@@ -43,13 +43,11 @@ export default function VendorAuth() {
 
     try {
       const response = await authApi.login({ email, password });
-      const { accessToken, refreshToken, user, vendor } = response.data;
-      
-      const userData = vendor ? { ...user, serviceCategory: vendor.serviceCategory } : user;
+      const { accessToken, refreshToken, user } = response.data;
       
       localStorage.setItem("access_token", accessToken);
       localStorage.setItem("refresh_token", refreshToken);
-      localStorage.setItem("user_data", JSON.stringify(userData));
+      localStorage.setItem("user_data", JSON.stringify(user));
       localStorage.setItem("user_roles", JSON.stringify([user.role]));
       localStorage.setItem("token_timestamp", Date.now().toString());
       
@@ -77,27 +75,7 @@ export default function VendorAuth() {
       }
     } catch (error: any) {
       const errorMsg = error.response?.data?.message || "";
-      
-      if (errorMsg.toLowerCase().includes("email not verified") || errorMsg.toLowerCase().includes("not verified")) {
-        toast.error("Email not verified", {
-          description: "Please verify your email to continue",
-          action: {
-            label: "Verify Now",
-            onClick: () => {
-              navigate("/auth/verify-email", { 
-                state: { 
-                  email, 
-                  password, 
-                  role: "vendor", 
-                  redirect: "/onboarding/vendor" 
-                } 
-              });
-            }
-          }
-        });
-      } else {
-        toast.error(errorMsg || "Invalid email or password.");
-      }
+      toast.error(errorMsg || "Invalid email or password.");
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +105,7 @@ export default function VendorAuth() {
         });
       } else if (errorMsg.toLowerCase().includes("already exists")) {
         toast.info("Please verify your email to continue");
-        navigate("/auth/verify-email", { 
+        navigate("/auth/request-verification", { 
           state: { 
             email, 
             password, 

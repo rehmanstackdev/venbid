@@ -32,8 +32,8 @@ export function EmailVerification({
   }, [resendCooldown]);
 
   const handleVerify = async () => {
-    if (code.length !== 5) {
-      setError('Please enter the complete 5-digit code');
+    if (code.length !== 6) {
+      setError('Please enter the complete 6-digit code');
       return;
     }
 

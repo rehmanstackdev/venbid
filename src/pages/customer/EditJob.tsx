@@ -206,8 +206,23 @@ export default function EditJob() {
         images: imageFiles,
       });
 
+      // Build specific update message
+      const updatedFields = [];
+      if (originalData) {
+        if (selectedCategory !== originalData.category) updatedFields.push('category');
+        if (details.title !== originalData.details.title) updatedFields.push('title');
+        if (details.description !== originalData.details.description) updatedFields.push('description');
+        if (details.budget !== originalData.details.budget) updatedFields.push('budget');
+        if (location.city !== originalData.location.city || location.zip !== originalData.location.zip) updatedFields.push('location');
+        if (details.images.some((img: any) => img.file instanceof File) || details.images.length !== originalData.details.images.length) updatedFields.push('images');
+      }
+
+      const message = updatedFields.length > 0 
+        ? `Updated: ${updatedFields.join(', ')}`
+        : 'Changes have been saved successfully.';
+
       toast.success("Your job has been updated!", {
-        description: "Changes have been saved successfully.",
+        description: message,
       });
       navigate("/customer/my-posts");
     } catch (error: any) {

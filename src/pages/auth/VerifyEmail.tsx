@@ -88,14 +88,7 @@ export default function VerifyEmail() {
         }
       } else {
         toast.success("Email verified successfully! Please login.");
-        
-        if (role === "customer") {
-          navigate("/auth/customer");
-        } else if (role === "vendor") {
-          navigate("/auth/vendor");
-        } else {
-          navigate("/auth");
-        }
+        navigate("/auth");
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || "Invalid OTP. Please try again.");

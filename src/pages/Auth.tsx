@@ -36,7 +36,7 @@ export default function Auth() {
   const [authStep, setAuthStep] = useState<AuthStep>('credentials');
   const [pendingSignupData, setPendingSignupData] = useState<{ email: string; password: string; fullName: string } | null>(null);
   
-  const { signIn, signUp, user } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -84,24 +84,13 @@ export default function Auth() {
     if (!validateForm(false)) return;
     
     setIsLoading(true);
-    const { error } = await signIn(email, password);
+    // Mock login - not implemented
     setIsLoading(false);
-    
-    if (error) {
-      toast({
-        title: 'Login failed',
-        description: error.message === 'Invalid login credentials' 
-          ? 'Invalid email or password. Please try again.'
-          : error.message,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Welcome back!',
-        description: 'You have successfully logged in.',
-      });
-      navigate(redirectTo);
-    }
+    toast({
+      title: 'Not implemented',
+      description: 'Please use /auth/customer or /auth/vendor pages',
+      variant: 'destructive',
+    });
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -183,32 +172,13 @@ export default function Auth() {
     setUserType(type);
     setIsLoading(true);
     
-    // Now actually create the user account
-    const { error } = await signUp(
-      pendingSignupData.email, 
-      pendingSignupData.password, 
-      pendingSignupData.fullName, 
-      type
-    );
-    
-    if (error) {
-      const errorMessage = error.message.includes('already registered')
-        ? 'This email is already registered. Please sign in instead.'
-        : error.message;
-      
-      toast({
-        title: 'Sign up failed',
-        description: errorMessage,
-        variant: 'destructive',
-      });
-      setAuthStep('credentials');
-      setIsLoading(false);
-      return;
-    }
-    
+    // Mock - not implemented
     setIsLoading(false);
-    // Move to profile setup
-    setAuthStep('profile');
+    toast({
+      title: 'Not implemented',
+      description: 'Please use /auth/customer or /auth/vendor pages',
+      variant: 'destructive',
+    });
   };
 
   const handleProfileComplete = async (data: ProfileData) => {
@@ -233,33 +203,7 @@ export default function Auth() {
     });
     navigate(redirectTo);
     
-    // Commented out Supabase profile update
-    // const { error: profileError } = await supabase
-    //   .from('profiles')
-    //   .update({
-    //     full_name: data.fullName,
-    //     phone: data.phone,
-    //     city: data.city || null,
-    //     terms_accepted: data.termsAccepted,
-    //     service_category: data.serviceCategory || null,
-    //     company_name: data.companyName || null,
-    //     verification_status: 'unverified',
-    //   })
-    //   .eq('user_id', user.id);
-    // if (profileError) {
-    //   toast({ title: 'Error', description: 'Failed to update profile. Please try again.', variant: 'destructive' });
-    //   setIsLoading(false);
-    //   return;
-    // }
-    // if (data.verificationDocument) {
-    //   const fileExt = data.verificationDocument.name.split('.').pop();
-    //   const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-    //   const { error: uploadError } = await supabase.storage.from('verification-documents').upload(fileName, data.verificationDocument);
-    //   if (!uploadError) {
-    //     await supabase.from('verification_documents').insert({ user_id: user.id, document_url: fileName, document_type: 'id', status: 'pending' });
-    //     await supabase.from('profiles').update({ verification_status: 'pending' }).eq('user_id', user.id);
-    //   }
-    // }
+   
   };
 
   const handleForgotPasswordSendCode = async (email: string): Promise<boolean> => {
@@ -270,20 +214,11 @@ export default function Auth() {
     });
     return true;
     
-    // Commented out Supabase password reset
-    // const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    //   redirectTo: `${window.location.origin}/auth?tab=login`,
-    // });
-    // if (error) {
-    //   toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    //   return false;
-    // }
-    // toast({ title: 'Email sent', description: 'Check your email for the password reset link.' });
-    // return true;
+
   };
 
   const handleForgotPasswordVerifyCode = async (email: string, code: string): Promise<boolean> => {
-    // Supabase uses magic links, so we skip OTP verification
+  
     return true;
   };
 

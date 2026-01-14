@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Listing, formatTimeAgo } from "@/hooks/useListings";
 import { cn } from "@/lib/utils";
 import { useFavorites } from "@/hooks/useFavorites";
+import { useAuth } from "@/hooks/useAuth";
+import { useState } from "react";
+import { LoginReminderDialog } from "@/components/auth/LoginReminderDialog";
 
 interface ListingCardProps {
   listing: Listing;
@@ -13,8 +16,22 @@ interface ListingCardProps {
 }
 
 export function ListingCard({ listing, compact = false }: ListingCardProps) {
+  const { user } = useAuth();
   const { isFavorite, toggleFavorite } = useFavorites();
   const isListingFavorite = isFavorite(listing.id);
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+
+  const handleFavoriteClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) {
+      setShowLoginDialog(true);
+      return;
+    }
+    
+    toggleFavorite(listing.id);
+  };
 
   if (compact) {
     return (
@@ -54,14 +71,24 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
   return (
     <Link to={`/listing/${listing.id}`}>
       <Card className="group overflow-hidden transition-all duration-200 hover:shadow-card-hover animate-fade-in h-[380px] flex flex-col">
-        {/* Image */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <img
-            src={listing.images[0] || "/placeholder.svg"}
-            alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-          
+        <div className="relative">
+          {/* Image */}
+          <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+            <img
+              src={listing.images[0] || "/placeholder.svg"}
+              alt={listing.title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+            
+            {/* Category badge */}
+            <Badge 
+              variant="secondary" 
+              className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm text-foreground text-xs"
+            >
+              {listing.categoryName}
+            </Badge>
+          </div>
+
           {/* Favorite button */}
           <Button
             variant="ghost"
@@ -71,22 +98,10 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
               "hover:bg-card hover:scale-110 transition-all",
               isListingFavorite && "text-red-500"
             )}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleFavorite(listing.id);
-            }}
+            onClick={handleFavoriteClick}
           >
             <Heart className={cn("h-4 w-4", isListingFavorite && "fill-red-500")} />
           </Button>
-
-          {/* Category badge */}
-          <Badge 
-            variant="secondary" 
-            className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm text-foreground text-xs"
-          >
-            {listing.categoryName}
-          </Badge>
         </div>
 
         {/* Content */}
@@ -111,6 +126,8 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
           </div>
         </CardContent>
       </Card>
+
+      <LoginReminderDialog open={showLoginDialog} onOpenChange={setShowLoginDialog} />
     </Link>
   );
 }

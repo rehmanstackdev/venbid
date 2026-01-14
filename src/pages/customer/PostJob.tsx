@@ -156,13 +156,13 @@ export default function PostJob() {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo(0, 0);
     }
   };
 
   const handleBack = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo(0, 0);
   };
 
   const handlePublish = async () => {
@@ -215,6 +215,7 @@ export default function PostJob() {
       
       navigate("/customer/my-posts");
     } catch (error: any) {
+      console.error('Job creation error:', error);
       toast.error(error.response?.data?.message || "Failed to post your job");
     } finally {
       setIsSubmitting(false);

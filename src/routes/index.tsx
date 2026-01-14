@@ -7,6 +7,7 @@ import CustomerAuth from "@/pages/auth/CustomerAuth";
 import VendorAuth from "@/pages/auth/VendorAuth";
 import AdminAuth from "@/pages/auth/AdminAuth";
 import VerifyEmail from "@/pages/auth/VerifyEmail";
+import RequestEmailVerification from "@/pages/auth/RequestEmailVerification";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import VerifyReset from "@/pages/auth/VerifyReset";
 import ResetPassword from "@/pages/auth/ResetPassword";
@@ -35,7 +36,9 @@ export function AppRoutes() {
       <Route path="/auth/customer" element={<CustomerAuth />} />
       <Route path="/auth/vendor" element={<VendorAuth />} />
       <Route path="/auth/admin" element={<AdminAuth />} />
+      <Route path="/auth/request-verification" element={<RequestEmailVerification />} />
       <Route path="/auth/verify-email" element={<VerifyEmail />} />
+      <Route path="/auth/verify-otp" element={<VerifyEmail />} />
       <Route path="/auth/forgot-password" element={<ForgotPassword />} />
       <Route path="/auth/verify-reset" element={<VerifyReset />} />
       <Route path="/auth/reset-password" element={<ResetPassword />} />

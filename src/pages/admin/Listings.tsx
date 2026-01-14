@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import { jobsApi, Job } from "@/api/jobs";
 import { adminApi } from "@/api/admin";
 import { categories } from "@/data/categories";
+import { LocationMap } from "@/components/map/LocationMap";
 
 export default function AdminListings() {
   const { toast } = useToast();
@@ -134,7 +135,7 @@ export default function AdminListings() {
           </div>
           <div>
             <p className="text-muted-foreground">Location</p>
-            <p className="font-medium">{listing.city || listing.zip}</p>
+            <p className="font-medium">{listing.city || `ZIP ${listing.zip}`}</p>
           </div>
           <div>
             <p className="text-muted-foreground">Posted</p>
@@ -280,17 +281,24 @@ export default function AdminListings() {
                 <p className="text-sm mt-1">${selectedListing.budget}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Location</p>
-                <p className="text-sm mt-1 break-words">
-                  {selectedListing.showExactAddress
-                    ? `${selectedListing.street}, ${selectedListing.city}, ${selectedListing.zip}`
-                    : `${selectedListing.crossStreet}, ${selectedListing.city}, ${selectedListing.zip}`}
-                </p>
+                <p className="text-sm font-medium text-muted-foreground">ZIP Code</p>
+                <p className="text-sm mt-1">{selectedListing.zip}</p>
               </div>
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Posted</p>
                 <p className="text-sm mt-1">{new Date(selectedListing.createdAt).toLocaleString()}</p>
               </div>
+              {selectedListing.coordinates && (
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Location Map</p>
+                  <LocationMap
+                    lat={selectedListing.coordinates.lat}
+                    lng={selectedListing.coordinates.long}
+                    showExactAddress={selectedListing.showExactAddress}
+                    className="h-64 rounded-lg overflow-hidden border border-border"
+                  />
+                </div>
+              )}
             </div>
           )}
         </DialogContent>

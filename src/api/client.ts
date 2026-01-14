@@ -133,6 +133,20 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Handle email verification error
+    if (error.response?.status === 403 && 
+        error.response?.data?.message?.toLowerCase().includes('email not verified')) {
+      if (typeof window !== 'undefined') {
+        import('sonner').then(({ toast }) => {
+          toast.error('Email not verified', {
+            description: 'Please verify your email to continue'
+          });
+        });
+        window.location.href = '/auth/request-verification';
+      }
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {

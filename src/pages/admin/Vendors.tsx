@@ -90,7 +90,7 @@ export default function AdminVendors() {
   }
 
   const VerificationCard = ({ vendor }: { vendor: AdminVendor }) => (
-    <Card>
+    <Card className="flex flex-col h-full">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
@@ -108,7 +108,7 @@ export default function AdminVendors() {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 flex-1 flex flex-col">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-muted-foreground">Company</p>
@@ -128,7 +128,7 @@ export default function AdminVendors() {
           </div>
         </div>
 
-        <div>
+        <div className="flex-1">
           <p className="text-sm text-muted-foreground mb-2">Verification Documents</p>
           {vendor.verificationDocuments && vendor.verificationDocuments.length > 0 ? (
             <div className="relative group">
@@ -154,7 +154,7 @@ export default function AdminVendors() {
 
         {!vendor.documentVerified && (
           <Button 
-            className="w-full gap-2" 
+            className="w-full gap-2 mt-auto" 
             onClick={() => handleApprove(vendor)}
             disabled={approvingId === vendor.id}
           >

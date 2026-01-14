@@ -43,6 +43,10 @@ export interface Job {
   crossStreet: string;
   showExactAddress: boolean;
   images: string[];
+  coordinates?: {
+    lat: number;
+    long: number;
+  };
   status?: string;
   isComplete?: boolean;
   createdBy?: {
@@ -98,6 +102,7 @@ export const jobsApi = {
 
     const response = await apiClient.post('/jobs', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 30000,
     });
     
     const job = response.data.data || response.data;

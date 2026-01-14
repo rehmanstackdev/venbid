@@ -250,12 +250,20 @@ export default function CustomerMyPosts() {
           <p className="text-muted-foreground">Manage your job listings</p>
         </div>
         <Link to="/post-job">
-          <Button className="gap-2">
+          <Button className="gap-2" disabled={activeJobs.length >= 5}>
             <Plus className="h-4 w-4" />
             Post New Job
           </Button>
         </Link>
       </div>
+
+      {activeJobs.length >= 5 && (
+        <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <p className="text-sm text-yellow-800">
+            You have reached the maximum limit of 5 active jobs. Please complete or delete a job to post a new one.
+          </p>
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
