@@ -97,12 +97,13 @@ export default function VendorOnboarding() {
               <LocationSearchInput
                 value={formData.locationSearch}
                 onChange={(address, coordinates) => {
-                  console.log('Location selected:', address, coordinates);
-                  setFormData({
-                    ...formData,
+                  console.log('Onboarding - Location selected:', { address, coordinates });
+                  setFormData(prev => ({
+                    ...prev,
                     locationSearch: address,
+                    address: address,
                     coordinates: { lat: coordinates.lat, long: coordinates.lng },
-                  });
+                  }));
                 }}
                 label="Search Location"
                 placeholder="Search for your address"
