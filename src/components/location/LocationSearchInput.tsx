@@ -32,12 +32,21 @@ export function LocationSearchInput({
   const [results, setResults] = useState<LocationResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const reverseGeocodedRef = useRef(false);
+  const isUserTypingRef = useRef(false);
 
-  // Reverse geocode coordinates to address on mount
+  // Sync with parent value prop only if user is not typing
   useEffect(() => {
-    if (coordinates?.lat && coordinates?.lng && !inputValue) {
+    if (value !== inputValue && !isUserTypingRef.current) {
+      setInputValue(value);
+    }
+  }, [value]);
+
+  // Reverse geocode coordinates to address on mount only
+  useEffect(() => {
+    if (coordinates?.lat && coordinates?.lng && !inputValue && !reverseGeocodedRef.current) {
+      reverseGeocodedRef.current = true;
       fetch(
         `https://nominatim.openstreetmap.org/reverse?` +
         `format=json&lat=${coordinates.lat}&lon=${coordinates.lng}`
@@ -50,11 +59,11 @@ export function LocationSearchInput({
         })
         .catch(err => console.error('Reverse geocoding error:', err));
     }
-  }, [coordinates, inputValue]);
+  }, []);
 
-  // Search for locations
+  // Search for locations only when user is typing
   useEffect(() => {
-    if (inputValue.length < 3 || !hasInteracted) {
+    if (!isUserTypingRef.current || inputValue.length < 3) {
       setResults([]);
       setShowResults(false);
       return;
@@ -88,7 +97,7 @@ export function LocationSearchInput({
       } finally {
         setLoading(false);
       }
-    }, 1000); // Increased debounce to 1 second
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [inputValue]);
@@ -98,6 +107,9 @@ export function LocationSearchInput({
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     
+    console.log('Location selected:', { address, coordinates: { lat, lng } });
+    
+    isUserTypingRef.current = false;
     setInputValue(address);
     setResults([]);
     setShowResults(false);
@@ -120,11 +132,10 @@ export function LocationSearchInput({
           placeholder={placeholder}
           value={inputValue}
           onChange={(e) => {
+            isUserTypingRef.current = true;
             setInputValue(e.target.value);
-            setHasInteracted(true);
           }}
           onFocus={() => {
-            setHasInteracted(true);
             results.length > 0 && setShowResults(true);
           }}
           onBlur={() => setTimeout(() => setShowResults(false), 200)}
@@ -151,6 +162,7 @@ export function LocationSearchInput({
                       <CommandItem
                         key={result.place_id}
                         onSelect={() => handleSelect(result)}
+                        onClick={() => handleSelect(result)}
                         className="cursor-pointer py-3"
                       >
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" />

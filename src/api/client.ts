@@ -59,16 +59,16 @@ const refreshAccessToken = async () => {
     localStorage.removeItem('token_timestamp');
     clearRefreshTimer();
     
-    // Show toast and redirect to home
+
     if (typeof window !== 'undefined') {
-      // Dynamically import toast to avoid circular dependencies
+
       import('sonner').then(({ toast }) => {
         toast.error('Session expired', {
           description: 'Please sign in again to continue'
         });
       });
       
-      // Redirect to home page
+
       window.location.href = '/';
     }
     
@@ -78,7 +78,7 @@ const refreshAccessToken = async () => {
 
 const scheduleTokenRefresh = () => {
   clearRefreshTimer();
-  // Refresh token after 13 minutes (2 minutes before 15-minute expiry)
+ 
   refreshTimer = setTimeout(() => {
     refreshAccessToken();
   }, 13 * 60 * 1000);
@@ -91,7 +91,7 @@ const clearRefreshTimer = () => {
   }
 };
 
-// Initialize token refresh on app load
+
 const initTokenRefresh = () => {
   const token = localStorage.getItem('access_token');
   const timestamp = localStorage.getItem('token_timestamp');
@@ -101,21 +101,21 @@ const initTokenRefresh = () => {
     const remaining = (15 * 60 * 1000) - elapsed;
     
     if (remaining > 2 * 60 * 1000) {
-      // Schedule refresh for remaining time minus 2 minutes
+   
       refreshTimer = setTimeout(() => {
         refreshAccessToken();
       }, remaining - (2 * 60 * 1000));
     } else {
-      // Token is about to expire or already expired, refresh immediately
+     
       refreshAccessToken();
     }
   }
 };
 
-// Call on module load
+
 initTokenRefresh();
 
-// Request interceptor to add auth token
+
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token');
@@ -127,13 +127,13 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    // Handle email verification error
+    
     if (error.response?.status === 403 && 
         error.response?.data?.message?.toLowerCase().includes('email not verified')) {
       if (typeof window !== 'undefined') {

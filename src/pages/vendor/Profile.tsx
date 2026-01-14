@@ -62,7 +62,7 @@ export default function VendorProfile() {
           address: userData.address || '',
           companyName: vendorData.companyName || '',
           coordinates: coords,
-          locationSearch: '',
+          locationSearch: userData.address || '',
         }));
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -97,7 +97,7 @@ export default function VendorProfile() {
     setIsLoading(true);
 
     try {
-      await vendorApi.updateProfile({
+      const dataToSend: any = {
         name: profile.name,
         phone: profile.phone,
         serviceCategory: profile.serviceCategory,
@@ -106,9 +106,20 @@ export default function VendorProfile() {
         zipCode: profile.zipCode,
         address: profile.address,
         companyName: profile.companyName,
-        coordinates: profile.coordinates,
         verificationDocument: documents.length > 0 ? documents : undefined,
-      });
+      };
+
+      // Always include coordinates if they exist
+      if (profile.coordinates.lat !== 0 || profile.coordinates.long !== 0) {
+        dataToSend.coordinates = profile.coordinates;
+        console.log('Including coordinates:', profile.coordinates);
+      } else {
+        console.log('Coordinates are 0,0 - not sending');
+      }
+
+      console.log('Sending profile data:', dataToSend);
+      
+      await vendorApi.updateProfile(dataToSend);
       toast({
         title: 'Profile updated',
         description: 'Your profile has been saved successfully.',
@@ -179,13 +190,14 @@ export default function VendorProfile() {
 
             {/* Location Search */}
             <LocationSearchInput
-              value=""
+              value={profile.locationSearch}
               coordinates={profile.coordinates.lat !== 0 ? { lat: profile.coordinates.lat, lng: profile.coordinates.long } : undefined}
               onChange={(address, coordinates) => {
-                console.log('Location selected:', address, coordinates);
+                console.log('Location changed - Address:', address, 'Coordinates:', coordinates);
                 setProfile(prev => ({
                   ...prev,
                   locationSearch: address,
+                  address: address,
                   coordinates: { lat: coordinates.lat, long: coordinates.lng },
                 }));
               }}
