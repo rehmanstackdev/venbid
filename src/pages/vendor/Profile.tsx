@@ -182,6 +182,7 @@ export default function VendorProfile() {
               value=""
               coordinates={profile.coordinates.lat !== 0 ? { lat: profile.coordinates.lat, lng: profile.coordinates.long } : undefined}
               onChange={(address, coordinates) => {
+                console.log('Location selected:', address, coordinates);
                 setProfile(prev => ({
                   ...prev,
                   locationSearch: address,
