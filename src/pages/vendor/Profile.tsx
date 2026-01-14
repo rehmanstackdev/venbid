@@ -47,6 +47,7 @@ export default function VendorProfile() {
         const userData = data.user || data;
         
         const coords = userData.coordinates || { lat: 0, long: 0 };
+        console.log('Fetched coordinates from API:', coords);
         setDocumentVerified(vendorData.documentVerified || false);
         setExistingDocuments(vendorData.verificationDocuments || []);
         console.log('Existing documents:', vendorData.verificationDocuments);
@@ -109,15 +110,18 @@ export default function VendorProfile() {
         verificationDocument: documents.length > 0 ? documents : undefined,
       };
 
+      console.log('Profile - profile.coordinates before check:', profile.coordinates);
+      
       // Always include coordinates if they exist
       if (profile.coordinates.lat !== 0 || profile.coordinates.long !== 0) {
         dataToSend.coordinates = profile.coordinates;
-        console.log('Including coordinates:', profile.coordinates);
+        console.log('Profile - Including coordinates:', profile.coordinates);
       } else {
-        console.log('Coordinates are 0,0 - not sending');
+        console.log('Profile - Coordinates are 0,0 - not sending');
       }
 
-      console.log('Sending profile data:', dataToSend);
+      console.log('Profile - Final dataToSend:', dataToSend);
+      console.log('Profile - dataToSend.coordinates:', dataToSend.coordinates);
       
       await vendorApi.updateProfile(dataToSend);
       toast({
@@ -191,15 +195,19 @@ export default function VendorProfile() {
             {/* Location Search */}
             <LocationSearchInput
               value={profile.locationSearch}
-              coordinates={profile.coordinates.lat !== 0 ? { lat: profile.coordinates.lat, lng: profile.coordinates.long } : undefined}
+              coordinates={profile.coordinates.lat !== 0 && profile.coordinates.long !== 0 ? { lat: profile.coordinates.lat, lng: profile.coordinates.long } : undefined}
               onChange={(address, coordinates) => {
-                console.log('Location changed - Address:', address, 'Coordinates:', coordinates);
-                setProfile(prev => ({
-                  ...prev,
-                  locationSearch: address,
-                  address: address,
-                  coordinates: { lat: coordinates.lat, long: coordinates.lng },
-                }));
+                console.log('Profile - onChange received:', { address, coordinates });
+                setProfile(prev => {
+                  const newProfile = {
+                    ...prev,
+                    locationSearch: address,
+                    address: address,
+                    coordinates: { lat: coordinates.lat, long: coordinates.lng },
+                  };
+                  console.log('Profile - New profile state:', newProfile);
+                  return newProfile;
+                });
               }}
               label="Search Location"
               placeholder="Search for your address"

@@ -54,6 +54,9 @@ export default function VendorOnboarding() {
     try {
       const { locationSearch, ...profileData } = formData;
       
+      console.log('Onboarding - formData before send:', formData);
+      console.log('Onboarding - profileData.coordinates:', profileData.coordinates);
+      
       // Always include coordinates if they exist
       const dataToSend = {
         ...profileData,
@@ -63,7 +66,8 @@ export default function VendorOnboarding() {
         verificationDocument: documents.length > 0 ? documents : undefined,
       };
       
-      console.log('Onboarding - Sending data:', dataToSend);
+      console.log('Onboarding - Final dataToSend:', dataToSend);
+      console.log('Onboarding - dataToSend.coordinates:', dataToSend.coordinates);
       
       await vendorApi.updateProfile(dataToSend);
       
@@ -97,13 +101,17 @@ export default function VendorOnboarding() {
               <LocationSearchInput
                 value={formData.locationSearch}
                 onChange={(address, coordinates) => {
-                  console.log('Onboarding - Location selected:', { address, coordinates });
-                  setFormData(prev => ({
-                    ...prev,
-                    locationSearch: address,
-                    address: address,
-                    coordinates: { lat: coordinates.lat, long: coordinates.lng },
-                  }));
+                  console.log('Onboarding - onChange received:', { address, coordinates });
+                  setFormData(prev => {
+                    const newData = {
+                      ...prev,
+                      locationSearch: address,
+                      address: address,
+                      coordinates: { lat: coordinates.lat, long: coordinates.lng },
+                    };
+                    console.log('Onboarding - New formData:', newData);
+                    return newData;
+                  });
                 }}
                 label="Search Location"
                 placeholder="Search for your address"

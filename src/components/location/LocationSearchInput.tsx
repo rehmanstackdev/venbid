@@ -43,23 +43,25 @@ export function LocationSearchInput({
     }
   }, [value]);
 
-  // Reverse geocode coordinates to address on mount only
+  // Reverse geocode coordinates to address on mount
   useEffect(() => {
-    if (coordinates?.lat && coordinates?.lng && !inputValue && !reverseGeocodedRef.current) {
+    if (coordinates?.lat && coordinates?.lng && !reverseGeocodedRef.current) {
       reverseGeocodedRef.current = true;
+      console.log('Reverse geocoding coordinates:', coordinates);
       fetch(
         `https://nominatim.openstreetmap.org/reverse?` +
         `format=json&lat=${coordinates.lat}&lon=${coordinates.lng}`
       )
         .then(res => res.json())
         .then(data => {
+          console.log('Reverse geocoding result:', data);
           if (data.display_name) {
             setInputValue(data.display_name);
           }
         })
         .catch(err => console.error('Reverse geocoding error:', err));
     }
-  }, []);
+  }, [coordinates]);
 
   // Search for locations only when user is typing
   useEffect(() => {
@@ -107,13 +109,19 @@ export function LocationSearchInput({
     const lat = parseFloat(result.lat);
     const lng = parseFloat(result.lon);
     
-    console.log('Location selected:', { address, coordinates: { lat, lng } });
+    console.log('LocationSearchInput - handleSelect called');
+    console.log('LocationSearchInput - Result:', result);
+    console.log('LocationSearchInput - Parsed coordinates:', { lat, lng });
     
     isUserTypingRef.current = false;
     setInputValue(address);
     setResults([]);
     setShowResults(false);
+    
+    console.log('LocationSearchInput - About to call onChange');
     onChange(address, { lat, lng });
+    console.log('LocationSearchInput - onChange called');
+    
     inputRef.current?.blur();
   };
 
@@ -138,7 +146,7 @@ export function LocationSearchInput({
           onFocus={() => {
             results.length > 0 && setShowResults(true);
           }}
-          onBlur={() => setTimeout(() => setShowResults(false), 200)}
+          onBlur={() => setTimeout(() => setShowResults(false), 300)}
           className="pl-10"
           required={required}
         />
@@ -161,8 +169,15 @@ export function LocationSearchInput({
                     {results.map((result) => (
                       <CommandItem
                         key={result.place_id}
-                        onSelect={() => handleSelect(result)}
-                        onClick={() => handleSelect(result)}
+                        onSelect={() => {
+                          console.log('CommandItem onSelect triggered');
+                          handleSelect(result);
+                        }}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          console.log('CommandItem onMouseDown triggered');
+                          handleSelect(result);
+                        }}
                         className="cursor-pointer py-3"
                       >
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" />
