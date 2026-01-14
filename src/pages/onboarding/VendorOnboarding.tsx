@@ -54,14 +54,16 @@ export default function VendorOnboarding() {
     try {
       const { locationSearch, ...profileData } = formData;
       
-      // Only include coordinates if they are valid (not 0,0)
+      // Always include coordinates if they exist
       const dataToSend = {
         ...profileData,
-        coordinates: profileData.coordinates.lat !== 0 && profileData.coordinates.long !== 0 
+        coordinates: profileData.coordinates.lat !== 0 || profileData.coordinates.long !== 0 
           ? profileData.coordinates 
           : undefined,
         verificationDocument: documents.length > 0 ? documents : undefined,
       };
+      
+      console.log('Onboarding - Sending data:', dataToSend);
       
       await vendorApi.updateProfile(dataToSend);
       
