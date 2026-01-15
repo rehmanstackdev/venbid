@@ -1,13 +1,14 @@
 import { categories } from "@/data/categories";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { MapPin, Calendar, DollarSign, Star, X } from "lucide-react";
+import { MapPin, Calendar, DollarSign, Star, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { JobDetails } from "./DetailsStep";
 import { LocationDetails } from "./LocationStep";
 import { LocationMap } from "@/components/map/LocationMap";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface PreviewStepProps {
   categoryId: number;
@@ -21,6 +22,15 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
   const category = categories.find((c) => c.id === categoryId);
   const CategoryIcon = category?.icon;
   const featuredImage = details.images.find((img) => img.isFeatured) || details.images[0];
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  const goToPrevious = () => {
+    setCurrentImageIndex((prev) => (prev === 0 ? details.images.length - 1 : prev - 1));
+  };
+
+  const goToNext = () => {
+    setCurrentImageIndex((prev) => (prev === details.images.length - 1 ? 0 : prev + 1));
+  };
 
   const removeImage = (id: string) => {
     const updated = details.images.filter((img) => img.id !== id);
@@ -47,109 +57,53 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
         </p>
       </div>
 
-      {/* Image Management */}
-      {details.images.length > 0 && (
-        <div className="space-y-4 border border-border rounded-lg p-4 bg-card">
-          {/* Featured Image */}
-          {featuredImage && (
-            <div>
-              <Label className="text-sm font-medium mb-2 block">Featured Image</Label>
-              <div className="relative aspect-video rounded-lg overflow-hidden group border-2 border-primary">
-                <img
-                  src={featuredImage.preview}
-                  alt="Featured"
-                  className="h-full w-full object-cover"
-                />
-                <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
-                  <Star className="h-3 w-3 fill-current" />
-                  Featured
-                </div>
-                <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => removeImage(featuredImage.id)}
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* All Images */}
-          <div>
-            <Label className="text-sm font-medium mb-2 block">All Images ({details.images.length})</Label>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-              {details.images.map((image) => (
-                <div
-                  key={image.id}
-                  className={cn(
-                    "relative aspect-square rounded-lg overflow-hidden group border-2",
-                    image.isFeatured ? "border-primary" : "border-border"
-                  )}
-                >
-                  <img
-                    src={image.preview}
-                    alt="Preview"
-                    className="h-full w-full object-cover"
-                  />
-                  {image.isFeatured && (
-                    <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-0.5">
-                      <Star className="h-2.5 w-2.5 fill-current" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
-                    {!image.isFeatured && (
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        className="h-7 text-[10px] w-full"
-                        onClick={() => setFeatured(image.id)}
-                      >
-                        <Star className="h-2.5 w-2.5 mr-1" />
-                        Set Featured
-                      </Button>
-                    )}
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="h-7 w-7"
-                      onClick={() => removeImage(image.id)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Preview card */}
       <div className="">
-        {/* Featured image */}
-        {featuredImage ? (
-          <div className="">
-            {/* <img
-              src={featuredImage.preview}
-              alt="Featured"
-              className="w-full h-full object-cover"
-            /> */}
-            {/* {details.images.length > 1 && (
-              <div className="absolute bottom-3 right-3 bg-foreground/80 text-background text-sm px-3 py-1 rounded-full">
-                +{details.images.length - 1} more
+        {/* Main Image with Navigation */}
+        {details.images.length > 0 && (
+          <div className="relative rounded-lg overflow-hidden bg-muted group mb-4">
+            <img
+              src={details.images[currentImageIndex].preview}
+              alt={`Image ${currentImageIndex + 1}`}
+              className="w-full h-auto object-contain"
+            />
+            
+            {/* Featured badge on main image */}
+            {details.images[currentImageIndex].isFeatured && (
+              <div className="absolute top-3 left-3 bg-primary text-primary-foreground text-sm px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5 shadow-lg">
+                <Star className="h-4 w-4 fill-current" />
+                Featured
               </div>
-            )} */}
-          </div>
-        ) : (
-          <div className="">
-            {/* <div className="text-center text-muted-foreground">
-              <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No images added</p>
-            </div> */}
+            )}
+            
+            {/* Navigation arrows */}
+            {details.images.length > 1 && (
+              <>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  onClick={goToPrevious}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="icon"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                  onClick={goToNext}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </>
+            )}
+
+            {/* Image counter */}
+            {details.images.length > 1 && (
+              <div className="absolute bottom-3 right-3 bg-foreground/80 text-background text-sm px-3 py-1 rounded-full backdrop-blur-sm">
+                {currentImageIndex + 1} / {details.images.length}
+              </div>
+            )}
           </div>
         )}
 
@@ -220,6 +174,68 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
               />
             )}
           </div>
+
+          <Separator />
+
+          {/* Image Gallery below map */}
+          {details.images.length > 0 && (
+            <div>
+              <h4 className="font-medium mb-3">All Images ({details.images.length})</h4>
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                {details.images.map((image, index) => (
+                  <div
+                    key={image.id}
+                    className={cn(
+                      "relative aspect-square rounded-lg overflow-hidden cursor-pointer border-2 hover:border-primary transition-colors group",
+                      index === currentImageIndex ? "border-primary" : "border-border"
+                    )}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img
+                      src={image.preview}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="h-full w-full object-cover"
+                    />
+                    {index === currentImageIndex && (
+                      <div className="absolute inset-0 bg-primary/10" />
+                    )}
+                    {image.isFeatured && (
+                      <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-0.5">
+                        <Star className="h-2.5 w-2.5 fill-current" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 p-1">
+                      {!image.isFeatured && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="h-7 text-[10px] w-full"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setFeatured(image.id);
+                          }}
+                        >
+                          <Star className="h-2.5 w-2.5 mr-1" />
+                          Set Featured
+                        </Button>
+                      )}
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeImage(image.id);
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

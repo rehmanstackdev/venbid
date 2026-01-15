@@ -13,6 +13,7 @@ interface ListingsMapProps {
   allListings?: Listing[];
   onBoundsChange?: (listings: Listing[]) => void;
   className?: string;
+  userCoordinates?: { lat: number; long: number };
 }
 
 // Illinois center coordinates
@@ -79,7 +80,7 @@ function MapEventHandler({
   return null;
 }
 
-export function ListingsMap({ listings, allListings, onBoundsChange, className }: ListingsMapProps) {
+export function ListingsMap({ listings, allListings, onBoundsChange, className, userCoordinates }: ListingsMapProps) {
   const [showSearchButton, setShowSearchButton] = useState(false);
   const [currentBounds, setCurrentBounds] = useState<{
     north: number;
@@ -96,6 +97,11 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className }
     radius: number;
   } | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
+  
+  // Use user coordinates if available, otherwise default to Illinois center
+  const mapCenter: [number, number] = userCoordinates?.lat && userCoordinates?.long 
+    ? [userCoordinates.lat, userCoordinates.long] 
+    : ILLINOIS_CENTER;
   
   // Use allListings for filtering (contains all category listings), but display only `listings`
   const listingsToFilter = allListings || listings;
@@ -131,13 +137,13 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className }
   }, []);
 
   const handleLocate = useCallback(() => {
-    mapRef.current?.setView(ILLINOIS_CENTER, DEFAULT_ZOOM);
-  }, []);
+    mapRef.current?.setView(mapCenter, DEFAULT_ZOOM);
+  }, [mapCenter]);
 
   return (
     <div className={cn("relative rounded-lg overflow-hidden border border-border", className)}>
       <MapContainer
-        center={ILLINOIS_CENTER}
+        center={mapCenter}
         zoom={DEFAULT_ZOOM}
         className="h-full w-full"
         zoomControl={false}

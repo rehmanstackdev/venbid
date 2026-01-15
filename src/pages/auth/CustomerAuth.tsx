@@ -211,7 +211,8 @@ export default function CustomerAuth() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value.replace(/\s/g, ''))}
+                        autoComplete="current-password"
                         required
                       />
                       <button
@@ -273,7 +274,8 @@ export default function CustomerAuth() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value.replace(/\s/g, ''))}
+                        autoComplete="new-password"
                         required
                         minLength={6}
                       />

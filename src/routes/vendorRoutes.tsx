@@ -1,6 +1,7 @@
 import { Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import VendorLayout from "@/pages/vendor/Layout";
+import VendorLayoutNoSidebar from "@/pages/vendor/LayoutNoSidebar";
 import VendorDashboard from "@/pages/vendor/Dashboard";
 import VendorMessages from "@/pages/vendor/Messages";
 import VendorProfile from "@/pages/vendor/Profile";
@@ -15,6 +16,12 @@ export function VendorRoutes() {
         </ProtectedRoute>
       }>
         <Route path="dashboard" element={<VendorDashboard />} />
+      </Route>
+      <Route path="/vendor" element={
+        <ProtectedRoute requireRole="vendor">
+          <VendorLayoutNoSidebar />
+        </ProtectedRoute>
+      }>
         <Route path="profile" element={<VendorProfile />} />
         <Route path="favorites" element={<VendorFavorites />} />
       </Route>

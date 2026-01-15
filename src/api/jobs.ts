@@ -141,6 +141,7 @@ export const jobsApi = {
     if (data.street) formData.append('street', data.street);
     if (data.crossStreet) formData.append('crossStreet', data.crossStreet);
     if (data.showExactAddress !== undefined) formData.append('showExactAddress', data.showExactAddress.toString());
+    if (data.phone) formData.append('phone', data.phone);
     
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {

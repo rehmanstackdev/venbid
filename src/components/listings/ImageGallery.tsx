@@ -32,13 +32,13 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
       <div className="space-y-3">
         {/* Main image */}
         <div 
-          className="relative aspect-[16/10] rounded-lg overflow-hidden bg-muted cursor-pointer group"
+          className="relative rounded-lg overflow-hidden bg-muted cursor-pointer group"
           onClick={() => setLightboxOpen(true)}
         >
           <img
             src={displayImages[currentIndex]}
             alt={`${title} - Image ${currentIndex + 1}`}
-            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
           
           {/* Navigation arrows */}
@@ -47,7 +47,7 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute left-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm shadow-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   goToPrevious();
@@ -58,7 +58,7 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
               <Button
                 variant="secondary"
                 size="icon"
-                className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-card/90 backdrop-blur-sm shadow-lg"
                 onClick={(e) => {
                   e.stopPropagation();
                   goToNext();
@@ -104,12 +104,12 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
 
       {/* Lightbox */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-background/95 backdrop-blur-md border-none">
-          <div className="relative flex items-center justify-center min-h-[80vh]">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none">
+          <div className="relative w-full h-full flex items-center justify-center p-4">
             <img
               src={displayImages[currentIndex]}
               alt={`${title} - Image ${currentIndex + 1}`}
-              className="max-h-[85vh] max-w-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
 
             {hasMultiple && (

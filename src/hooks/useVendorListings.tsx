@@ -44,7 +44,14 @@ export function useVendorListings() {
       
       const mappedListings: VendorListing[] = jobs.map(job => {
         const category = categories.find(c => c.slug === job.category);
-        const coords = getZipCoordinates(job.zip);
+        
+        // Use job coordinates if available, otherwise fallback to ZIP lookup
+        let coords = { lat: 0, lng: 0 };
+        if (job.coordinates?.lat && job.coordinates?.long) {
+          coords = { lat: job.coordinates.lat, lng: job.coordinates.long };
+        } else {
+          coords = getZipCoordinates(job.zip);
+        }
         
         return {
           id: job.id,

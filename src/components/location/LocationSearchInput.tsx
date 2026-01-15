@@ -36,14 +36,14 @@ export function LocationSearchInput({
   const reverseGeocodedRef = useRef(false);
   const isUserTypingRef = useRef(false);
 
-  // Sync with parent value prop only if user is not typing
+
   useEffect(() => {
     if (value !== inputValue && !isUserTypingRef.current) {
       setInputValue(value);
     }
   }, [value]);
 
-  // Reverse geocode coordinates to address on mount
+
   useEffect(() => {
     if (coordinates?.lat && coordinates?.lng && !reverseGeocodedRef.current) {
       reverseGeocodedRef.current = true;
@@ -63,7 +63,7 @@ export function LocationSearchInput({
     }
   }, [coordinates]);
 
-  // Search for locations only when user is typing
+ 
   useEffect(() => {
     if (!isUserTypingRef.current || inputValue.length < 3) {
       setResults([]);

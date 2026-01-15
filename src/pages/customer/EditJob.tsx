@@ -25,6 +25,7 @@ export default function EditJob() {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phone, setPhone] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [details, setDetails] = useState<JobDetails>({
@@ -46,6 +47,7 @@ export default function EditJob() {
     category: number | null;
     details: JobDetails;
     location: LocationDetails;
+    phone: string;
   } | null>(null);
 
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
@@ -80,12 +82,14 @@ export default function EditJob() {
         setSelectedCategory(category?.id || null);
         setDetails(jobDetails);
         setLocation(jobLocation);
+        setPhone(job.phone || "");
         
         // Store original data
         setOriginalData({
           category: category?.id || null,
           details: jobDetails,
           location: jobLocation,
+          phone: job.phone || "",
         });
       } catch (error) {
         toast.error("Failed to load job");
@@ -137,6 +141,10 @@ export default function EditJob() {
         } else if (!isValidIllinoisZip(location.zip)) {
           lErrors.zip = "Please enter a valid Illinois ZIP code";
         }
+        if (!phone.trim()) {
+          toast.error("Please fill the Phone Number field");
+          return false;
+        }
         setLocationErrors(lErrors);
         if (Object.keys(lErrors).length > 0) {
           toast.error("Please fix the errors before continuing");
@@ -162,6 +170,7 @@ export default function EditJob() {
     if (location.city !== originalData.location.city) return true;
     if (location.zip !== originalData.location.zip) return true;
     if (location.showExactAddress !== originalData.location.showExactAddress) return true;
+    if (phone !== originalData.phone) return true;
     
     // Check if images changed (new files added or removed)
     if (details.images.length !== originalData.details.images.length) return true;
@@ -204,6 +213,7 @@ export default function EditJob() {
         crossStreet: location.crossStreet,
         showExactAddress: location.showExactAddress,
         images: imageFiles,
+        phone: phone,
       });
 
       // Build specific update message
@@ -308,6 +318,8 @@ export default function EditJob() {
             location={location}
             onChange={setLocation}
             errors={locationErrors}
+            phone={phone}
+            onPhoneChange={setPhone}
           />
         )}
 

@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Heart } from "lucide-react";
+import { Heart, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -68,74 +68,56 @@ const Favorites = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-          <div className="container flex h-14 items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="font-semibold">Favorites</h1>
-          </div>
-        </header>
-        <main className="container py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-64 rounded-lg" />
-            ))}
-          </div>
-        </main>
+      <div className="container py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-        <div className="container flex h-14 items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="font-semibold">Favorites</h1>
-          <span className="text-sm text-muted-foreground">
-            ({favoriteJobs.length})
-          </span>
+    <div className="container py-6">
+      <div className="mb-6 flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <h1 className="text-2xl font-bold">Favorites</h1>
+      </div>
+      {favoriteJobs.length === 0 ? (
+        <div className="text-center py-16">
+          <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+          <h2 className="text-xl font-semibold mb-2">No favorites yet</h2>
+          <p className="text-muted-foreground mb-4">
+            Browse listings and click the heart icon to save them here
+          </p>
+          <Link to="/">
+            <Button>Browse Listings</Button>
+          </Link>
         </div>
-      </header>
-
-      <main className="container py-6">
-        {favoriteJobs.length === 0 ? (
-          <div className="text-center py-16">
-            <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">No favorites yet</h2>
-            <p className="text-muted-foreground mb-4">
-              Browse listings and click the heart icon to save them here
-            </p>
-            <Link to="/">
-              <Button>Browse Listings</Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
-            {favoriteJobs.map((listing) => (
-              <div key={listing.id} className="relative">
-                <ListingCard listing={listing} />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card hover:scale-110 transition-all text-red-500 z-10"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleRemoveFavorite(listing.id);
-                  }}
-                >
-                  <Heart className="h-4 w-4 fill-red-500" />
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
-      </main>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 items-start">
+          {favoriteJobs.map((listing) => (
+            <div key={listing.id} className="relative">
+              <ListingCard listing={listing} />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 h-8 w-8 rounded-full bg-card/80 backdrop-blur-sm hover:bg-card hover:scale-110 transition-all text-red-500 z-10"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveFavorite(listing.id);
+                }}
+              >
+                <Heart className="h-4 w-4 fill-red-500" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

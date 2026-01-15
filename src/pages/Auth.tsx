@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { useAuth } from '@/hooks/useAuth';
-// import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -99,7 +98,6 @@ export default function Auth() {
     
     setIsLoading(true);
     
-    // Mock - skip verification, go directly to user type selection
     setPendingSignupData({ email, password, fullName });
     setAuthStep('user-type');
     
@@ -110,60 +108,27 @@ export default function Auth() {
     
     setIsLoading(false);
     
-    // Commented out Supabase verification
-    // try {
-    //   const { data, error } = await supabase.functions.invoke('send-verification-code', {
-    //     body: { email },
-    //   });
-    //   if (error) throw error;
-    //   setPendingSignupData({ email, password, fullName });
-    //   setAuthStep('verification');
-    //   toast({ title: 'Code sent!', description: 'Please check your email for the 5-digit verification code.' });
-    // } catch (error: any) {
-    //   toast({ title: 'Failed to send code', description: error.message || 'Could not send verification code. Please try again.', variant: 'destructive' });
-    // }
+
   };
 
   const handleEmailVerification = async (code: string): Promise<boolean> => {
-    // Mock - always succeed
     setAuthStep('user-type');
     return true;
     
-    // Commented out Supabase verification
-    // try {
-    //   const { data, error } = await supabase.functions.invoke('verify-code', {
-    //     body: { email: pendingSignupData?.email, code },
-    //   });
-    //   if (error || !data?.success) {
-    //     toast({ title: 'Invalid code', description: 'The verification code is invalid or expired.', variant: 'destructive' });
-    //     return false;
-    //   }
-    //   setAuthStep('user-type');
-    //   return true;
-    // } catch (error: any) {
-    //   toast({ title: 'Verification failed', description: error.message || 'Could not verify code.', variant: 'destructive' });
-    //   return false;
-    // }
+
   };
 
   const handleResendCode = async () => {
     if (!pendingSignupData?.email) return;
 
     setIsLoading(true);
-    // Mock - just show success
     toast({
       title: 'Code sent',
       description: 'A new verification code has been sent to your email.',
     });
     setIsLoading(false);
     
-    // Commented out Supabase code
-    // try {
-    //   await supabase.functions.invoke('send-verification-code', { body: { email: pendingSignupData.email } });
-    //   toast({ title: 'Code sent', description: 'A new verification code has been sent to your email.' });
-    // } catch (error: any) {
-    //   toast({ title: 'Failed to resend', description: error.message || 'Could not resend code.', variant: 'destructive' });
-    // }
+
   };
 
   const handleUserTypeSelect = async (type: UserType) => {
@@ -172,7 +137,6 @@ export default function Auth() {
     setUserType(type);
     setIsLoading(true);
     
-    // Mock - not implemented
     setIsLoading(false);
     toast({
       title: 'Not implemented',
@@ -193,7 +157,6 @@ export default function Auth() {
 
     setIsLoading(true);
 
-    // Mock - just log and proceed
     console.log('Mock profile setup:', data);
     
     setIsLoading(false);
@@ -207,7 +170,6 @@ export default function Auth() {
   };
 
   const handleForgotPasswordSendCode = async (email: string): Promise<boolean> => {
-    // Mock - always succeed
     toast({
       title: 'Email sent',
       description: 'Check your email for the password reset link.',
@@ -223,21 +185,13 @@ export default function Auth() {
   };
 
   const handleForgotPasswordReset = async (email: string, password: string): Promise<boolean> => {
-    // Mock - always succeed
     console.log('Mock password reset for:', email);
     return true;
     
-    // Commented out Supabase password update
-    // const { error } = await supabase.auth.updateUser({ password });
-    // if (error) {
-    //   toast({ title: 'Error', description: error.message, variant: 'destructive' });
-    //   return false;
-    // }
-    // return true;
+
   };
 
   const handleClose = () => {
-    // Check if there's history to go back to, otherwise go home
     if (window.history.length > 1) {
       navigate(-1);
     } else {
@@ -245,7 +199,6 @@ export default function Auth() {
     }
   };
 
-  // Show forgot password flow
   if (authStep === 'forgot-password') {
     return (
       <ForgotPassword
@@ -257,7 +210,6 @@ export default function Auth() {
     );
   }
 
-  // Show email verification step
   if (authStep === 'verification') {
     return (
       <EmailVerification
@@ -270,7 +222,6 @@ export default function Auth() {
     );
   }
 
-  // Show user type selection step
   if (authStep === 'user-type') {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -331,7 +282,6 @@ export default function Auth() {
     );
   }
 
-  // Show profile setup step
   if (authStep === 'profile') {
     return (
       <ProfileSetup

@@ -5,6 +5,7 @@ import { SearchBar } from "./SearchBar";
 import { ListingGrid } from "./ListingGrid";
 import { ListingsMap } from "@/components/map/ListingsMap";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 interface VendorListingsSectionProps {
   selectedCategory: number | null;
@@ -12,12 +13,23 @@ interface VendorListingsSectionProps {
 
 export function VendorListingsSection({ selectedCategory }: VendorListingsSectionProps) {
   const { listings: allListings, loading } = useVendorListings();
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState<"gallery" | "map">("gallery");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [mapFilteredListings, setMapFilteredListings] = useState<VendorListing[] | null>(null);
+
+  // Get user coordinates from localStorage
+  const userCoordinates = useMemo(() => {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      return parsed.coordinates;
+    }
+    return undefined;
+  }, [user]);
 
   useEffect(() => {
     setMapFilteredListings(null);
@@ -151,6 +163,7 @@ export function VendorListingsSection({ selectedCategory }: VendorListingsSectio
               listings={mapFilteredListings || baseListings}
               allListings={baseListings}
               onBoundsChange={handleBoundsChange}
+              userCoordinates={userCoordinates}
               className="w-full h-full"
             />
           </div>
