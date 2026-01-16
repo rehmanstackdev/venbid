@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Trash2, Eye, X } from "lucide-react";
+import { Search, Trash2, Eye, X, MoreVertical, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +13,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,6 +27,7 @@ import { jobsApi, Job } from "@/api/jobs";
 import { adminApi } from "@/api/admin";
 import { categories } from "@/data/categories";
 import { LocationMap } from "@/components/map/LocationMap";
+import { JobConversationsDialog } from "@/components/admin/JobConversationsDialog";
 
 export default function AdminListings() {
   const { toast } = useToast();
@@ -34,6 +41,8 @@ export default function AdminListings() {
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [conversationsDialogOpen, setConversationsDialogOpen] = useState(false);
+  const [selectedJobForConversations, setSelectedJobForConversations] = useState<{ id: string; title: string } | null>(null);
 
   useEffect(() => {
     fetchListings();
@@ -106,14 +115,30 @@ export default function AdminListings() {
             <CardTitle className="text-base truncate mb-2">{listing.title}</CardTitle>
             <p className="text-sm text-muted-foreground line-clamp-2">{listing.description}</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={() => handleAction(listing, "view")}>
-              <Eye className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => handleAction(listing, "delete")}>
-              <Trash2 className="h-4 w-4 text-destructive" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleAction(listing, "view")}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                setSelectedJobForConversations({ id: listing.id, title: listing.title });
+                setConversationsDialogOpen(true);
+              }}>
+                <MessageSquare className="h-4 w-4 mr-2" />
+                View Conversations
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleAction(listing, "delete")} className="text-destructive">
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
@@ -323,6 +348,13 @@ export default function AdminListings() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <JobConversationsDialog
+        jobId={selectedJobForConversations?.id || null}
+        jobTitle={selectedJobForConversations?.title || ""}
+        open={conversationsDialogOpen}
+        onOpenChange={setConversationsDialogOpen}
+      />
     </div>
   );
 }
