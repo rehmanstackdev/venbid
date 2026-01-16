@@ -21,7 +21,7 @@ export function DetailsStep({ details, onChange, errors }: DetailsStepProps) {
     onChange({ ...details, [key]: value });
   };
 
-  // Only allow numbers and hyphens for budget
+
   const handleBudgetChange = (value: string) => {
     const sanitized = value.replace(/[^0-9-]/g, "");
     handleChange("budget", sanitized);
@@ -36,7 +36,7 @@ export function DetailsStep({ details, onChange, errors }: DetailsStepProps) {
         </p>
       </div>
 
-      {/* Title */}
+
       <div className="space-y-2">
         <Label htmlFor="title">
           Job Title <span className="text-destructive">*</span>
@@ -63,7 +63,7 @@ export function DetailsStep({ details, onChange, errors }: DetailsStepProps) {
         </div>
       </div>
 
-      {/* Description */}
+      
       <div className="space-y-2">
         <Label htmlFor="description">
           Description <span className="text-destructive">*</span>
@@ -81,7 +81,7 @@ export function DetailsStep({ details, onChange, errors }: DetailsStepProps) {
         )}
       </div>
 
-      {/* Budget */}
+     
       <div className="space-y-2">
         <Label htmlFor="budget">
           Budget <span className="text-destructive">*</span>
@@ -107,7 +107,7 @@ export function DetailsStep({ details, onChange, errors }: DetailsStepProps) {
         )}
       </div>
 
-      {/* Images */}
+  
       <div className="space-y-2">
         <Label>Photos (optional)</Label>
         <ImageUpload

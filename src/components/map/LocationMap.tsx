@@ -10,7 +10,7 @@ interface LocationMapProps {
   className?: string;
 }
 
-// Custom marker icon
+
 const customIcon = L.divIcon({
   html: `<div class="marker-icon"></div>`,
   className: "custom-marker",
@@ -18,7 +18,7 @@ const customIcon = L.divIcon({
   iconAnchor: L.point(16, 32),
 });
 
-// Component to handle map fly-to animation when coordinates change
+
 function MapUpdater({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   
@@ -33,15 +33,15 @@ function MapUpdater({ lat, lng }: { lat: number; lng: number }) {
 }
 
 export function LocationMap({ lat, lng, showExactAddress = false, className }: LocationMapProps) {
-  // Return null if coordinates are invalid
+
   if (!lat || !lng || isNaN(lat) || isNaN(lng)) {
     return null;
   }
   
-  // Convert 5 miles to meters (5 * 1609.34)
+
   const fiveMilesInMeters = 8046.72;
   
-  // Use key to force re-render when coordinates change significantly
+
   const mapKey = `${lat.toFixed(2)}-${lng.toFixed(2)}`;
   
   return (

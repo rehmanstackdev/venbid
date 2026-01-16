@@ -14,6 +14,7 @@ import { categories } from "@/data/categories";
 import { useAuth } from "@/hooks/useAuth";
 import { saveDraft, loadDraft, clearDraft } from "@/lib/jobDraft";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const STEPS = [
   { id: 1, title: "Category", description: "Select service type" },
@@ -26,6 +27,7 @@ export default function PostJob() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
+  const { createNotification } = useNotifications();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phone, setPhone] = useState("");
@@ -209,6 +211,15 @@ export default function PostJob() {
       await jobsApi.createJob(jobData);
 
       clearDraft();
+      
+      // Create notification
+      createNotification(
+        'Job posted successfully',
+        `Your job "${details.title}" is now live`,
+        'success',
+        '/customer/my-posts'
+      );
+      
       toast.success("Your job has been posted!", {
         description: "Service providers can now see and respond to your listing."
       });

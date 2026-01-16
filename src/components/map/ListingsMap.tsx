@@ -16,20 +16,20 @@ interface ListingsMapProps {
   userCoordinates?: { lat: number; long: number };
 }
 
-// Illinois center coordinates
+
 const ILLINOIS_CENTER: [number, number] = [41.8781, -87.7298];
 const DEFAULT_ZOOM = 10;
 
-// Calculate radius that covers ~40% of the visible map viewport
+
 function calculateViewportRadius(map: LeafletMap): number {
   const bounds = map.getBounds();
   const center = map.getCenter();
   
-  // Get the distance from center to the edge of the viewport (in meters)
+
   const northEast = bounds.getNorthEast();
   const southWest = bounds.getSouthWest();
   
-  // Calculate distances in meters
+
   const latDistance = map.distance(
     [bounds.getSouth(), center.lng],
     [bounds.getNorth(), center.lng]
@@ -39,7 +39,7 @@ function calculateViewportRadius(map: LeafletMap): number {
     [center.lat, bounds.getEast()]
   );
   
-  // Use the smaller dimension and take 40% of it for the radius
+
   const smallerDimension = Math.min(latDistance, lngDistance);
   return smallerDimension * 0.4;
 }
@@ -62,7 +62,7 @@ function MapEventHandler({
       const map = e.target;
       const bounds = map.getBounds();
       const center = map.getCenter();
-      // Calculate radius based on viewport size (scales with zoom)
+      
       const radius = calculateViewportRadius(map);
       
       onMoveEnd(
@@ -98,12 +98,12 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
   } | null>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   
-  // Use user coordinates if available, otherwise default to Illinois center
+  
   const mapCenter: [number, number] = userCoordinates?.lat && userCoordinates?.long 
     ? [userCoordinates.lat, userCoordinates.long] 
     : ILLINOIS_CENTER;
   
-  // Use allListings for filtering (contains all category listings), but display only `listings`
+
   const listingsToFilter = allListings || listings;
 
   const handleMoveEnd = useCallback(
@@ -155,7 +155,7 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
         <MarkerClusterGroup listings={listings} />
         <MapEventHandler onMoveEnd={handleMoveEnd} onMapReady={handleMapReady} />
         
-        {/* Search area circle overlay - like Craigslist */}
+
         {searchCircle && (
           <Circle
             center={searchCircle.center}
@@ -171,7 +171,7 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
         )}
       </MapContainer>
 
-      {/* Search this area button */}
+
       {showSearchButton && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] animate-fade-in">
           <Button
@@ -185,7 +185,7 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
         </div>
       )}
 
-      {/* Map controls */}
+
       <div className="absolute right-4 top-4 z-[1000] flex flex-col gap-2">
         <Button
           variant="secondary"
@@ -213,7 +213,7 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
         </Button>
       </div>
 
-      {/* Listing count overlay */}
+
       <div className="absolute bottom-4 left-4 z-[1000]">
         <div className="bg-card/95 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-md text-sm font-medium">
           {listings.length} {listings.length === 1 ? "listing" : "listings"}

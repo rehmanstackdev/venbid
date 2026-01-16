@@ -40,8 +40,7 @@ export function ChatDialog({ open, onOpenChange, jobId, jobTitle, customerId, co
     if (open && currentConvId) {
       loadMessages();
       inputRef.current?.focus();
-      
-      // Initialize socket and join conversation
+     
       const token = localStorage.getItem('access_token');
       if (token) {
         const socket = initChatSocket(token);

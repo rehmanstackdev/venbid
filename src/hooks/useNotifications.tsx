@@ -154,6 +154,25 @@ export function useNotifications() {
     // }
   };
 
+  const createNotification = (title: string, message: string, type: string = 'info', link: string | null = null) => {
+    if (!user) return;
+
+    const newNotification: Notification = {
+      id: `notif-${Date.now()}`,
+      user_id: user.id,
+      title,
+      message,
+      type,
+      read: false,
+      link,
+      created_at: new Date().toISOString(),
+    };
+
+    mockNotificationsStore.unshift(newNotification);
+    setNotifications(prev => [newNotification, ...prev]);
+    setUnreadCount(prev => prev + 1);
+  };
+
   useEffect(() => {
     fetchNotifications();
 
@@ -191,6 +210,7 @@ export function useNotifications() {
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    createNotification,
     refetch: fetchNotifications,
   };
 }

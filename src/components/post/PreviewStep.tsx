@@ -140,7 +140,6 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
 
           <Separator />
 
-          {/* Description */}
           <div>
             <h4 className="font-medium mb-2">Description</h4>
             <p className="text-muted-foreground whitespace-pre-wrap break-words break-all max-w-full overflow-hidden">
@@ -150,7 +149,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
 
           <Separator />
 
-          {/* Location */}
+        
           <div>
             <h4 className="font-medium mb-2">Location</h4>
             {location.showExactAddress && location.street ? (
@@ -177,7 +176,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
 
           <Separator />
 
-          {/* Image Gallery below map */}
+
           {details.images.length > 0 && (
             <div>
               <h4 className="font-medium mb-3">All Images ({details.images.length})</h4>

@@ -35,7 +35,7 @@ export function MarkerClusterGroup({ listings, onListingClick }: MarkerClusterGr
       },
     });
 
-    // Create custom icon for individual markers
+
     const createCustomIcon = () => {
       return L.divIcon({
         html: `<div class="marker-icon"></div>`,
@@ -50,7 +50,7 @@ export function MarkerClusterGroup({ listings, onListingClick }: MarkerClusterGr
         icon: createCustomIcon(),
       });
 
-      // Create popup content
+ 
       const popupContent = `
         <div class="listing-popup">
           <img src="${listing.images[0] || '/placeholder.svg'}" alt="${listing.title}" class="popup-image" />

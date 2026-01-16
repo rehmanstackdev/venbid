@@ -36,7 +36,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
     }
   };
 
-  // Validate ZIP and get coordinates
+  
   useEffect(() => {
     const zipPattern = /^\d{5}(-\d{4})?$/;
     
@@ -44,12 +44,12 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
       setZipValid(true);
       setGeocoding(true);
       
-      // Build search query with city if available for better accuracy
+      
       const searchQuery = location.city 
         ? `${location.zip}, ${location.city}`
         : location.zip;
       
-      // Geocode with full context
+
       fetch(
         `https://nominatim.openstreetmap.org/search?` +
         `format=json&q=${encodeURIComponent(searchQuery)}&` +
@@ -58,7 +58,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
         .then(res => res.json())
         .then(data => {
           if (data && data.length > 0) {
-            // Find best match with highest importance
+         
             const bestResult = data.reduce((best: any, current: any) => {
               if (!best) return current;
               const currentImportance = parseFloat(current.importance || 0);
@@ -110,7 +110,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {/* Phone */}
+   
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="phone">
             Phone Number <span className="text-destructive">*</span>
@@ -127,7 +127,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
           </p>
         </div>
 
-        {/* Street */}
+ 
         <div className="space-y-2">
           <Label htmlFor="street">Street Address (optional)</Label>
           <Input
@@ -138,7 +138,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
           />
         </div>
 
-        {/* Cross Street */}
+    
         <div className="space-y-2">
           <Label htmlFor="crossStreet">Cross Street (optional)</Label>
           <Input
@@ -149,7 +149,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
           />
         </div>
 
-        {/* City */}
+      
         <div className="space-y-2">
           <Label htmlFor="city">
             City <span className="text-muted-foreground text-xs">(recommended)</span>
@@ -165,7 +165,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
           </p>
         </div>
 
-        {/* ZIP */}
+  
         <div className="space-y-2">
           <Label htmlFor="zip">
             ZIP Code <span className="text-destructive">*</span>
@@ -207,7 +207,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
         </div>
       </div>
 
-      {/* Show exact address toggle */}
+
       <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50 border border-border">
         <div className="flex items-start gap-3">
           <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -226,7 +226,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
         />
       </div>
 
-      {/* Map preview */}
+
       {coordinates && (
         <div className="space-y-2">
           <Label>Location Preview</Label>

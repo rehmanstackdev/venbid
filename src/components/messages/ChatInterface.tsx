@@ -51,7 +51,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
   const listingTitle = conversation.listing?.title || "Job listing";
   const categoryName = conversation.listing?.category_name || "";
 
-  // Scroll to bottom only on new messages
+ 
   useEffect(() => {
     if (scrollRef.current && messages.length > prevMessageCountRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -59,7 +59,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
     prevMessageCountRef.current = messages.length;
   }, [messages]);
 
-  // Focus input on mount
+  
   useEffect(() => {
     inputRef.current?.focus();
   }, [conversation.id]);
@@ -91,7 +91,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
     }
   };
 
-  // Group messages by date
+  
   const groupedMessages = messages.reduce((groups, message) => {
     const date = new Date(message.created_at).toDateString();
     if (!groups[date]) {
@@ -118,7 +118,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
 
   return (
     <div className="flex flex-col h-[calc(100vh-3.5rem)]">
-      {/* Header */}
+   
       <div className="flex items-center gap-3 p-4 border-b border-border bg-card shrink-0">
         {onBack && (
           <Button variant="ghost" size="icon" onClick={onBack} className="lg:hidden">
@@ -152,7 +152,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Messages */}
+   
       <div className="flex-1 overflow-y-auto p-4 pb-2 overscroll-contain min-h-0" ref={scrollRef}>
         <div className="flex flex-col space-y-4">
           {messages.length === 0 ? (
@@ -163,14 +163,14 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
             <div className="space-y-4">
               {Object.entries(groupedMessages).map(([date, dayMessages]) => (
               <div key={date}>
-                {/* Date header */}
+            
                 <div className="flex items-center justify-center mb-4">
                   <span className="text-xs text-muted-foreground bg-muted px-3 py-1 rounded-full">
                     {formatDateHeader(date)}
                   </span>
                 </div>
 
-                {/* Messages for this day */}
+               
                 <div className="space-y-3">
                   {dayMessages.map((message) => {
                     const isOwn = message.sender_id === user?.id;
@@ -214,7 +214,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Input */}
+ 
       <div className="p-4 border-t border-border bg-card shrink-0">
         <div className="flex gap-2">
           <Input
@@ -235,7 +235,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         </div>
       </div>
 
-      {/* Job Details Dialog */}
+  
       <Dialog open={showJobDialog} onOpenChange={setShowJobDialog}>
         <DialogContent className="max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -284,7 +284,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Image Fullscreen Dialog */}
+   
       <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
         <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
           <div className="relative w-full h-full flex items-center justify-center">

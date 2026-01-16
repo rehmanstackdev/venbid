@@ -52,7 +52,7 @@ export function ConversationList({ conversations, selectedId, onSelect }: Conver
               isSelected && "bg-accent"
             )}
           >
-            {/* Listing image */}
+     
             <div className="relative flex-shrink-0">
               <img
                 src={conversation.listingImage}
@@ -66,7 +66,7 @@ export function ConversationList({ conversations, selectedId, onSelect }: Conver
               )}
             </div>
 
-            {/* Content */}
+         
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2 mb-0.5">
                 <span className={cn(

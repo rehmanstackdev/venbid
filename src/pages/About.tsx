@@ -13,7 +13,7 @@ const About = () => {
       />
       
       <main className="container max-w-4xl py-16 px-4">
-        {/* Hero Section */}
+      
         <div className="text-center mb-16">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">About Venbid</h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
@@ -21,7 +21,7 @@ const About = () => {
           </p>
         </div>
         
-        {/* Section 1 - What is Venbid */}
+      
         <section className="mb-14 p-6 bg-muted/30 rounded-lg">
           <h2 className="text-xl font-bold text-foreground mb-5">What is Venbid?</h2>
           <ul className="space-y-3 text-muted-foreground">
@@ -44,7 +44,7 @@ const About = () => {
           </ul>
         </section>
 
-        {/* Two Column Layout for Customer/Vendor */}
+        
         <div className="grid md:grid-cols-2 gap-8 mb-14">
           {/* Section 2 - For Customers */}
           <section className="p-6 border border-border rounded-lg">

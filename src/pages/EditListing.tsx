@@ -11,7 +11,6 @@ import { isValidIllinoisZip, getZipCoordinates } from "@/data/illinoisZips";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-// import { supabase } from "@/integrations/supabase/client";
 import { categories } from "@/data/categories";
 
 const STEPS = [
@@ -29,7 +28,6 @@ const EditListing = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form state
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [details, setDetails] = useState<JobDetails>({
     title: "",
@@ -45,7 +43,6 @@ const EditListing = () => {
     showExactAddress: false,
   });
 
-  // Validation errors
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
   const [locationErrors, setLocationErrors] = useState<Partial<Record<keyof LocationDetails, string>>>({});
 
@@ -65,38 +62,7 @@ const EditListing = () => {
     navigate("/my-posts");
     setIsLoading(false);
     
-    // Commented out Supabase fetch
-    // const { data, error } = await supabase
-    //   .from("listings")
-    //   .select("*")
-    //   .eq("id", id)
-    //   .eq("user_id", user.id)
-    //   .single();
-    // if (error || !data) {
-    //   toast.error("Listing not found or you don't have permission to edit it");
-    //   navigate("/my-posts");
-    //   return;
-    // }
-    // setSelectedCategory(data.category_id);
-    // setDetails({
-    //   title: data.title,
-    //   description: data.description,
-    //   budget: data.budget,
-    //   images: (data.images || []).map((url: string, index: number) => ({
-    //     id: `existing-${index}`,
-    //     file: null as unknown as File,
-    //     preview: url,
-    //     isFeatured: index === 0,
-    //   })),
-    // });
-    // setLocation({
-    //   street: data.street || "",
-    //   crossStreet: data.cross_street || "",
-    //   city: data.city || "",
-    //   zip: data.zip,
-    //   showExactAddress: data.show_exact_address || false,
-    // });
-    // setIsLoading(false);
+    
   };
 
   const progress = (currentStep / STEPS.length) * 100;
@@ -168,42 +134,11 @@ const EditListing = () => {
 
     setIsSubmitting(true);
 
-    // Mock update - just show success
     toast.success("Your listing has been updated!");
     navigate(`/listing/${id}`);
     setIsSubmitting(false);
     
-    // Commented out Supabase update
-    // const coords = getZipCoordinates(location.zip);
-    // const category = categories.find((c) => c.id === selectedCategory);
-    // const imageUrls = details.images?.map((img) => img.preview) || [];
-    // const { error } = await supabase
-    //   .from("listings")
-    //   .update({
-    //     title: details.title,
-    //     description: details.description,
-    //     category_id: selectedCategory,
-    //     category_name: category?.name || "Unknown",
-    //     budget: details.budget,
-    //     city: location.city || null,
-    //     zip: location.zip,
-    //     street: location.street || null,
-    //     cross_street: location.crossStreet || null,
-    //     show_exact_address: location.showExactAddress,
-    //     lat: coords.lat,
-    //     lng: coords.lng,
-    //     images: imageUrls,
-    //     updated_at: new Date().toISOString(),
-    //   })
-    //   .eq("id", id)
-    //   .eq("user_id", user.id);
-    // setIsSubmitting(false);
-    // if (error) {
-    //   toast.error("Failed to update listing. Please try again.");
-    //   return;
-    // }
-    // toast.success("Your listing has been updated!");
-    // navigate(`/listing/${id}`);
+  
   };
 
   if (!user) {
