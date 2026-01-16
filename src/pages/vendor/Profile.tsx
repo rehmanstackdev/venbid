@@ -126,6 +126,20 @@ export default function VendorProfile() {
       console.log('Profile - dataToSend.coordinates:', dataToSend.coordinates);
       
       await vendorApi.updateProfile(dataToSend);
+      
+      // Fetch updated profile to get latest coordinates
+      const updatedProfile = await vendorApi.getProfile();
+      const updatedData = updatedProfile.data || updatedProfile;
+      const updatedUserData = updatedData.user || updatedData;
+      
+      // Update localStorage with new coordinates
+      const currentUser = localStorage.getItem('user_data');
+      if (currentUser) {
+        const userData = JSON.parse(currentUser);
+        userData.coordinates = updatedUserData.coordinates;
+        localStorage.setItem('user_data', JSON.stringify(userData));
+      }
+      
       toast({
         title: 'Profile updated',
         description: 'Your profile has been saved successfully.',
