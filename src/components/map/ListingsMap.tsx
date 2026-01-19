@@ -7,6 +7,7 @@ import { Search, ZoomIn, ZoomOut, Locate } from "lucide-react";
 import { Listing, getListingsInBounds } from "@/hooks/useListings";
 import { MarkerClusterGroup } from "./MarkerClusterGroup";
 import { cn } from "@/lib/utils";
+import { mapTilerConfig } from '@/config/maptiler';
 
 interface ListingsMapProps {
   listings: Listing[];
@@ -149,8 +150,8 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
         zoomControl={false}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={mapTilerConfig.attribution}
+          url={mapTilerConfig.tileUrl}
         />
         <MarkerClusterGroup listings={listings} />
         <MapEventHandler onMoveEnd={handleMoveEnd} onMapReady={handleMapReady} />

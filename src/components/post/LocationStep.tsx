@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { LocationMap } from "@/components/map/LocationMap";
 import { MapPin, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { geocodeZipCode } from "@/lib/geocoding";
+import { mapTilerConfig } from '@/config/maptiler';
 
 export interface LocationDetails {
   street: string;
@@ -36,7 +36,6 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
     }
   };
 
-  
   useEffect(() => {
     const zipPattern = /^\d{5}(-\d{4})?$/;
     
@@ -44,39 +43,20 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
       setZipValid(true);
       setGeocoding(true);
       
-      
       const searchQuery = location.city 
         ? `${location.zip}, ${location.city}`
         : location.zip;
       
-
       fetch(
-        `https://nominatim.openstreetmap.org/search?` +
-        `format=json&q=${encodeURIComponent(searchQuery)}&` +
-        `addressdetails=1&limit=5`
+        `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(searchQuery)}.json?key=${mapTilerConfig.apiKey}&limit=5`
       )
         .then(res => res.json())
         .then(data => {
-          if (data && data.length > 0) {
-         
-            const bestResult = data.reduce((best: any, current: any) => {
-              if (!best) return current;
-              const currentImportance = parseFloat(current.importance || 0);
-              const bestImportance = parseFloat(best.importance || 0);
-              return currentImportance > bestImportance ? current : best;
-            }, null);
-            
-            if (bestResult) {
-              const coords = {
-                lat: parseFloat(bestResult.lat),
-                lng: parseFloat(bestResult.lon)
-              };
-              setCoordinates(coords);
-              onCoordinatesChange?.(coords);
-            } else {
-              setCoordinates(null);
-              onCoordinatesChange?.(null);
-            }
+          if (data?.features && data.features.length > 0) {
+            const [lng, lat] = data.features[0].center;
+            const coords = { lat, lng };
+            setCoordinates(coords);
+            onCoordinatesChange?.(coords);
           } else {
             setCoordinates(null);
             onCoordinatesChange?.(null);

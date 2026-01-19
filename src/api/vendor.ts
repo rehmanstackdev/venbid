@@ -30,6 +30,7 @@ export interface UpdateVendorProfileRequest {
     long: number;
   };
   verificationDocument?: File[];
+  removeDocuments?: string[];
 }
 
 export interface VerificationDocumentUpload {
@@ -148,7 +149,6 @@ export const vendorApi = {
       if (data.address) formData.append('address', data.address);
       if (data.companyName) formData.append('companyName', data.companyName);
       if (data.coordinates) {
-        console.log('Appending coordinates to FormData:', data.coordinates);
         formData.append('coordinates', JSON.stringify(data.coordinates));
       }
       data.verificationDocument.forEach(file => {
@@ -170,7 +170,6 @@ export const vendorApi = {
       if (data.address) payload.address = data.address;
       if (data.companyName) payload.companyName = data.companyName;
       if (data.coordinates) {
-        console.log('Adding coordinates to payload:', data.coordinates);
         payload.coordinates = {
           lat: data.coordinates.lat,
           long: data.coordinates.long,
@@ -179,5 +178,10 @@ export const vendorApi = {
       const response = await apiClient.patch('/vendors/profile', payload);
       return response.data.data || response.data;
     }
+  },
+
+  // Delete verification document
+  deleteDocument: async (documentUrl: string): Promise<void> => {
+    await apiClient.delete('/vendors/document', { data: { documentUrl } });
   },
 };

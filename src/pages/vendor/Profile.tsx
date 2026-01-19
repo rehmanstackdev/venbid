@@ -95,6 +95,23 @@ export default function VendorProfile() {
     setDocuments(documents.filter((_, i) => i !== index));
   };
 
+  const handleDeleteDocument = async (doc: string, index: number) => {
+    try {
+      await vendorApi.deleteDocument(doc);
+      setExistingDocuments(existingDocuments.filter((_, i) => i !== index));
+      toast({
+        title: 'Document deleted',
+        description: 'Document has been removed successfully.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.response?.data?.message || 'Failed to delete document',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -362,7 +379,7 @@ export default function VendorProfile() {
                         variant="destructive"
                         size="icon"
                         className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => setExistingDocuments(existingDocuments.filter((_, i) => i !== index))}
+                        onClick={() => handleDeleteDocument(doc, index)}
                       >
                         <X className="h-4 w-4" />
                       </Button>

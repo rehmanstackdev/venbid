@@ -2,6 +2,7 @@ import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { useEffect } from "react";
+import { mapTilerConfig } from '@/config/maptiler';
 
 interface LocationMapProps {
   lat: number;
@@ -58,8 +59,8 @@ export function LocationMap({ lat, lng, showExactAddress = false, className }: L
         doubleClickZoom={true}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution={mapTilerConfig.attribution}
+          url={mapTilerConfig.tileUrl}
         />
         <MapUpdater lat={lat} lng={lng} />
         {showExactAddress ? (

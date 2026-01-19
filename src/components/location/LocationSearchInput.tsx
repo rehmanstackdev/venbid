@@ -3,12 +3,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { mapTilerConfig } from '@/config/maptiler';
 
 interface LocationResult {
-  place_id: string;
-  display_name: string;
-  lat: string;
-  lon: string;
+  id: string;
+  place_name: string;
+  center: [number, number];
 }
 
 interface LocationSearchInputProps {
@@ -47,16 +47,13 @@ export function LocationSearchInput({
   useEffect(() => {
     if (coordinates?.lat && coordinates?.lng && !reverseGeocodedRef.current) {
       reverseGeocodedRef.current = true;
-      console.log('Reverse geocoding coordinates:', coordinates);
       fetch(
-        `https://nominatim.openstreetmap.org/reverse?` +
-        `format=json&lat=${coordinates.lat}&lon=${coordinates.lng}`
+        `${mapTilerConfig.geocodingUrl}/${coordinates.lng},${coordinates.lat}.json?key=${mapTilerConfig.apiKey}`
       )
         .then(res => res.json())
         .then(data => {
-          console.log('Reverse geocoding result:', data);
-          if (data.display_name) {
-            setInputValue(data.display_name);
+          if (data?.features && data.features.length > 0) {
+            setInputValue(data.features[0].place_name);
           }
         })
         .catch(err => console.error('Reverse geocoding error:', err));
@@ -75,14 +72,7 @@ export function LocationSearchInput({
       setLoading(true);
       try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?` +
-          `format=json&q=${encodeURIComponent(inputValue)}&` +
-          `limit=7&addressdetails=1`,
-          {
-            headers: {
-              'Accept': 'application/json',
-            }
-          }
+          `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(inputValue)}.json?key=${mapTilerConfig.apiKey}&limit=7`
         );
         
         if (!response.ok) {
@@ -90,7 +80,7 @@ export function LocationSearchInput({
         }
         
         const data = await response.json();
-        setResults(data);
+        setResults(data.features || []);
         setShowResults(true);
       } catch (error) {
         console.error('Geocoding error:', error);
@@ -105,22 +95,15 @@ export function LocationSearchInput({
   }, [inputValue]);
 
   const handleSelect = (result: LocationResult) => {
-    const address = result.display_name;
-    const lat = parseFloat(result.lat);
-    const lng = parseFloat(result.lon);
-    
-    console.log('LocationSearchInput - handleSelect called');
-    console.log('LocationSearchInput - Result:', result);
-    console.log('LocationSearchInput - Parsed coordinates:', { lat, lng });
+    const address = result.place_name;
+    const [lng, lat] = result.center;
     
     isUserTypingRef.current = false;
     setInputValue(address);
     setResults([]);
     setShowResults(false);
     
-    console.log('LocationSearchInput - About to call onChange');
     onChange(address, { lat, lng });
-    console.log('LocationSearchInput - onChange called');
     
     inputRef.current?.blur();
   };
@@ -168,20 +151,16 @@ export function LocationSearchInput({
                   <CommandGroup>
                     {results.map((result) => (
                       <CommandItem
-                        key={result.place_id}
-                        onSelect={() => {
-                          console.log('CommandItem onSelect triggered');
-                          handleSelect(result);
-                        }}
+                        key={result.id}
+                        onSelect={() => handleSelect(result)}
                         onMouseDown={(e) => {
                           e.preventDefault();
-                          console.log('CommandItem onMouseDown triggered');
                           handleSelect(result);
                         }}
                         className="cursor-pointer py-3"
                       >
                         <MapPin className="h-4 w-4 mr-2 flex-shrink-0 text-muted-foreground" />
-                        <span className="line-clamp-2 text-sm">{result.display_name}</span>
+                        <span className="line-clamp-2 text-sm">{result.place_name}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
