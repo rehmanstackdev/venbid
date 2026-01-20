@@ -64,7 +64,7 @@ export function ConversationListItem({
             {conversation.lastMessage.sender_id === currentUserId && (
               <span className="text-muted-foreground">You: </span>
             )}
-            {conversation.lastMessage.content}
+            {conversation.lastMessage.content.split(' ').slice(0, 3).join(' ')}{conversation.lastMessage.content.split(' ').length > 3 ? '...' : ''}
           </p>
         )}
       </div>
