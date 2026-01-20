@@ -32,13 +32,13 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
       <div className="space-y-3">
         {/* Main image */}
         <div 
-          className="relative rounded-lg overflow-hidden bg-muted cursor-pointer group"
+          className="relative rounded-lg overflow-hidden bg-muted cursor-pointer group h-96"
           onClick={() => setLightboxOpen(true)}
         >
           <img
             src={displayImages[currentIndex]}
             alt={`${title} - Image ${currentIndex + 1}`}
-            className="w-full h-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
           />
           
           {/* Navigation arrows */}
@@ -104,34 +104,13 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
 
       {/* Lightbox */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none">
+        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none [&>button]:text-white [&>button]:h-10 [&>button]:w-10 [&>button>svg]:h-6 [&>button>svg]:w-6 [&>button]:bg-transparent [&>button]:border-none [&>button]:hover:bg-white/10 [&>button]:flex [&>button]:items-center [&>button]:justify-center">
           <div className="relative w-full h-full flex items-center justify-center p-4">
             <img
               src={displayImages[currentIndex]}
               alt={`${title} - Image ${currentIndex + 1}`}
-              className="max-h-full max-w-full object-contain"
+              className="max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] object-contain"
             />
-
-            {hasMultiple && (
-              <>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full"
-                  onClick={goToPrevious}
-                >
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full"
-                  onClick={goToNext}
-                >
-                  <ChevronRight className="h-6 w-6" />
-                </Button>
-              </>
-            )}
           </div>
         </DialogContent>
       </Dialog>

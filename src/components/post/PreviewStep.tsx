@@ -45,6 +45,8 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
       ...img,
       isFeatured: img.id === id,
     }));
+    const newFeaturedIndex = updated.findIndex((img) => img.id === id);
+    setCurrentImageIndex(newFeaturedIndex);
     onUpdateImages?.(updated);
   };
 
@@ -61,11 +63,11 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
       <div className="">
         {/* Main Image with Navigation */}
         {details.images.length > 0 && (
-          <div className="relative rounded-lg overflow-hidden bg-muted group mb-4">
+          <div className="relative rounded-lg overflow-hidden bg-muted group mb-4 h-96">
             <img
               src={details.images[currentImageIndex].preview}
               alt={`Image ${currentImageIndex + 1}`}
-              className="w-full h-auto object-contain"
+              className="w-full h-full object-contain"
             />
             
             {/* Featured badge on main image */}

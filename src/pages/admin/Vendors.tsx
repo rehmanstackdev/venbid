@@ -132,11 +132,22 @@ export default function AdminVendors() {
           <p className="text-sm text-muted-foreground mb-2">Verification Documents</p>
           {vendor.verificationDocuments && vendor.verificationDocuments.length > 0 ? (
             <div className="relative group">
-              <img
-                src={vendor.verificationDocuments[0]}
-                alt="Verification document"
-                className="w-full h-48 object-cover rounded-lg border"
-              />
+              {vendor.verificationDocuments[0].toLowerCase().endsWith('.pdf') ? (
+                <div className="w-full h-48 flex items-center justify-center bg-muted rounded-lg border">
+                  <div className="text-center">
+                    <svg className="h-16 w-16 mx-auto text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                    <p className="text-sm mt-2">PDF Document</p>
+                  </div>
+                </div>
+              ) : (
+                <img
+                  src={vendor.verificationDocuments[0]}
+                  alt="Verification document"
+                  className="w-full h-48 object-cover rounded-lg border"
+                />
+              )}
               <Button
                 variant="secondary"
                 size="sm"
@@ -240,11 +251,19 @@ export default function AdminVendors() {
           <div className="w-full h-full overflow-auto p-4">
             <div className="min-h-full flex items-center justify-center">
               {selectedDoc?.verificationDocuments && selectedDoc.verificationDocuments.length > 0 && (
-                <img
-                  src={selectedDoc.verificationDocuments[0]}
-                  alt="Document"
-                  className="max-w-full h-auto"
-                />
+                selectedDoc.verificationDocuments[0].toLowerCase().endsWith('.pdf') ? (
+                  <iframe
+                    src={selectedDoc.verificationDocuments[0]}
+                    className="w-full h-full"
+                    title="PDF Document"
+                  />
+                ) : (
+                  <img
+                    src={selectedDoc.verificationDocuments[0]}
+                    alt="Document"
+                    className="max-w-full h-auto"
+                  />
+                )
               )}
             </div>
           </div>

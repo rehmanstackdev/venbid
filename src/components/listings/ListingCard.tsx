@@ -73,11 +73,11 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
       <Card className="group overflow-hidden transition-all duration-200 hover:shadow-card-hover animate-fade-in h-[380px] flex flex-col">
         <div className="relative">
           {/* Image */}
-          <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          <div className="relative h-60 overflow-hidden bg-muted">
             <img
               src={listing.images[0] || "/placeholder.svg"}
               alt={listing.title}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
             />
             
             {/* Category badge */}

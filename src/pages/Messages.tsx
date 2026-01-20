@@ -24,7 +24,6 @@ const Messages = () => {
     }
   }, [searchParams]);
 
-  // Auto-select first conversation if conversations load and one is selected but not found
   useEffect(() => {
     if (!loading && conversations.length > 0 && selectedConversationId) {
       const found = conversations.find(c => c.id === selectedConversationId);
@@ -51,7 +50,7 @@ const Messages = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
-      {/* Header */}
+   
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-4">
           <Link to="/">
@@ -70,9 +69,9 @@ const Messages = () => {
         </div>
       </header>
 
-      {/* Content */}
+     
       <div className="flex-1 flex">
-        {/* Conversation list */}
+    
         <aside
           className={cn(
             "w-full lg:w-96 border-r border-border bg-card",
@@ -109,7 +108,7 @@ const Messages = () => {
           </ScrollArea>
         </aside>
 
-        {/* Chat area */}
+   
         <main
           className={cn(
             "flex-1 bg-background",

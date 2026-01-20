@@ -70,7 +70,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
           {/* LEFT: Image Viewer */}
           {hasImages && (
             <div>
-              <div className="relative w-full bg-black rounded-xl overflow-hidden max-h-[60vh] sm:max-h-[450px]">
+              <div className="relative w-full bg-black rounded-xl overflow-hidden h-96">
                 <img
                   src={listing.images![currentImageIndex]}
                   alt={`${listing.title} ${currentImageIndex + 1}`}
