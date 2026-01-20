@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, Loader2, Upload, X, ArrowLeft } from 'lucide-react';
+import { Save, Loader2, Upload, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -184,14 +184,9 @@ export default function VendorProfile() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <div className="mb-6 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-bold">Profile Settings</h1>
-          <p className="text-muted-foreground">Manage your account information</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Profile Settings</h1>
+        <p className="text-muted-foreground">Manage your account information</p>
       </div>
 
       <Card>

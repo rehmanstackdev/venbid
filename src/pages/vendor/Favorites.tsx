@@ -1,5 +1,5 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Heart, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ListingCard } from "@/components/listings/ListingCard";
 import { useFavorites } from "@/hooks/useFavorites";
@@ -12,7 +12,6 @@ import { getZipCoordinates } from "@/data/illinoisZips";
 import { Listing } from "@/hooks/useListings";
 
 const Favorites = () => {
-  const navigate = useNavigate();
   const { loading: favoritesLoading, refetch } = useFavorites();
   const [favoriteJobs, setFavoriteJobs] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,10 +79,7 @@ const Favorites = () => {
 
   return (
     <div className="container py-6">
-      <div className="mb-6 flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">Favorites</h1>
       </div>
       {favoriteJobs.length === 0 ? (
