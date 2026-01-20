@@ -47,7 +47,7 @@ export default function VendorLayoutWithSidebar() {
           </nav>
         </aside>
 
-        {/* Main content */}
+       
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>

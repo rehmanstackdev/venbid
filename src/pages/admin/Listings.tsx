@@ -12,7 +12,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogOverlay,
+  DialogPortal,
 } from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -281,13 +284,14 @@ export default function AdminListings() {
               {selectedListing.images && selectedListing.images.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {selectedListing.images.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt={`Job image ${idx + 1}`}
-                      className="w-full h-48 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setFullscreenImage(img)}
-                    />
+                    <div key={idx} className="w-full h-48 bg-muted rounded-lg overflow-hidden">
+                      <img
+                        src={img}
+                        alt={`Job image ${idx + 1}`}
+                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setFullscreenImage(img)}
+                      />
+                    </div>
                   ))}
                 </div>
               )}
@@ -329,25 +333,32 @@ export default function AdminListings() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
-          <div className="relative w-full h-full flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
-              onClick={() => setFullscreenImage(null)}
+      {fullscreenImage && (
+        <Dialog open={true} onOpenChange={() => setFullscreenImage(null)}>
+          <DialogPortal>
+            <DialogOverlay className="bg-black/95" />
+            <DialogPrimitive.Content
+              className="fixed inset-0 z-50 flex items-center justify-center p-0"
+              onOpenAutoFocus={(e) => e.preventDefault()}
             >
-              <X className="h-6 w-6" />
-            </Button>
-            <img
-              src={fullscreenImage || ""}
-              alt="Full size"
-              className="max-w-full max-h-full object-contain"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
+                onClick={() => setFullscreenImage(null)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              <img
+                src={fullscreenImage}
+                alt="Full size"
+                className="max-w-[95vw] max-h-[95vh] object-contain"
+                style={{ width: 'auto', height: 'auto' }}
+              />
+            </DialogPrimitive.Content>
+          </DialogPortal>
+        </Dialog>
+      )}
 
       <JobConversationsDialog
         jobId={selectedJobForConversations?.id || null}
