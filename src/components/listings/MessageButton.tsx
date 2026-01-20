@@ -11,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { ChatDialog } from "@/components/messages/ChatDialog";
+import { chatApi } from "@/api/chat";
 
 interface MessageButtonProps {
   listingId: string;
@@ -21,7 +21,7 @@ interface MessageButtonProps {
 
 export function MessageButton({ listingId, listingTitle, customerId }: MessageButtonProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [sending, setSending] = useState(false);
   const navigate = useNavigate();
   const { user, isVendor, loading: authLoading } = useAuth();
   
@@ -45,7 +45,21 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
       return;
     }
 
-    setChatOpen(true);
+    // Send initial message and navigate to full messages page
+    setSending(true);
+    try {
+      const response = await chatApi.sendMessage({
+        jobId: listingId,
+        recipientId: customerId,
+        content: `Hi, I'm interested in your job: ${listingTitle}`,
+      });
+      
+      navigate(`/vendor/messages/${response.conversationId}`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Failed to start conversation");
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -54,19 +68,11 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
         size="lg" 
         className="w-full gap-2"
         onClick={handleClick}
-        disabled={user?.id === customerId}
+        disabled={user?.id === customerId || sending}
       >
         <MessageSquare className="h-5 w-5" />
-        Message about this job
+        {sending ? 'Starting conversation...' : 'Message about this job'}
       </Button>
-
-      <ChatDialog
-        open={chatOpen}
-        onOpenChange={setChatOpen}
-        jobId={listingId}
-        jobTitle={listingTitle}
-        customerId={customerId}
-      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">

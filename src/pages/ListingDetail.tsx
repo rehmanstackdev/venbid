@@ -95,10 +95,10 @@ const ListingDetail = () => {
       </header>
 
 
-      <main className="container py-6">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <main className="container py-4 sm:py-6 px-4">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
 
-          <div className="lg:col-span-2 space-y-6 lg:overflow-y-auto">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6 lg:overflow-y-auto">
 
             <ImageGallery images={listing.images} title={listing.title} />
 
@@ -110,7 +110,7 @@ const ListingDetail = () => {
                   {listing.categoryName}
                 </Badge>
               </div>
-              <h2 className="text-2xl font-bold text-foreground">{listing.title}</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-foreground">{listing.title}</h2>
             </div>
             
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -132,8 +132,8 @@ const ListingDetail = () => {
 
         
             <div>
-              <h3 className="text-lg font-semibold mb-3">Description</h3>
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Description</h3>
+              <p className="text-sm sm:text-base text-foreground leading-relaxed whitespace-pre-wrap">
                 {listing.description}
               </p>
             </div>
@@ -142,7 +142,7 @@ const ListingDetail = () => {
 
 
             <div>
-              <h3 className="text-lg font-semibold mb-3">Location</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3">Location</h3>
               <p className="text-muted-foreground text-sm mb-3">
                 Approximate location shown. Exact address will be shared after contact.
               </p>
@@ -150,7 +150,7 @@ const ListingDetail = () => {
                 lat={listing.lat}
                 lng={listing.lng}
                 showExactAddress={false}
-                className="h-64 rounded-lg overflow-hidden border border-border"
+                className="h-48 sm:h-64 rounded-lg overflow-hidden border border-border"
               />
             </div>
           </div>
@@ -158,10 +158,10 @@ const ListingDetail = () => {
 
           <div className="lg:sticky lg:top-20 lg:self-start space-y-4">
 
-            <div className="bg-card border border-border rounded-lg p-5">
+            <div className="bg-card border border-border rounded-lg p-4 sm:p-5">
               <div className="mb-4">
                 <p className="text-sm text-muted-foreground mb-1">Budget</p>
-                <p className="text-3xl font-bold text-primary">${listing.budget}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-primary">${listing.budget}</p>
               </div>
 
               <MessageButton 

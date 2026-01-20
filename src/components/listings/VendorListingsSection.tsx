@@ -4,16 +4,18 @@ import { useVendorListings, VendorListing } from "@/hooks/useVendorListings";
 import { SearchBar } from "./SearchBar";
 import { ListingGrid } from "./ListingGrid";
 import { ListingsMap } from "@/components/map/ListingsMap";
-import { Loader2 } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 interface VendorListingsSectionProps {
   selectedCategory: number | null;
 }
 
 export function VendorListingsSection({ selectedCategory }: VendorListingsSectionProps) {
-  const { listings: allListings, loading } = useVendorListings();
   const { user } = useAuth();
+  const [nearMeOnly, setNearMeOnly] = useState(false);
+  const { listings: allListings, loading } = useVendorListings(nearMeOnly);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [viewMode, setViewMode] = useState<"gallery" | "map">("gallery");
@@ -125,7 +127,18 @@ export function VendorListingsSection({ selectedCategory }: VendorListingsSectio
   return (
     <div className="h-full overflow-y-auto">
       <div className="p-4 lg:p-6">
-        <h1 className="text-2xl font-bold text-foreground">{categoryName}</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-foreground">{categoryName}</h1>
+          <Button
+            variant={nearMeOnly ? "default" : "outline"}
+            size="sm"
+            onClick={() => setNearMeOnly(!nearMeOnly)}
+            className="gap-2"
+          >
+            <MapPin className="h-4 w-4" />
+            Jobs Near Me
+          </Button>
+        </div>
         <p className="text-muted-foreground text-sm mt-1">
           {filteredListings.length} {filteredListings.length === 1 ? "listing" : "listings"} available
           {mapFilteredListings && (

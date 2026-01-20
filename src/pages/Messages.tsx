@@ -108,7 +108,6 @@ const Messages = () => {
           </ScrollArea>
         </aside>
 
-   
         <main
           className={cn(
             "flex-1 bg-background",

@@ -21,7 +21,7 @@ export interface VendorListing {
   status: string;
 }
 
-export function useVendorListings() {
+export function useVendorListings(nearMeOnly: boolean = false) {
   const [listings, setListings] = useState<VendorListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,12 +31,15 @@ export function useVendorListings() {
       setLoading(true);
       const params: { lat?: number; long?: number } = {};
       
-      const userStr = localStorage.getItem('user_data');
-      if (userStr) {
-        const userData = JSON.parse(userStr);
-        if (userData.coordinates) {
-          params.lat = userData.coordinates.lat;
-          params.long = userData.coordinates.long;
+      // Only send coordinates if "Near Me" filter is active
+      if (nearMeOnly) {
+        const userStr = localStorage.getItem('user_data');
+        if (userStr) {
+          const userData = JSON.parse(userStr);
+          if (userData.coordinates) {
+            params.lat = userData.coordinates.lat;
+            params.long = userData.coordinates.long;
+          }
         }
       }
       
@@ -79,7 +82,7 @@ export function useVendorListings() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [nearMeOnly]);
 
   useEffect(() => {
     fetchListings();
