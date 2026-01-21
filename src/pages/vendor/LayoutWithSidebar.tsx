@@ -16,15 +16,15 @@ export default function VendorLayoutWithSidebar() {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background">
       <Header 
         selectedCategory={selectedCategory} 
         onSelectCategory={setSelectedCategory} 
       />
       
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex">
         {/* Desktop sidebar */}
-        <aside className="hidden lg:block w-64 border-r border-border bg-card overflow-y-auto">
+        <aside className="hidden lg:block w-64 border-r border-border bg-card fixed left-0 top-14 h-[calc(100vh-3.5rem)] overflow-y-auto">
           <nav className="p-4 space-y-2">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
@@ -48,7 +48,7 @@ export default function VendorLayoutWithSidebar() {
         </aside>
 
        
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 lg:ml-64">
           <Outlet />
         </main>
       </div>
