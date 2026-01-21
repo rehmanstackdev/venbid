@@ -39,9 +39,9 @@ export function JobConversationsDialog({ jobId, jobTitle, open, onOpenChange }: 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[80vh]">
         <DialogHeader>
-          <DialogTitle>Conversations for: {jobTitle}</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">Conversations for: {jobTitle}</DialogTitle>
         </DialogHeader>
         
         {loading ? (
@@ -57,23 +57,23 @@ export function JobConversationsDialog({ jobId, jobTitle, open, onOpenChange }: 
           <ScrollArea className="h-[60vh]">
             <div className="space-y-6">
               {conversations.map((conversation) => (
-                <div key={conversation.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
+                <div key={conversation.id} className="border rounded-lg p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <User className="h-4 w-4 text-blue-500" />
-                          <span className="font-semibold text-sm">Customer: {conversation.customer.name}</span>
+                          <span className="font-semibold text-xs sm:text-sm">Customer: {conversation.customer.name}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">{conversation.customer.email}</p>
+                        <p className="text-xs text-muted-foreground break-all">{conversation.customer.email}</p>
                       </div>
-                      <div className="h-8 w-px bg-border" />
+                      <div className="hidden sm:block h-8 w-px bg-border" />
                       <div>
                         <div className="flex items-center gap-2 mb-1">
                           <User className="h-4 w-4 text-green-500" />
-                          <span className="font-semibold text-sm">Vendor: {conversation.vendor.name}</span>
+                          <span className="font-semibold text-xs sm:text-sm">Vendor: {conversation.vendor.name}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground">{conversation.vendor.email}</p>
+                        <p className="text-xs text-muted-foreground break-all">{conversation.vendor.email}</p>
                       </div>
                     </div>
                   </div>
@@ -91,13 +91,13 @@ export function JobConversationsDialog({ jobId, jobTitle, open, onOpenChange }: 
                         >
                           <div
                             className={cn(
-                              'max-w-[70%] rounded-lg px-4 py-2',
+                              'max-w-[85%] sm:max-w-[70%] rounded-lg px-3 py-2',
                               isCustomer
                                 ? 'bg-blue-500/10 border border-blue-500/20'
                                 : 'bg-green-500/10 border border-green-500/20'
                             )}
                           >
-                            <p className="text-sm">{message.content}</p>
+                            <p className="text-xs sm:text-sm break-words">{message.content}</p>
                             <p className="text-xs text-muted-foreground mt-1">
                               {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
                             </p>
