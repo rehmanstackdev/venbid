@@ -100,7 +100,7 @@ const ListingDetail = () => {
           {/* Main Content - Always first on mobile */}
           <div className="w-full lg:col-span-2 space-y-4 sm:space-y-6">
 
-            <ImageGallery images={listing.images} title={listing.title} />
+            <ImageGallery images={listing.jobImages?.map(img => img.image) || listing.images} title={listing.title} />
 
             <div>
               <div className="flex items-center gap-2 mb-2">

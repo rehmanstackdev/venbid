@@ -16,6 +16,13 @@ interface JobDetailsDialogProps {
     street?: string;
     crossStreet?: string;
     images?: string[];
+    jobImages?: Array<{
+      id: string;
+      jobId: string;
+      image: string;
+      isFeatured: boolean;
+      createdAt: string;
+    }>;
     status: string;
     isComplete?: boolean;
     createdAt: string;
@@ -46,15 +53,16 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
     return categories.find(c => c.slug === slug)?.name || slug;
   };
 
-  const hasImages = listing.images && listing.images.length > 0;
-  const hasMultipleImages = hasImages && listing.images!.length > 1;
+  const images = listing.jobImages?.map(img => img.image) || listing.images || [];
+  const hasImages = images.length > 0;
+  const hasMultipleImages = images.length > 1;
 
   const nextImage = () => {
-    if (hasImages) setCurrentImageIndex((prev) => (prev + 1) % listing.images!.length);
+    if (hasImages) setCurrentImageIndex((prev) => (prev + 1) % images.length);
   };
 
   const prevImage = () => {
-    if (hasImages) setCurrentImageIndex((prev) => (prev - 1 + listing.images!.length) % listing.images!.length);
+    if (hasImages) setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
   return (
@@ -72,7 +80,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
             <div>
               <div className="relative w-full bg-black rounded-xl overflow-hidden h-96">
                 <img
-                  src={listing.images![currentImageIndex]}
+                  src={images[currentImageIndex]}
                   alt={`${listing.title} ${currentImageIndex + 1}`}
                   className="w-full h-full object-contain"
                 />
@@ -94,7 +102,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
                     </button>
 
                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
-                      {currentImageIndex + 1} / {listing.images!.length}
+                      {currentImageIndex + 1} / {images.length}
                     </div>
                   </>
                 )}
@@ -102,7 +110,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
 
               {hasMultipleImages && (
                 <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
-                  {listing.images!.map((img, idx) => (
+                  {images.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setCurrentImageIndex(idx)}

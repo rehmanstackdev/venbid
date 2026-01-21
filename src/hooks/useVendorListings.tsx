@@ -16,6 +16,13 @@ export interface VendorListing {
   lng: number;
   createdAt: Date;
   images: string[];
+  jobImages?: Array<{
+    id: string;
+    jobId: string;
+    image: string;
+    isFeatured: boolean;
+    createdAt: string;
+  }>;
   userId: string;
   userName: string;
   status: string;
@@ -69,6 +76,7 @@ export function useVendorListings(nearMeOnly: boolean = false) {
           lng: coords.lng,
           createdAt: new Date(job.createdAt),
           images: job.images || [],
+          jobImages: job.jobImages,
           userId: job.createdById || job.createdBy?.id || '',
           userName: job.createdBy?.name || '',
           status: 'active',

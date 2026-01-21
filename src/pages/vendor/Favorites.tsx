@@ -25,7 +25,9 @@ const Favorites = () => {
       const jobs = await favoritesApi.getFavorites();
       const mappedListings: Listing[] = jobs.map(job => {
         const category = categories.find(c => c.slug === job.category);
-        const coords = getZipCoordinates(job.zip);
+        const coords = job.coordinates?.lat && job.coordinates?.long 
+          ? { lat: job.coordinates.lat, lng: job.coordinates.long }
+          : getZipCoordinates(job.zip);
         return {
           id: job.id,
           title: job.title,
@@ -39,6 +41,7 @@ const Favorites = () => {
           lng: coords.lng,
           createdAt: new Date(job.createdAt),
           images: job.images || [],
+          jobImages: job.jobImages,
           userId: job.createdById || job.createdBy?.id || '',
           userName: job.createdBy?.name || '',
           status: 'active',

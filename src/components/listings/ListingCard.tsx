@@ -21,6 +21,8 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
   const isListingFavorite = isFavorite(listing.id);
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
+  const featuredImage = listing.jobImages?.find(img => img.isFeatured)?.image || listing.jobImages?.[0]?.image || listing.images?.[0];
+
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -41,7 +43,7 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
             {/* Image */}
             <div className="relative w-24 h-24 flex-shrink-0 overflow-hidden bg-muted">
               <img
-                src={listing.images[0] || "/placeholder.svg"}
+                src={featuredImage || "/placeholder.svg"}
                 alt={listing.title}
                 className="h-full w-full object-cover"
               />
@@ -75,7 +77,7 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
           {/* Image */}
           <div className="relative h-60 overflow-hidden bg-muted">
             <img
-              src={listing.images[0] || "/placeholder.svg"}
+              src={featuredImage || "/placeholder.svg"}
               alt={listing.title}
               className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-105"
             />

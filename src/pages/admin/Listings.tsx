@@ -110,6 +110,7 @@ export default function AdminListings() {
 
   const ListingCard = ({ listing }: { listing: Job }) => {
     const categoryName = categories.find(c => c.slug === listing.category)?.name || listing.category;
+    const featuredImage = listing.jobImages?.find(img => img.isFeatured)?.image || listing.jobImages?.[0]?.image || listing.images?.[0];
     
     return (
     <Card>
@@ -146,9 +147,9 @@ export default function AdminListings() {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {listing.images && listing.images.length > 0 && (
+        {featuredImage && (
           <img
-            src={listing.images[0]}
+            src={featuredImage}
             alt={listing.title}
             className="w-full h-40 object-cover rounded-lg"
           />
@@ -282,7 +283,20 @@ export default function AdminListings() {
           </DialogHeader>
           {selectedListing && (
             <div className="space-y-4">
-              {selectedListing.images && selectedListing.images.length > 0 && (
+              {selectedListing.jobImages && selectedListing.jobImages.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedListing.jobImages.map((img, idx) => (
+                    <div key={idx} className="w-full h-48 bg-muted rounded-lg overflow-hidden">
+                      <img
+                        src={img.image}
+                        alt={`Job image ${idx + 1}`}
+                        className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setFullscreenImage(img.image)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : selectedListing.images && selectedListing.images.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {selectedListing.images.map((img, idx) => (
                     <div key={idx} className="w-full h-48 bg-muted rounded-lg overflow-hidden">

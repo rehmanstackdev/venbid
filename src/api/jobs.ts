@@ -25,6 +25,7 @@ export interface CreateJobRequest {
   showExactAddress: boolean;
   images: File[];
   phone?: string;
+  featuredImageIndex?: number;
   coordinates?: {
     lat: number;
     long: number;
@@ -43,6 +44,13 @@ export interface Job {
   crossStreet: string;
   showExactAddress: boolean;
   images: string[];
+  jobImages?: Array<{
+    id: string;
+    jobId: string;
+    image: string;
+    isFeatured: boolean;
+    createdAt: string;
+  }>;
   coordinates?: {
     lat: number;
     long: number;
@@ -88,6 +96,7 @@ export const jobsApi = {
     formData.append('crossStreet', data.crossStreet);
     formData.append('showExactAddress', data.showExactAddress.toString());
     if (data.phone) formData.append('phone', data.phone);
+    if (data.featuredImageIndex !== undefined) formData.append('featuredImageIndex', data.featuredImageIndex.toString());
     if (data.coordinates) {
       formData.append('coordinates', JSON.stringify(data.coordinates));
     }
@@ -102,7 +111,7 @@ export const jobsApi = {
 
     const response = await apiClient.post('/jobs', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 30000,
+      timeout: 60000,
     });
     
     const job = response.data.data || response.data;
@@ -153,6 +162,7 @@ export const jobsApi = {
 
     const response = await apiClient.patch(`/jobs/${id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 60000,
     });
     return response.data.data || response.data;
   },

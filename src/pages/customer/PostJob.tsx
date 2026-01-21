@@ -186,6 +186,8 @@ export default function PostJob() {
         .map((img: any) => img.file)
         .filter((file): file is File => file instanceof File);
 
+      const featuredIndex = details.images.findIndex((img: any) => img.isFeatured);
+
       const jobData: any = {
         title: details.title,
         description: details.description,
@@ -198,6 +200,7 @@ export default function PostJob() {
         showExactAddress: locationData.showExactAddress,
         images: imageFiles,
         phone: phone,
+        featuredImageIndex: featuredIndex >= 0 ? featuredIndex : 0,
       };
 
       // Add coordinates if available
@@ -227,7 +230,13 @@ export default function PostJob() {
       navigate("/customer/my-posts");
     } catch (error: any) {
       console.error('Job creation error:', error);
-      toast.error(error.response?.data?.message || "Failed to post your job");
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Upload timeout', {
+          description: 'The upload is taking too long. Try with fewer or smaller images.'
+        });
+      } else {
+        toast.error(error.response?.data?.message || "Failed to post your job");
+      }
     } finally {
       setIsSubmitting(false);
     }

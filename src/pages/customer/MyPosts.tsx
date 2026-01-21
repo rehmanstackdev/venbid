@@ -136,7 +136,10 @@ export default function CustomerMyPosts() {
       return 0;
     });
 
-  const JobCard = ({ listing }: { listing: Job }) => (
+  const JobCard = ({ listing }: { listing: Job }) => {
+    const featuredImage = listing.jobImages?.find(img => img.isFeatured)?.image || listing.jobImages?.[0]?.image;
+    
+    return (
     <Card
       className="hover:shadow-md transition-shadow overflow-hidden cursor-pointer relative flex flex-col"
       onClick={() => {
@@ -144,10 +147,10 @@ export default function CustomerMyPosts() {
         setDialogOpen(true);
       }}
     >
-      {listing.images && listing.images.length > 0 && (
+      {featuredImage && (
         <div className="w-full h-40 bg-muted relative">
           <img
-            src={listing.images[0]}
+            src={featuredImage}
             alt={listing.title}
             className="w-full h-full object-cover"
           />
@@ -225,6 +228,7 @@ export default function CustomerMyPosts() {
       </CardContent>
     </Card>
   );
+  };
 
   if (loading) {
     return (
