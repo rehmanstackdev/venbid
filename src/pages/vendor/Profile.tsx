@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { vendorApi } from '@/api/vendor';
 import { LocationSearchInput } from '@/components/location/LocationSearchInput';
 import { categories } from '@/data/categories';
-import { convertPdfToAvif } from '@/lib/cloudinary';
 
 export default function VendorProfile() {
   const navigate = useNavigate();
@@ -356,20 +355,24 @@ export default function VendorProfile() {
 
             {/* Verification Documents */}
             <div className="space-y-2">
-              <Label>Verification Documents</Label>
+              <Label>Verification Documents (PDF only)</Label>
               {existingDocuments.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
                   {existingDocuments.map((doc, index) => (
                     <div key={index} className="relative group">
-                      <img
-                        src={convertPdfToAvif(doc)}
-                        alt={`Document ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => {
-                          setSelectedImage(doc);
-                          setViewImageDialog(true);
-                        }}
-                      />
+                      <a
+                        href={doc}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full h-32 flex items-center justify-center bg-muted rounded-lg border cursor-pointer hover:bg-muted/80 transition-colors"
+                      >
+                        <div className="text-center">
+                          <svg className="h-12 w-12 mx-auto text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                          </svg>
+                          <p className="text-xs mt-1">PDF Document {index + 1}</p>
+                        </div>
+                      </a>
                       <Button
                         type="button"
                         variant="destructive"
@@ -388,7 +391,7 @@ export default function VendorProfile() {
                   id="documents"
                   type="file"
                   multiple
-                  accept="image/*,.pdf"
+                  accept=".pdf,application/pdf"
                   onChange={handleDocumentChange}
                   className="hidden"
                 />
@@ -439,26 +442,7 @@ export default function VendorProfile() {
         </CardContent>
       </Card>
 
-      {/* Document Viewer Dialog */}
-      <Dialog open={viewImageDialog} onOpenChange={setViewImageDialog}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
-          <div className="relative w-full h-full flex items-center justify-center p-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
-              onClick={() => setViewImageDialog(false)}
-            >
-              <X className="h-6 w-6" />
-            </Button>
-            <img
-              src={convertPdfToAvif(selectedImage)}
-              alt="Document"
-              className="max-w-[95vw] max-h-[95vh] w-auto h-auto object-contain"
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Document Viewer Dialog - Removed since PDFs open in new tab */}
     </div>
   );
 }

@@ -89,7 +89,7 @@ const Favorites = () => {
           <p className="text-muted-foreground mb-4">
             Browse listings and click the heart icon to save them here
           </p>
-          <Link to="/">
+          <Link to="/vendor/dashboard">
             <Button>Browse Listings</Button>
           </Link>
         </div>

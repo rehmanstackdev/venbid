@@ -13,15 +13,15 @@ export default function PublicLayout() {
         onSelectCategory={setSelectedCategory} 
       />
       
-      <div className="flex flex-1 overflow-hidden">
-        <aside className="hidden lg:block w-64 border-r border-border bg-card overflow-y-auto">
+      <div className="flex flex-1">
+        <aside className="hidden lg:block w-64 border-r border-border bg-card fixed left-0 top-14 h-[calc(100vh-3.5rem)] overflow-y-auto z-10">
           <CategorySidebar
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
           />
         </aside>
 
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 lg:ml-64 overflow-y-auto">
           <Outlet context={{ selectedCategory }} />
         </main>
       </div>

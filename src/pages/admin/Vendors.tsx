@@ -16,7 +16,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { getVendors, AdminVendor, adminApi } from "@/api/admin";
-import { convertPdfToAvif } from '@/lib/cloudinary';
 
 export default function AdminVendors() {
   const { toast } = useToast();
@@ -132,21 +131,23 @@ export default function AdminVendors() {
         <div className="flex-1">
           <p className="text-sm text-muted-foreground mb-2">Verification Documents</p>
           {vendor.verificationDocuments && vendor.verificationDocuments.length > 0 ? (
-            <div className="relative group">
-              <img
-                src={convertPdfToAvif(vendor.verificationDocuments[0])}
-                alt="Verification document"
-                className="w-full h-48 object-cover rounded-lg border"
-              />
-              <Button
-                variant="secondary"
-                size="sm"
-                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleView(vendor)}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View Full
-              </Button>
+            <div className="grid grid-cols-2 gap-2">
+              {vendor.verificationDocuments.map((doc, idx) => (
+                <a
+                  key={idx}
+                  href={doc}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="h-24 flex items-center justify-center bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
+                >
+                  <div className="text-center">
+                    <svg className="h-8 w-8 mx-auto text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                    <p className="text-xs mt-1">PDF {idx + 1}</p>
+                  </div>
+                </a>
+              ))}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">No documents uploaded</p>
@@ -228,29 +229,7 @@ export default function AdminVendors() {
         </TabsContent>
       </Tabs>
 
-      <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="fixed top-4 right-4 z-50 h-10 w-10 rounded-full bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm"
-            onClick={() => setViewDialogOpen(false)}
-          >
-            <X className="h-5 w-5" />
-          </Button>
-          <div className="w-full h-full overflow-auto p-4">
-            <div className="min-h-full flex items-center justify-center">
-              {selectedDoc?.verificationDocuments && selectedDoc.verificationDocuments.length > 0 && (
-                <img
-                  src={convertPdfToAvif(selectedDoc.verificationDocuments[0])}
-                  alt="Document"
-                  className="max-w-full h-auto"
-                />
-              )}
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Document Viewer Dialog - Removed since PDFs open in new tab */}
     </div>
   );
 }

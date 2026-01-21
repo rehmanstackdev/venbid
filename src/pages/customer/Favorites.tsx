@@ -110,7 +110,7 @@ export default function CustomerFavorites() {
             <p className="text-muted-foreground mb-4">
               Browse listings and click the heart icon to save them here
             </p>
-            <Link to="/">
+            <Link to="/customer/my-posts">
               <Button>Browse Listings</Button>
             </Link>
           </div>

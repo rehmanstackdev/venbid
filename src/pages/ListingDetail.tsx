@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, MapPin, Calendar, User, Heart, Share2, Loader2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,11 +11,11 @@ import { MessageButton } from "@/components/listings/MessageButton";
 import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-
 import { useAuth } from "@/hooks/useAuth";
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { listings, loading } = useListings();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { user } = useAuth();
@@ -63,11 +63,9 @@ const ListingDetail = () => {
 
       <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
         <div className="container flex h-14 items-center gap-2 px-3 sm:gap-4 sm:px-4">
-          <Link to="/">
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+          </Button>
           <div className="flex-1 min-w-0">
             <h1 className="font-semibold truncate text-sm sm:text-base">{listing.title}</h1>
           </div>

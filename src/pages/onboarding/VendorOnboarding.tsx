@@ -218,14 +218,14 @@ export default function VendorOnboarding() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="documents">Verification Documents (optional)</Label>
-                <p className="text-xs text-muted-foreground">Upload business license, insurance, or certifications (max 5 files, 10MB each)</p>
+                <Label htmlFor="documents">Verification Documents (PDF only)</Label>
+                <p className="text-xs text-muted-foreground">Upload business license, insurance, or certifications (max 5 PDFs, 10MB each)</p>
                 <div className="border-2 border-dashed rounded-lg p-4">
                   <input
                     id="documents"
                     type="file"
                     multiple
-                    accept="image/*,.pdf"
+                    accept=".pdf,application/pdf"
                     onChange={handleDocumentChange}
                     className="hidden"
                   />

@@ -46,7 +46,7 @@ export function LocationMap({ lat, lng, showExactAddress = false, className }: L
   const mapKey = `${lat.toFixed(2)}-${lng.toFixed(2)}`;
   
   return (
-    <div className={className}>
+    <div className={className} style={{ position: 'relative', zIndex: 0 }}>
       <MapContainer
         key={mapKey}
         center={[lat, lng]}
@@ -57,6 +57,7 @@ export function LocationMap({ lat, lng, showExactAddress = false, className }: L
         touchZoom={true}
         scrollWheelZoom={true}
         doubleClickZoom={true}
+        style={{ zIndex: 0 }}
       >
         <TileLayer
           attribution={mapTilerConfig.attribution}
