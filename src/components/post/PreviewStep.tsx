@@ -9,6 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogOverlay,
+  DialogPortal,
+} from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface PreviewStepProps {
   categoryId: number;
@@ -23,6 +30,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
   const CategoryIcon = category?.icon;
   const featuredImage = details.images.find((img) => img.isFeatured) || details.images[0];
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   const goToPrevious = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? details.images.length - 1 : prev - 1));
@@ -67,7 +75,8 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
             <img
               src={details.images[currentImageIndex].preview}
               alt={`Image ${currentImageIndex + 1}`}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain cursor-pointer"
+              onClick={() => setFullscreenImage(details.images[currentImageIndex].preview)}
             />
             
             {/* Featured badge on main image */}
@@ -240,6 +249,33 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
         </div>
       </div>
 
+      {/* Fullscreen image dialog */}
+      {fullscreenImage && (
+        <Dialog open={true} onOpenChange={() => setFullscreenImage(null)}>
+          <DialogPortal>
+            <DialogOverlay className="bg-black/95" />
+            <DialogPrimitive.Content
+              className="fixed inset-0 z-50 flex items-center justify-center p-0"
+              onOpenAutoFocus={(e) => e.preventDefault()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
+                onClick={() => setFullscreenImage(null)}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+              <img
+                src={fullscreenImage}
+                alt="Full size"
+                className="max-w-[95vw] max-h-[95vh] object-contain"
+                style={{ width: 'auto', height: 'auto' }}
+              />
+            </DialogPrimitive.Content>
+          </DialogPortal>
+        </Dialog>
+      )}
 
     </div>
   );

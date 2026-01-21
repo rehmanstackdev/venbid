@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Trash2, Eye, X, MoreVertical, MessageSquare } from "lucide-react";
+import { Search, Trash2, Eye, X, MoreVertical, MessageSquare, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -31,6 +31,7 @@ import { adminApi } from "@/api/admin";
 import { categories } from "@/data/categories";
 import { LocationMap } from "@/components/map/LocationMap";
 import { JobConversationsDialog } from "@/components/admin/JobConversationsDialog";
+import { LazyLoad } from "@/components/common/LazyLoad";
 
 export default function AdminListings() {
   const { toast } = useToast();
@@ -320,12 +321,20 @@ export default function AdminListings() {
               {selectedListing.coordinates && (
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">Location Map</p>
-                  <LocationMap
-                    lat={selectedListing.coordinates.lat}
-                    lng={selectedListing.coordinates.long}
-                    showExactAddress={selectedListing.showExactAddress}
-                    className="h-64 rounded-lg overflow-hidden border border-border"
-                  />
+                  <LazyLoad
+                    placeholder={
+                      <div className="h-64 rounded-lg bg-muted flex items-center justify-center border border-border">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                      </div>
+                    }
+                  >
+                    <LocationMap
+                      lat={selectedListing.coordinates.lat}
+                      lng={selectedListing.coordinates.long}
+                      showExactAddress={selectedListing.showExactAddress}
+                      className="h-64 rounded-lg overflow-hidden border border-border"
+                    />
+                  </LazyLoad>
                 </div>
               )}
             </div>

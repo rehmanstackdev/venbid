@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label';
 import { MapPin, Loader2 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { mapTilerConfig } from '@/config/maptiler';
+import { geocodingCache } from '@/lib/geocodingCache';
 
 interface LocationResult {
   id: string;
@@ -47,13 +48,23 @@ export function LocationSearchInput({
   useEffect(() => {
     if (coordinates?.lat && coordinates?.lng && !reverseGeocodedRef.current) {
       reverseGeocodedRef.current = true;
+      const cacheKey = `reverse_${coordinates.lng.toFixed(4)}_${coordinates.lat.toFixed(4)}`;
+      const cached = geocodingCache.get(cacheKey);
+      
+      if (cached) {
+        setInputValue(cached);
+        return;
+      }
+      
       fetch(
         `${mapTilerConfig.geocodingUrl}/${coordinates.lng},${coordinates.lat}.json?key=${mapTilerConfig.apiKey}`
       )
         .then(res => res.json())
         .then(data => {
           if (data?.features && data.features.length > 0) {
-            setInputValue(data.features[0].place_name);
+            const placeName = data.features[0].place_name;
+            setInputValue(placeName);
+            geocodingCache.set(cacheKey, placeName);
           }
         })
         .catch(err => console.error('Reverse geocoding error:', err));
@@ -71,6 +82,16 @@ export function LocationSearchInput({
     const timer = setTimeout(async () => {
       setLoading(true);
       try {
+        const cacheKey = `forward_${inputValue.toLowerCase()}`;
+        const cached = geocodingCache.get(cacheKey);
+        
+        if (cached) {
+          setResults(cached);
+          setShowResults(true);
+          setLoading(false);
+          return;
+        }
+        
         const response = await fetch(
           `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(inputValue)}.json?key=${mapTilerConfig.apiKey}&limit=7`
         );
@@ -80,8 +101,10 @@ export function LocationSearchInput({
         }
         
         const data = await response.json();
-        setResults(data.features || []);
+        const features = data.features || [];
+        setResults(features);
         setShowResults(true);
+        geocodingCache.set(cacheKey, features);
       } catch (error) {
         console.error('Geocoding error:', error);
         setResults([]);

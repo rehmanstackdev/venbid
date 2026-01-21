@@ -12,6 +12,7 @@ import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { LazyLoad } from "@/components/common/LazyLoad";
 
 const ListingDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -142,12 +143,20 @@ const ListingDetail = () => {
               <p className="text-muted-foreground text-sm mb-3">
                 Approximate location shown. Exact address will be shared after contact.
               </p>
-              <LocationMap
-                lat={listing.lat}
-                lng={listing.lng}
-                showExactAddress={false}
-                className="w-full h-48 sm:h-64 lg:h-80 rounded-lg overflow-hidden border border-border"
-              />
+              <LazyLoad
+                placeholder={
+                  <div className="w-full h-48 sm:h-64 lg:h-80 rounded-lg bg-muted flex items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                }
+              >
+                <LocationMap
+                  lat={listing.lat}
+                  lng={listing.lng}
+                  showExactAddress={false}
+                  className="w-full h-48 sm:h-64 lg:h-80 rounded-lg overflow-hidden border border-border"
+                />
+              </LazyLoad>
             </div>
           </div>
 

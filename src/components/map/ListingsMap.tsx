@@ -19,7 +19,7 @@ interface ListingsMapProps {
 
 
 const ILLINOIS_CENTER: [number, number] = [41.8781, -87.7298];
-const DEFAULT_ZOOM = 10;
+const DEFAULT_ZOOM = 9;
 
 
 function calculateViewportRadius(map: LeafletMap): number {
@@ -138,7 +138,7 @@ export function ListingsMap({ listings, allListings, onBoundsChange, className, 
   }, []);
 
   const handleLocate = useCallback(() => {
-    mapRef.current?.setView(mapCenter, DEFAULT_ZOOM);
+    mapRef.current?.setView(mapCenter, 9);
   }, [mapCenter]);
 
   return (

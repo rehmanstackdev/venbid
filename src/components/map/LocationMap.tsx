@@ -24,7 +24,7 @@ function MapUpdater({ lat, lng }: { lat: number; lng: number }) {
   const map = useMap();
   
   useEffect(() => {
-    map.flyTo([lat, lng], 13, {
+    map.flyTo([lat, lng], 11, {
       duration: 1.5,
       easeLinearity: 0.25,
     });
@@ -39,10 +39,7 @@ export function LocationMap({ lat, lng, showExactAddress = false, className }: L
     return null;
   }
   
-
   const fiveMilesInMeters = 8046.72;
-  
-
   const mapKey = `${lat.toFixed(2)}-${lng.toFixed(2)}`;
   
   return (
@@ -50,12 +47,12 @@ export function LocationMap({ lat, lng, showExactAddress = false, className }: L
       <MapContainer
         key={mapKey}
         center={[lat, lng]}
-        zoom={13}
+        zoom={11}
         className="h-full w-full rounded-lg"
         zoomControl={true}
         dragging={true}
         touchZoom={true}
-        scrollWheelZoom={true}
+        scrollWheelZoom={false}
         doubleClickZoom={true}
         style={{ zIndex: 0 }}
       >
