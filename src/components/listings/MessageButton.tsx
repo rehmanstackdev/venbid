@@ -75,7 +75,7 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-md mx-auto">
+        <DialogContent className="w-[95vw] max-w-md mx-4">
           <DialogHeader>
             <DialogTitle className="text-base sm:text-lg">Sign in to message</DialogTitle>
             <DialogDescription className="text-sm">
