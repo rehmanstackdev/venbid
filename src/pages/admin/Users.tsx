@@ -184,10 +184,10 @@ export default function AdminUsers() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all">
-            <TabsList>
-              <TabsTrigger value="all">All Users ({filteredUsers.length})</TabsTrigger>
-              <TabsTrigger value="customers">Customers ({customers.length})</TabsTrigger>
-              <TabsTrigger value="vendors">Vendors ({vendors.length})</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="all" className="text-xs sm:text-sm">All ({filteredUsers.length})</TabsTrigger>
+              <TabsTrigger value="customers" className="text-xs sm:text-sm">Customers ({customers.length})</TabsTrigger>
+              <TabsTrigger value="vendors" className="text-xs sm:text-sm">Vendors ({vendors.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="all" className="mt-4">
               <UserTable users={filteredUsers} />

@@ -57,7 +57,7 @@ export default function AdminLayout() {
       {/* Mobile sidebar */}
       {sidebarOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0" onClick={() => setSidebarOpen(false)} />
           <div className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <span className="text-xl font-bold text-primary">Admin Panel</span>

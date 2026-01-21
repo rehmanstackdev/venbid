@@ -75,10 +75,10 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
       </Button>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>Sign in to message</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Sign in to message</DialogTitle>
+            <DialogDescription className="text-sm">
               Only registered service providers can message customers about jobs. 
               Sign in or create a vendor account to get started.
             </DialogDescription>
@@ -86,7 +86,7 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
 
           <div className="space-y-3 pt-4">
             <Button 
-              className="w-full gap-2" 
+              className="w-full gap-2 text-sm sm:text-base" 
               onClick={() => {
                 setDialogOpen(false);
                 navigate("/auth/vendor");
@@ -98,7 +98,7 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
             
             <Button 
               variant="outline" 
-              className="w-full gap-2"
+              className="w-full gap-2 text-sm sm:text-base"
               onClick={() => {
                 setDialogOpen(false);
                 navigate("/auth/vendor");
@@ -108,7 +108,7 @@ export function MessageButton({ listingId, listingTitle, customerId }: MessageBu
               Create Vendor Account
             </Button>
 
-            <p className="text-center text-sm text-muted-foreground pt-2">
+            <p className="text-center text-xs sm:text-sm text-muted-foreground pt-2">
               Are you a customer?{" "}
               <button 
                 className="text-primary hover:underline"

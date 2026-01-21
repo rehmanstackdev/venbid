@@ -377,16 +377,16 @@ export default function CustomerMyPosts() {
       </AlertDialog>
 
       <AlertDialog open={completeDialogOpen} onOpenChange={setCompleteDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] max-w-md mx-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle>Mark Job as Complete</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">Mark Job as Complete</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm">
               Are you sure you want to mark this job as complete? This will move it to the completed jobs tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmComplete} disabled={completingJob === jobToComplete}>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel className="w-full sm:w-auto m-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmComplete} disabled={completingJob === jobToComplete} className="w-full sm:w-auto">
               {completingJob === jobToComplete ? "Completing..." : "Mark Complete"}
             </AlertDialogAction>
           </AlertDialogFooter>

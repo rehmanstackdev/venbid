@@ -256,18 +256,18 @@ export default function AdminListings() {
       </Tabs>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-md mx-auto">
           <DialogHeader>
-            <DialogTitle>Delete Job</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-base sm:text-lg">Delete Job</DialogTitle>
+            <DialogDescription className="text-sm">
               Are you sure you want to delete "{selectedListing?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting} className="w-full sm:w-auto">
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+            <Button variant="destructive" onClick={handleDelete} disabled={deleting} className="w-full sm:w-auto">
               {deleting ? "Deleting..." : "Delete Job"}
             </Button>
           </DialogFooter>

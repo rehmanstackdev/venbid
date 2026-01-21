@@ -111,12 +111,6 @@ const About = () => {
             </li>
           </ul>
         </section>
-
-        <div className="pt-6 border-t border-border">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-            ← Back to listings
-          </Link>
-        </div>
       </main>
     </div>
   );

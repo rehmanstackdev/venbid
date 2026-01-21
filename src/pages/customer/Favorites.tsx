@@ -64,45 +64,24 @@ export default function CustomerFavorites() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-          <div className="container flex h-14 items-center gap-4">
-            <Link to="/customer/my-posts">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <h1 className="font-semibold">Favorites</h1>
-          </div>
-        </header>
-        <main className="container py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-64 rounded-lg" />
-            ))}
-          </div>
-        </main>
+      <div className="container py-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-card shadow-nav">
-        <div className="container flex h-14 items-center gap-4">
-          <Link to="/customer/my-posts">
-            <Button variant="ghost" size="icon">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <h1 className="font-semibold">Favorites</h1>
-          <span className="text-sm text-muted-foreground">
-            ({favoriteJobs.length})
-          </span>
-        </div>
-      </header>
-
-      <main className="container py-6">
+    <div className="container py-6">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Favorites</h1>
+        <span className="text-sm text-muted-foreground">
+          ({favoriteJobs.length})
+        </span>
+      </div>
         {favoriteJobs.length === 0 ? (
           <div className="text-center py-16">
             <Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
@@ -110,7 +89,7 @@ export default function CustomerFavorites() {
             <p className="text-muted-foreground mb-4">
               Browse listings and click the heart icon to save them here
             </p>
-            <Link to="/customer/my-posts">
+            <Link to="/customer/dashboard">
               <Button>Browse Listings</Button>
             </Link>
           </div>
@@ -135,7 +114,6 @@ export default function CustomerFavorites() {
             ))}
           </div>
         )}
-      </main>
     </div>
   );
 }
