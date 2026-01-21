@@ -8,7 +8,7 @@ import { LocationMap } from "@/components/map/LocationMap";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,9 +28,16 @@ interface PreviewStepProps {
 export function PreviewStep({ categoryId, details, location, coordinates, onUpdateImages }: PreviewStepProps) {
   const category = categories.find((c) => c.id === categoryId);
   const CategoryIcon = category?.icon;
-  const featuredImage = details.images.find((img) => img.isFeatured) || details.images[0];
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const featuredImageIndex = details.images.findIndex((img) => img.isFeatured);
+  const [currentImageIndex, setCurrentImageIndex] = useState(featuredImageIndex >= 0 ? featuredImageIndex : 0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const newFeaturedIndex = details.images.findIndex((img) => img.isFeatured);
+    if (newFeaturedIndex >= 0) {
+      setCurrentImageIndex(newFeaturedIndex);
+    }
+  }, [details.images]);
 
   const goToPrevious = () => {
     setCurrentImageIndex((prev) => (prev === 0 ? details.images.length - 1 : prev - 1));
@@ -53,8 +60,6 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
       ...img,
       isFeatured: img.id === id,
     }));
-    const newFeaturedIndex = updated.findIndex((img) => img.id === id);
-    setCurrentImageIndex(newFeaturedIndex);
     onUpdateImages?.(updated);
   };
 

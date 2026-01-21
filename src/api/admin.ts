@@ -72,7 +72,7 @@ export const adminApi = {
   },
 
   updateVendorDocumentVerification: async (vendorId: string, verified: boolean): Promise<void> => {
-    await apiClient.patch(`/admin/vendors/${vendorId}/verify`, { documentVerified: verified });
+    await apiClient.patch(`/admin/vendors/${vendorId}/document-verified`, { documentVerified: verified });
   },
 
   getUsers: async (): Promise<User[]> => {

@@ -151,6 +151,7 @@ export const jobsApi = {
     if (data.crossStreet) formData.append('crossStreet', data.crossStreet);
     if (data.showExactAddress !== undefined) formData.append('showExactAddress', data.showExactAddress.toString());
     if (data.phone) formData.append('phone', data.phone);
+    if (data.featuredImageIndex !== undefined) formData.append('featuredImageIndex', data.featuredImageIndex.toString());
     
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {

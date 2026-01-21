@@ -64,7 +64,12 @@ export default function EditJob() {
           title: job.title,
           description: job.description,
           budget: Math.floor(job.budget).toString(),
-          images: job.images ? job.images.map((url, index) => ({
+          images: job.jobImages ? job.jobImages.map((img) => ({
+            id: img.id,
+            file: null as any,
+            preview: img.image,
+            isFeatured: img.isFeatured,
+          })) : job.images ? job.images.map((url, index) => ({
             id: `existing-${index}`,
             file: null as any,
             preview: url,
@@ -176,6 +181,11 @@ export default function EditJob() {
     if (details.images.length !== originalData.details.images.length) return true;
     if (details.images.some((img: any) => img.file instanceof File)) return true;
     
+    // Check if featured image changed
+    const currentFeaturedId = details.images.find((img: any) => img.isFeatured)?.id;
+    const originalFeaturedId = originalData.details.images.find((img: any) => img.isFeatured)?.id;
+    if (currentFeaturedId !== originalFeaturedId) return true;
+    
     return false;
   };
 
@@ -202,6 +212,8 @@ export default function EditJob() {
         .filter((img: any) => img.file instanceof File)
         .map((img: any) => img.file);
 
+      const featuredImageIndex = details.images.findIndex((img: any) => img.isFeatured);
+
       await jobsApi.updateJob(id, {
         title: details.title,
         description: details.description,
@@ -214,6 +226,7 @@ export default function EditJob() {
         showExactAddress: location.showExactAddress,
         images: imageFiles,
         phone: phone,
+        featuredImageIndex: featuredImageIndex >= 0 ? featuredImageIndex : undefined,
       });
 
       // Build specific update message
