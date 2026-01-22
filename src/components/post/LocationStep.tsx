@@ -20,12 +20,15 @@ interface LocationStepProps {
   errors: Partial<Record<keyof LocationDetails, string>>;
   phone?: string;
   onPhoneChange?: (phone: string) => void;
-  onCoordinatesChange?: (coords: { lat: number; lng: number } | null) => void;
+  coordinates?: { lat: number; long: number };
+  onCoordinatesChange?: (coords: { lat: number; long: number } | null) => void;
 }
 
-export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange, onCoordinatesChange }: LocationStepProps) {
+export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange, coordinates: initialCoordinates, onCoordinatesChange }: LocationStepProps) {
   const [zipValid, setZipValid] = useState<boolean | null>(null);
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(
+    initialCoordinates ? { lat: initialCoordinates.lat, lng: initialCoordinates.long } : null
+  );
   const [geocoding, setGeocoding] = useState(false);
 
   const handleChange = <K extends keyof LocationDetails>(key: K, value: LocationDetails[K]) => {
@@ -56,7 +59,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
             const [lng, lat] = data.features[0].center;
             const coords = { lat, lng };
             setCoordinates(coords);
-            onCoordinatesChange?.(coords);
+            onCoordinatesChange?.({ lat, long: lng });
           } else {
             setCoordinates(null);
             onCoordinatesChange?.(null);

@@ -10,7 +10,7 @@ import { PreviewStep } from "@/components/post/PreviewStep";
 import { isValidIllinoisZip } from "@/data/illinoisZips";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { jobsApi, JobCategory } from "@/api/jobs";
+import { jobsApi, JobCategory, UpdateJobRequest } from "@/api/jobs";
 import { categories } from "@/data/categories";
 
 const STEPS = [
@@ -41,6 +41,7 @@ export default function EditJob() {
     zip: "",
     showExactAddress: false,
   });
+  const [coordinates, setCoordinates] = useState<{ lat: number; long: number } | undefined>();
 
   // Store original values for change detection
   const [originalData, setOriginalData] = useState<{
@@ -48,6 +49,7 @@ export default function EditJob() {
     details: JobDetails;
     location: LocationDetails;
     phone: string;
+    coordinates?: { lat: number; long: number };
   } | null>(null);
 
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
@@ -88,6 +90,7 @@ export default function EditJob() {
         setDetails(jobDetails);
         setLocation(jobLocation);
         setPhone(job.phone || "");
+        setCoordinates(job.coordinates);
         
         // Store original data
         setOriginalData({
@@ -95,6 +98,7 @@ export default function EditJob() {
           details: jobDetails,
           location: jobLocation,
           phone: job.phone || "",
+          coordinates: job.coordinates,
         });
       } catch (error) {
         toast.error("Failed to load job");
@@ -212,9 +216,13 @@ export default function EditJob() {
         .filter((img: any) => img.file instanceof File)
         .map((img: any) => img.file);
 
+      const existingImages = details.images
+        .filter((img: any) => !img.file || !(img.file instanceof File))
+        .map((img: any) => img.preview);
+
       const featuredImageIndex = details.images.findIndex((img: any) => img.isFeatured);
 
-      await jobsApi.updateJob(id, {
+      const updateData: UpdateJobRequest = {
         title: details.title,
         description: details.description,
         category: category.slug as JobCategory,
@@ -224,10 +232,23 @@ export default function EditJob() {
         street: location.street,
         crossStreet: location.crossStreet,
         showExactAddress: location.showExactAddress,
-        images: imageFiles,
         phone: phone,
         featuredImageIndex: featuredImageIndex >= 0 ? featuredImageIndex : undefined,
-      });
+      };
+
+      if (imageFiles.length > 0) {
+        updateData.images = imageFiles;
+      }
+
+      if (existingImages.length > 0) {
+        updateData.existingImages = existingImages;
+      }
+
+      if (coordinates) {
+        updateData.coordinates = coordinates;
+      }
+
+      await jobsApi.updateJob(id, updateData);
 
       // Build specific update message
       const updatedFields = [];
@@ -333,6 +354,8 @@ export default function EditJob() {
             errors={locationErrors}
             phone={phone}
             onPhoneChange={setPhone}
+            coordinates={coordinates}
+            onCoordinatesChange={setCoordinates}
           />
         )}
 
