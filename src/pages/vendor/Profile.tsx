@@ -305,54 +305,6 @@ export default function VendorProfile() {
               />
             </div>
 
-            {/* Address */}
-            <div className="space-y-2">
-              <Label htmlFor="address">Street Address</Label>
-              <Input
-                id="address"
-                type="text"
-                placeholder="123 Main Street"
-                value={profile.address}
-                onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
-              />
-            </div>
-
-            {/* City */}
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                type="text"
-                placeholder="Chicago"
-                value={profile.city}
-                onChange={(e) => setProfile(prev => ({ ...prev, city: e.target.value }))}
-              />
-            </div>
-
-            {/* State */}
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                type="text"
-                placeholder="IL"
-                value={profile.state}
-                onChange={(e) => setProfile(prev => ({ ...prev, state: e.target.value }))}
-              />
-            </div>
-
-            {/* Zip Code */}
-            <div className="space-y-2">
-              <Label htmlFor="zipCode">ZIP Code</Label>
-              <Input
-                id="zipCode"
-                type="text"
-                placeholder="60601"
-                value={profile.zipCode}
-                onChange={(e) => setProfile(prev => ({ ...prev, zipCode: e.target.value }))}
-              />
-            </div>
-
             {/* Verification Documents */}
             <div className="space-y-2">
               <Label>Verification Documents (PDF only)</Label>

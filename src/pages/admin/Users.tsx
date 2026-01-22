@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, MoreVertical, Ban, CheckCircle } from "lucide-react";
+import { Search, MoreVertical, Ban, CheckCircle, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -28,6 +29,7 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState<string>("all");
 
   useEffect(() => {
     fetchUsers();
@@ -45,9 +47,26 @@ export default function AdminUsers() {
   };
 
   const filteredUsers = users.filter(
-    (user) =>
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    (user) => {
+      const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const now = new Date();
+      const userDate = new Date(user.createdAt);
+      let matchesDate = true;
+      
+      if (dateFilter === "today") {
+        matchesDate = userDate.toDateString() === now.toDateString();
+      } else if (dateFilter === "week") {
+        const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        matchesDate = userDate >= weekAgo;
+      } else if (dateFilter === "month") {
+        const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        matchesDate = userDate >= monthAgo;
+      }
+      
+      return matchesSearch && matchesDate;
+    }
   );
 
   const handleSuspend = async (userId: string) => {
@@ -180,6 +199,18 @@ export default function AdminUsers() {
                 className="pl-9"
               />
             </div>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger className="w-48">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Filter by date" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">Last 7 Days</SelectItem>
+                <SelectItem value="month">Last 30 Days</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>

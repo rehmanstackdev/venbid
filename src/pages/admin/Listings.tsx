@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Trash2, Eye, X, MoreVertical, MessageSquare, Loader2 } from "lucide-react";
+import { Search, Trash2, Eye, X, MoreVertical, MessageSquare, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,7 @@ export default function AdminListings() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
   const [deleting, setDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [conversationsDialogOpen, setConversationsDialogOpen] = useState(false);
@@ -291,7 +292,10 @@ export default function AdminListings() {
                         src={img.image}
                         alt={`Job image ${idx + 1}`}
                         className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setFullscreenImage(img.image)}
+                        onClick={() => {
+                          setFullscreenImage(img.image);
+                          setFullscreenImageIndex(idx);
+                        }}
                       />
                     </div>
                   ))}
@@ -304,7 +308,10 @@ export default function AdminListings() {
                         src={img}
                         alt={`Job image ${idx + 1}`}
                         className="w-full h-full object-contain cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => setFullscreenImage(img)}
+                        onClick={() => {
+                          setFullscreenImage(img);
+                          setFullscreenImageIndex(idx);
+                        }}
                       />
                     </div>
                   ))}
@@ -356,7 +363,7 @@ export default function AdminListings() {
         </DialogContent>
       </Dialog>
 
-      {fullscreenImage && (
+      {fullscreenImage && selectedListing && (
         <Dialog open={true} onOpenChange={() => setFullscreenImage(null)}>
           <DialogContent className="max-w-fit max-h-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden" style={{boxShadow: 'none'}}>
             <div className="relative">
@@ -365,6 +372,39 @@ export default function AdminListings() {
                 alt="Full size"
                 className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
               />
+              {(() => {
+                const images = selectedListing.jobImages?.map(img => img.image) || selectedListing.images || [];
+                return images.length > 1 && (
+                  <>
+                    <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newIndex = (fullscreenImageIndex - 1 + images.length) % images.length;
+                        setFullscreenImageIndex(newIndex);
+                        setFullscreenImage(images[newIndex]);
+                      }}
+                      className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <button
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const newIndex = (fullscreenImageIndex + 1) % images.length;
+                        setFullscreenImageIndex(newIndex);
+                        setFullscreenImage(images[newIndex]);
+                      }}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </>
+                );
+              })()}
               <button
                 onClick={() => setFullscreenImage(null)}
                 className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"

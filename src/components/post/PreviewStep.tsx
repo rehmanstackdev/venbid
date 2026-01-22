@@ -31,6 +31,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
   const featuredImageIndex = details.images.findIndex((img) => img.isFeatured);
   const [currentImageIndex, setCurrentImageIndex] = useState(featuredImageIndex >= 0 ? featuredImageIndex : 0);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [fullscreenImageIndex, setFullscreenImageIndex] = useState(0);
 
   useEffect(() => {
     const newFeaturedIndex = details.images.findIndex((img) => img.isFeatured);
@@ -81,7 +82,10 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
               src={details.images[currentImageIndex].preview}
               alt={`Image ${currentImageIndex + 1}`}
               className="w-full h-full object-contain cursor-pointer"
-              onClick={() => setFullscreenImage(details.images[currentImageIndex].preview)}
+              onClick={() => {
+                setFullscreenImage(details.images[currentImageIndex].preview);
+                setFullscreenImageIndex(currentImageIndex);
+              }}
             />
             
             {/* Featured badge on main image */}
@@ -258,18 +262,46 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
       {fullscreenImage && (
         <Dialog open={true} onOpenChange={() => setFullscreenImage(null)}>
           <DialogContent className="max-w-fit max-h-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
-            <div className="relative">
-              <img
-                src={fullscreenImage}
-                alt="Full size"
-                className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
-              />
-              <button
-                onClick={() => setFullscreenImage(null)}
-                className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
-              >
-                <X className="h-4 w-4 text-gray-600" />
-              </button>
+            <div className="flex items-center gap-4">
+              {details.images.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newIndex = (fullscreenImageIndex - 1 + details.images.length) % details.images.length;
+                    setFullscreenImageIndex(newIndex);
+                    setFullscreenImage(details.images[newIndex].preview);
+                  }}
+                  className="bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+              )}
+              <div className="relative">
+                <img
+                  src={fullscreenImage}
+                  alt="Full size"
+                  className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
+                />
+                <button
+                  onClick={() => setFullscreenImage(null)}
+                  className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
+                >
+                  <X className="h-4 w-4 text-gray-600" />
+                </button>
+              </div>
+              {details.images.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const newIndex = (fullscreenImageIndex + 1) % details.images.length;
+                    setFullscreenImageIndex(newIndex);
+                    setFullscreenImage(details.images[newIndex].preview);
+                  }}
+                  className="bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </DialogContent>
         </Dialog>

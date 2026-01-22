@@ -57,7 +57,7 @@ export function LocationSearchInput({
       }
       
       fetch(
-        `${mapTilerConfig.geocodingUrl}/${coordinates.lng},${coordinates.lat}.json?key=${mapTilerConfig.apiKey}`
+        `${mapTilerConfig.geocodingUrl}/${coordinates.lng},${coordinates.lat}.json?key=${mapTilerConfig.apiKey}&country=us`
       )
         .then(res => res.json())
         .then(data => {
@@ -93,7 +93,7 @@ export function LocationSearchInput({
         }
         
         const response = await fetch(
-          `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(inputValue)}.json?key=${mapTilerConfig.apiKey}&limit=7`
+          `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(inputValue)}.json?key=${mapTilerConfig.apiKey}&limit=7&country=us`
         );
         
         if (!response.ok) {

@@ -105,18 +105,42 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
       {/* Lightbox */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
         <DialogContent className="max-w-fit max-h-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
-          <div className="relative">
-            <img
-              src={displayImages[currentIndex]}
-              alt={`${title} - Image ${currentIndex + 1}`}
-              className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
-            />
-            <button
-              onClick={() => setLightboxOpen(false)}
-              className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
-            >
-              <X className="h-4 w-4 text-gray-600" />
-            </button>
+          <div className="flex items-center gap-4">
+            {hasMultiple && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPrevious();
+                }}
+                className="bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            <div className="relative">
+              <img
+                src={displayImages[currentIndex]}
+                alt={`${title} - Image ${currentIndex + 1}`}
+                className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
+              />
+              <button
+                onClick={() => setLightboxOpen(false)}
+                className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-4 w-4 text-gray-600" />
+              </button>
+            </div>
+            {hasMultiple && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNext();
+                }}
+                className="bg-black/70 text-white rounded-full p-2 hover:bg-black/90 transition-colors z-10"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -11,8 +11,8 @@ export async function geocodeZipCode(zip: string): Promise<{ lat: number; lng: n
     // Check if input is a 5-digit ZIP code (US format)
     const isUSZip = /^\d{5}$/.test(zip.trim());
     
-    // Add country restriction for ZIP codes to prevent global mismatches
-    const countryParam = isUSZip ? '&country=us' : '';
+    // Always restrict to United States for all geocoding requests
+    const countryParam = '&country=us';
     
     const response = await fetch(
       `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(zip)}.json?key=${mapTilerConfig.apiKey}${countryParam}`

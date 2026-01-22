@@ -1,5 +1,5 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, User, Heart, Share2, Loader2, Pencil } from "lucide-react";
+import { ArrowLeft, MapPin, Calendar, User, Heart, Share2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -71,13 +71,6 @@ const ListingDetail = () => {
             <h1 className="font-semibold truncate text-sm sm:text-base">{listing.title}</h1>
           </div>
           <div className="flex gap-0.5 sm:gap-1">
-            {isOwner && (
-              <Link to={`/edit-listing/${id}`}>
-                <Button variant="ghost" size="icon" className="h-9 w-9">
-                  <Pencil className="h-4 w-4 sm:h-5 sm:w-5" />
-                </Button>
-              </Link>
-            )}
             <Button
               variant="ghost"
               size="icon"
