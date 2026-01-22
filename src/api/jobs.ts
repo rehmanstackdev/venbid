@@ -32,6 +32,10 @@ export interface CreateJobRequest {
   };
 }
 
+export interface UpdateJobRequest extends Partial<CreateJobRequest> {
+  existingImages?: string[];
+}
+
 export interface Job {
   id: string;
   title: string;
@@ -138,7 +142,7 @@ export const jobsApi = {
     return response.data.data || response.data;
   },
 
-  updateJob: async (id: string, data: Partial<CreateJobRequest>): Promise<Job> => {
+  updateJob: async (id: string, data: UpdateJobRequest): Promise<Job> => {
     const formData = new FormData();
     
     if (data.title) formData.append('title', data.title);
@@ -152,6 +156,15 @@ export const jobsApi = {
     if (data.showExactAddress !== undefined) formData.append('showExactAddress', data.showExactAddress.toString());
     if (data.phone) formData.append('phone', data.phone);
     if (data.featuredImageIndex !== undefined) formData.append('featuredImageIndex', data.featuredImageIndex.toString());
+    if (data.coordinates) {
+      formData.append('coordinates', JSON.stringify(data.coordinates));
+    }
+    
+    if (data.existingImages && data.existingImages.length > 0) {
+      data.existingImages.forEach((imageUrl) => {
+        formData.append('existingImages', imageUrl);
+      });
+    }
     
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {
