@@ -209,7 +209,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
                     <img
                       src={image.preview}
                       alt={`Thumbnail ${index + 1}`}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain bg-muted"
                     />
                     {index === currentImageIndex && (
                       <div className="absolute inset-0 bg-primary/10" />
@@ -257,28 +257,21 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
       {/* Fullscreen image dialog */}
       {fullscreenImage && (
         <Dialog open={true} onOpenChange={() => setFullscreenImage(null)}>
-          <DialogPortal>
-            <DialogOverlay className="bg-black/95" />
-            <DialogPrimitive.Content
-              className="fixed inset-0 z-50 flex items-center justify-center p-0"
-              onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 h-10 w-10"
-                onClick={() => setFullscreenImage(null)}
-              >
-                <X className="h-6 w-6" />
-              </Button>
+          <DialogContent className="max-w-fit max-h-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+            <div className="relative">
               <img
                 src={fullscreenImage}
                 alt="Full size"
-                className="max-w-[95vw] max-h-[95vh] object-contain"
-                style={{ width: 'auto', height: 'auto' }}
+                className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
               />
-            </DialogPrimitive.Content>
-          </DialogPortal>
+              <button
+                onClick={() => setFullscreenImage(null)}
+                className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="h-4 w-4 text-gray-600" />
+              </button>
+            </div>
+          </DialogContent>
         </Dialog>
       )}
 

@@ -120,7 +120,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
                           : "border-transparent opacity-60 hover:opacity-100"
                       }`}
                     >
-                      <img src={img} className="w-full h-full object-cover" />
+                      <img src={img} className="w-full h-full object-contain bg-muted" />
                     </button>
                   ))}
                 </div>

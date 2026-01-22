@@ -152,7 +152,7 @@ export default function CustomerMyPosts() {
           <img
             src={featuredImage}
             alt={listing.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain bg-muted"
           />
           <Button
             variant="ghost"

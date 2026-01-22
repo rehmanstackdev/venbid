@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -94,7 +94,7 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
                 <img
                   src={image}
                   alt={`Thumbnail ${index + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain bg-muted"
                 />
               </button>
             ))}
@@ -104,13 +104,19 @@ export function ImageGallery({ images, title }: ImageGalleryProps) {
 
       {/* Lightbox */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="max-w-[100vw] max-h-[100vh] w-full h-full p-0 bg-black/95 border-none [&>button]:text-white [&>button]:h-10 [&>button]:w-10 [&>button>svg]:h-6 [&>button>svg]:w-6 [&>button]:bg-transparent [&>button]:border-none [&>button]:hover:bg-white/10 [&>button]:flex [&>button]:items-center [&>button]:justify-center">
-          <div className="relative w-full h-full flex items-center justify-center p-4">
+        <DialogContent className="max-w-fit max-h-fit p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+          <div className="relative">
             <img
               src={displayImages[currentIndex]}
               alt={`${title} - Image ${currentIndex + 1}`}
-              className="max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] object-contain"
+              className="max-h-[70vh] max-w-[70vw] object-contain rounded-lg"
             />
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute -top-2 -right-2 bg-white rounded-full p-1 shadow-lg hover:bg-gray-100 transition-colors"
+            >
+              <X className="h-4 w-4 text-gray-600" />
+            </button>
           </div>
         </DialogContent>
       </Dialog>

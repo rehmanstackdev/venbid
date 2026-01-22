@@ -94,7 +94,7 @@ export function ImageUpload({
             <img
               src={featuredImage.preview}
               alt="Featured"
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain bg-muted"
             />
             <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
               <Star className="h-3 w-3 fill-current" />
@@ -130,7 +130,7 @@ export function ImageUpload({
                 <img
                   src={image.preview}
                   alt="Preview"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain bg-muted"
                 />
                 {image.isFeatured && (
                   <div className="absolute top-1 left-1 bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-medium flex items-center gap-0.5">

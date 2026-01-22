@@ -23,6 +23,7 @@ export default function VendorAuth() {
   const [name, setName] = useState("");
   const [serviceCategory, setServiceCategory] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState("");
 
   // Redirect if already logged in
   useEffect(() => {
@@ -250,7 +251,15 @@ export default function VendorAuth() {
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value.replace(/\s/g, ''))}
+                        onChange={(e) => {
+                          const newPassword = e.target.value.replace(/\s/g, '');
+                          setPassword(newPassword);
+                          if (newPassword.length > 0 && newPassword.length < 6) {
+                            setPasswordError("Password must be at least 6 characters.");
+                          } else {
+                            setPasswordError("");
+                          }
+                        }}
                         autoComplete="new-password"
                         required
                         minLength={6}
@@ -263,6 +272,9 @@ export default function VendorAuth() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
+                    {passwordError && (
+                      <p className="text-sm text-red-500">{passwordError}</p>
+                    )}
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
