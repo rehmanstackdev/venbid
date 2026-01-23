@@ -47,6 +47,7 @@ export interface Job {
   street: string;
   crossStreet: string;
   showExactAddress: boolean;
+  phone?: string;
   images: string[];
   jobImages?: Array<{
     id: string;
@@ -162,7 +163,7 @@ export const jobsApi = {
     
     if (data.existingImages && data.existingImages.length > 0) {
       data.existingImages.forEach((imageUrl) => {
-        formData.append('existingImages', imageUrl);
+        formData.append('existingImages[]', imageUrl);
       });
     }
     

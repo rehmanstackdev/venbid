@@ -144,16 +144,11 @@ export default function VendorProfile() {
       
       await vendorApi.updateProfile(dataToSend);
       
-      // Fetch updated profile to get latest coordinates
-      const updatedProfile = await vendorApi.getProfile();
-      const updatedData = updatedProfile.data || updatedProfile;
-      const updatedUserData = updatedData.user || updatedData;
-      
-      // Update localStorage with new coordinates
+      // Update localStorage immediately with new coordinates
       const currentUser = localStorage.getItem('user_data');
       if (currentUser) {
         const userData = JSON.parse(currentUser);
-        userData.coordinates = updatedUserData.coordinates;
+        userData.coordinates = profile.coordinates;
         localStorage.setItem('user_data', JSON.stringify(userData));
       }
       

@@ -40,7 +40,7 @@ export default function CustomerProfile() {
           state: data.state || '',
           zipCode: data.zipCode || '',
           coordinates: coords,
-          locationSearch: '',
+          locationSearch: data.address || '',
         }));
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -127,12 +127,13 @@ export default function CustomerProfile() {
 
             {/* Location Search */}
             <LocationSearchInput
-              value=""
+              value={profile.locationSearch}
               coordinates={profile.coordinates.lat !== 0 ? { lat: profile.coordinates.lat, lng: profile.coordinates.long } : undefined}
               onChange={(address, coordinates) => {
                 setProfile(prev => ({
                   ...prev,
                   locationSearch: address,
+                  address: address,
                   coordinates: { lat: coordinates.lat, long: coordinates.lng },
                 }));
               }}

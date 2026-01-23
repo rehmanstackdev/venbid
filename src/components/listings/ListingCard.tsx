@@ -58,10 +58,10 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
                 ${listing.budget}
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                <span>{listing.city}</span>
+                <MapPin className="h-3 w-3 flex-shrink-0" />
+                <span className="truncate">{listing.city}</span>
                 <span className="mx-1">•</span>
-                <span>{formatTimeAgo(listing.createdAt)}</span>
+                <span className="whitespace-nowrap">{formatTimeAgo(listing.createdAt)}</span>
               </div>
             </CardContent>
           </div>
@@ -120,11 +120,11 @@ export function ListingCard({ listing, compact = false }: ListingCardProps) {
 
           {/* Location and time */}
           <div className="flex items-center justify-between text-sm text-muted-foreground mt-auto">
-            <div className="flex items-center gap-1">
-              <MapPin className="h-3.5 w-3.5" />
-              <span>{listing.city} – {listing.zip}</span>
+            <div className="flex items-center gap-1 min-w-0 flex-1">
+              <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+              <span className="truncate">{listing.city} – {listing.zip}</span>
             </div>
-            <span>{formatTimeAgo(listing.createdAt)}</span>
+            <span className="whitespace-nowrap ml-2">{formatTimeAgo(listing.createdAt)}</span>
           </div>
         </CardContent>
       </Card>

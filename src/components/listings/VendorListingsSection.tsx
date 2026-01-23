@@ -23,6 +23,27 @@ export function VendorListingsSection({ selectedCategory }: VendorListingsSectio
   const [maxPrice, setMaxPrice] = useState("");
   const [mapFilteredListings, setMapFilteredListings] = useState<VendorListing[] | null>(null);
 
+  // Ensure coordinates are in localStorage
+  useEffect(() => {
+    const userData = localStorage.getItem('user_data');
+    if (userData) {
+      const parsed = JSON.parse(userData);
+      if (!parsed.coordinates || (parsed.coordinates.lat === 0 && parsed.coordinates.long === 0)) {
+        // Fetch vendor profile to get coordinates
+        import('@/api/vendor').then(({ vendorApi }) => {
+          vendorApi.getProfile().then((response) => {
+            const data = response.data || response;
+            const vendorData = data.user || data;
+            if (vendorData.coordinates) {
+              parsed.coordinates = vendorData.coordinates;
+              localStorage.setItem('user_data', JSON.stringify(parsed));
+            }
+          }).catch(err => console.error('Error fetching vendor coordinates:', err));
+        });
+      }
+    }
+  }, []);
+
   // Get user coordinates from localStorage
   const userCoordinates = useMemo(() => {
     const userData = localStorage.getItem('user_data');
