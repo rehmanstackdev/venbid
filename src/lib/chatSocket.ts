@@ -22,19 +22,27 @@ export const initChatSocket = (token: string): Socket | null => {
     });
 
     socket.on('connect', () => {
-      console.log('✅ WebSocket connected');
+      console.log('✅ Frontend: WebSocket connected to', SOCKET_URL);
     });
 
     socket.on('connect_error', (error) => {
-      console.warn('⚠️ WebSocket connection failed (app will work without real-time updates):', error.message);
+      console.warn('⚠️ Frontend: WebSocket connection failed:', error.message);
     });
 
     socket.on('disconnect', (reason) => {
-      console.log('WebSocket disconnected:', reason);
+      console.log('🔌 Frontend: WebSocket disconnected:', reason);
     });
 
     socket.on('error', (data) => {
-      console.error('Chat socket error:', data);
+      console.error('❌ Frontend: Chat socket error:', data);
+    });
+
+    socket.on('messageSent', (data) => {
+      console.log('📤 Frontend: Message sent confirmation:', data);
+    });
+
+    socket.on('newMessage', (data) => {
+      console.log('📥 Frontend: New message received:', data);
     });
 
     return socket;
@@ -54,11 +62,16 @@ export const disconnectChatSocket = () => {
 };
 
 export const sendMessage = (data: { jobId: string; recipientId: string; content: string }) => {
+  console.log('🚀 Frontend: Attempting to send message via WebSocket:', data);
+  console.log('🔌 Frontend: Socket connected?', socket?.connected);
+  console.log('🔌 Frontend: Socket exists?', !!socket);
+  
   if (socket?.connected) {
+    console.log('✅ Frontend: Emitting sendMessage event');
     socket.emit('sendMessage', data);
     return true;
   }
-  console.warn('WebSocket not connected, cannot send message');
+  console.warn('❌ Frontend: WebSocket not connected, cannot send message');
   return false;
 };
 
