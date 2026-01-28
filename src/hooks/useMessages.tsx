@@ -5,34 +5,49 @@ import { getChatSocket, initChatSocket, joinConversation, leaveConversation } fr
 
 export interface Message {
   id: string;
-  conversation_id: string;
-  sender_id: string;
+  conversationId: string;
+  senderId: string;
   content: string;
-  created_at: string;
-  read: boolean;
+  createdAt: string;
+  isRead: boolean;
+  sender?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
+  };
 }
 
 export interface Conversation {
   id: string;
-  listing_id: string;
-  customer_id: string;
-  vendor_id: string;
-  created_at: string;
-  updated_at: string;
-  listing?: {
+  jobId: string;
+  customerId: string;
+  vendorId: string;
+  createdAt: string;
+  updatedAt: string;
+  job?: {
+    id: string;
     title: string;
-    images: string[] | null;
-    category_name: string;
+    category?: string;
+    jobImages?: Array<{ image: string; isFeatured: boolean }>;
   };
   customer?: {
-    name: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
   };
   vendor?: {
-    name: string;
+    id: string;
+    firstName: string;
+    lastName: string;
+    name?: string;
     documentVerified?: boolean;
   };
-  lastMessage?: Message;
-  unreadCount?: number;
+  lastMessage?: string | null;
+  lastMessageAt?: string | null;
+  customerUnreadCount?: number;
+  vendorUnreadCount?: number;
 }
 
 export function useConversations() {
@@ -55,32 +70,33 @@ export function useConversations() {
         
         return {
           id: room.id,
-          listing_id: room.jobId,
-          customer_id: room.customerId,
-          vendor_id: room.vendorId,
-          created_at: room.createdAt,
-          updated_at: room.updatedAt,
-          listing: {
+          jobId: room.jobId,
+          customerId: room.customerId,
+          vendorId: room.vendorId,
+          createdAt: room.createdAt,
+          updatedAt: room.updatedAt,
+          job: {
+            id: room.job.id,
             title: room.job.title,
-            images: null,
-            category_name: '',
+            category: room.job.category,
           },
           customer: {
-            name: room.customer.name,
+            id: room.customer.id,
+            firstName: room.customer.firstName,
+            lastName: room.customer.lastName,
+            name: room.customer.name || `${room.customer.firstName} ${room.customer.lastName}`.trim(),
           },
           vendor: {
-            name: room.vendor.name,
+            id: room.vendor.id,
+            firstName: room.vendor.firstName,
+            lastName: room.vendor.lastName,
+            name: room.vendor.name || `${room.vendor.firstName} ${room.vendor.lastName}`.trim(),
             documentVerified: room.vendor.documentVerified,
           },
-          lastMessage: room.lastMessage ? {
-            id: '',
-            conversation_id: room.id,
-            sender_id: '',
-            content: room.lastMessage,
-            created_at: room.lastMessageAt,
-            read: unreadCount === 0,
-          } : undefined,
-          unreadCount,
+          lastMessage: room.lastMessage,
+          lastMessageAt: room.lastMessageAt,
+          customerUnreadCount: room.customerUnreadCount,
+          vendorUnreadCount: room.vendorUnreadCount,
         };
       });
       
@@ -139,14 +155,22 @@ export function useConversationMessages(conversationId: string | null) {
 
     try {
       const apiMessages = await chatApi.getMessages(conversationId);
+      
       const transformedMessages: Message[] = apiMessages.map(msg => ({
         id: msg.id,
-        conversation_id: msg.conversationId,
-        sender_id: msg.senderId,
+        conversationId: msg.conversationId,
+        senderId: msg.senderId,
         content: msg.content,
-        created_at: msg.createdAt,
-        read: msg.isRead,
+        createdAt: msg.createdAt,
+        isRead: msg.isRead,
+        sender: msg.sender ? {
+          id: msg.sender.id,
+          firstName: msg.sender.firstName,
+          lastName: msg.sender.lastName,
+          name: msg.sender.name || `${msg.sender.firstName} ${msg.sender.lastName}`.trim(),
+        } : undefined,
       }));
+      
       setMessages(transformedMessages);
       markAsRead();
     } catch (error) {
@@ -164,29 +188,59 @@ export function useConversationMessages(conversationId: string | null) {
     }
     
     const socket = getChatSocket();
-    if (socket?.connected && conversationId) {
-      socket.on('newMessage', (data: any) => {
+    if (socket && conversationId) {
+      const handleNewMessage = (data: any) => {
         if (data.conversationId === conversationId) {
           const newMsg: Message = {
             id: data.message.id,
-            conversation_id: data.message.conversationId,
-            sender_id: data.message.senderId,
+            conversationId: data.message.conversationId,
+            senderId: data.message.senderId,
             content: data.message.content,
-            created_at: data.message.createdAt,
-            read: data.message.isRead,
+            createdAt: data.message.createdAt,
+            isRead: data.message.isRead,
+            sender: data.message.sender,
           };
-          setMessages(prev => [...prev, newMsg]);
-          if (newMsg.sender_id !== user?.id) {
+          setMessages(prev => {
+            if (prev.some(msg => msg.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg];
+          });
+          if (newMsg.senderId !== user?.id) {
             markAsRead();
           }
         }
-      });
+      };
+      
+      const handleMessageSent = (data: any) => {
+        if (data.success && data.message.conversationId === conversationId) {
+          const newMsg: Message = {
+            id: data.message.id,
+            conversationId: data.message.conversationId,
+            senderId: data.message.senderId,
+            content: data.message.content,
+            createdAt: data.message.createdAt,
+            isRead: data.message.isRead,
+            sender: data.message.sender,
+          };
+          setMessages(prev => {
+            if (prev.some(msg => msg.id === newMsg.id)) {
+              return prev;
+            }
+            return [...prev, newMsg];
+          });
+        }
+      };
+      
+      socket.on('newMessage', handleNewMessage);
+      socket.on('messageSent', handleMessageSent);
       
       return () => {
         if (conversationId) {
           leaveConversation(conversationId);
         }
-        socket.off('newMessage');
+        socket.off('newMessage', handleNewMessage);
+        socket.off('messageSent', handleMessageSent);
       };
     }
   }, [conversationId, user]);

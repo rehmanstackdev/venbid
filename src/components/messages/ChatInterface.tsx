@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
 
 export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
   const { messages, refetch } = useConversationMessages(conversation.id);
+  
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState("");
   const [showJobDialog, setShowJobDialog] = useState(false);
@@ -35,21 +36,21 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const prevMessageCountRef = useRef(messages.length);
 
-  const isVendor = user?.id === conversation.vendor_id;
-  const otherPartyId = isVendor ? conversation.customer_id : conversation.vendor_id;
+  const isVendor = user?.id === conversation.vendorId;
+  const otherPartyId = isVendor ? conversation.customerId : conversation.vendorId;
   const otherPartyName = isVendor
     ? conversation.customer?.name || "Customer"
     : conversation.vendor?.name || "Vendor";
   
   const { sendMessage, sending } = useSendMessage(
     conversation.id,
-    conversation.listing_id,
+    conversation.jobId,
     otherPartyId
   );
 
-  const listingImage = conversation.listing?.images?.[0] || "/placeholder.svg";
-  const listingTitle = conversation.listing?.title || "Job listing";
-  const categoryName = conversation.listing?.category_name || "";
+  const listingImage = conversation.job?.jobImages?.[0]?.image || "/placeholder.svg";
+  const listingTitle = conversation.job?.title || "Job listing";
+  const categoryName = conversation.job?.category || "";
 
  
   useEffect(() => {
@@ -70,7 +71,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
     const success = await sendMessage(newMessage);
     if (success) {
       setNewMessage("");
-      setTimeout(() => refetch(), 100);
+      // Don't need to refetch as WebSocket will handle real-time updates
     }
   };
 
@@ -83,7 +84,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
 
   const handleShowJobDetails = async () => {
     try {
-      const job = await jobsApi.getJobById(conversation.listing_id);
+      const job = await jobsApi.getJobById(conversation.jobId);
       setJobDetails(job);
       setShowJobDialog(true);
     } catch (error) {
@@ -93,7 +94,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
 
   
   const groupedMessages = messages.reduce((groups, message) => {
-    const date = new Date(message.created_at).toDateString();
+    const date = new Date(message.createdAt).toDateString();
     if (!groups[date]) {
       groups[date] = [];
     }
@@ -173,7 +174,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
                
                 <div className="space-y-3">
                   {dayMessages.map((message) => {
-                    const isOwn = message.sender_id === user?.id;
+                    const isOwn = message.senderId === user?.id;
 
                     return (
                       <div
@@ -200,7 +201,7 @@ export function ChatInterface({ conversation, onBack }: ChatInterfaceProps) {
                               isOwn ? "text-primary-foreground/70" : "text-muted-foreground"
                             )}
                           >
-                            {formatChatTime(message.created_at)}
+                            {formatChatTime(message.createdAt)}
                           </p>
                         </div>
                       </div>

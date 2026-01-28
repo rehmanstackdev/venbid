@@ -16,11 +16,13 @@ export function ConversationListItem({
   onSelect,
   currentUserId,
 }: ConversationListItemProps) {
-  const isVendor = currentUserId === conversation.vendor_id;
+  const isVendor = currentUserId === conversation.vendorId;
   const otherUserName = isVendor 
     ? conversation.customer?.name || "Customer"
     : conversation.vendor?.name || "Vendor";
-  const hasUnread = (conversation.unreadCount || 0) > 0;
+  const isCustomer = currentUserId === conversation.customerId;
+  const unreadCount = isCustomer ? conversation.customerUnreadCount : conversation.vendorUnreadCount;
+  const hasUnread = (unreadCount || 0) > 0;
   
   return (
     <button
@@ -45,15 +47,15 @@ export function ConversationListItem({
           )}>
             {otherUserName}
           </span>
-          {conversation.lastMessage && (
+          {conversation.lastMessageAt && (
             <span className="text-xs text-muted-foreground flex-shrink-0">
-              {formatMessageTime(conversation.lastMessage.created_at)}
+              {formatMessageTime(conversation.lastMessageAt)}
             </span>
           )}
         </div>
         
         <p className="text-xs text-muted-foreground truncate">
-          {conversation.listing?.title || "Job listing"}
+          {conversation.job?.title || "Job listing"}
         </p>
         
         {conversation.lastMessage && (
@@ -61,17 +63,14 @@ export function ConversationListItem({
             "text-sm truncate",
             hasUnread ? "text-foreground font-medium" : "text-muted-foreground"
           )}>
-            {conversation.lastMessage.sender_id === currentUserId && (
-              <span className="text-muted-foreground">You: </span>
-            )}
-            {conversation.lastMessage.content.split(' ').slice(0, 3).join(' ')}{conversation.lastMessage.content.split(' ').length > 3 ? '...' : ''}
+            {conversation.lastMessage.split(' ').slice(0, 3).join(' ')}{conversation.lastMessage.split(' ').length > 3 ? '...' : ''}
           </p>
         )}
       </div>
       
       {hasUnread && (
         <Badge className="h-5 min-w-5 px-1.5 rounded-full flex items-center justify-center text-xs">
-          {conversation.unreadCount}
+          {unreadCount}
         </Badge>
       )}
     </button>

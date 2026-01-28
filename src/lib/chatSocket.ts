@@ -54,7 +54,12 @@ export const disconnectChatSocket = () => {
 };
 
 export const sendMessage = (data: { jobId: string; recipientId: string; content: string }) => {
-  socket?.emit('sendMessage', data);
+  if (socket?.connected) {
+    socket.emit('sendMessage', data);
+    return true;
+  }
+  console.warn('WebSocket not connected, cannot send message');
+  return false;
 };
 
 export const joinConversation = (conversationId: string) => {

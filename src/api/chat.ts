@@ -13,6 +13,7 @@ export interface ChatMessage {
     firstName: string;
     lastName: string;
     email: string;
+    name?: string;
   };
 }
 
@@ -21,8 +22,8 @@ export interface ChatRoom {
   customerId: string;
   vendorId: string;
   jobId: string;
-  lastMessage: string;
-  lastMessageAt: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
   customerUnreadCount: number;
   vendorUnreadCount: number;
   createdAt: string;
@@ -31,15 +32,19 @@ export interface ChatRoom {
     id: string;
     firstName: string;
     lastName: string;
+    name?: string;
   };
   vendor: {
     id: string;
     firstName: string;
     lastName: string;
+    name?: string;
+    documentVerified?: boolean;
   };
   job: {
     id: string;
     title: string;
+    category?: string;
   };
 }
 
