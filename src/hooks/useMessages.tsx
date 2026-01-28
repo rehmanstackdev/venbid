@@ -273,14 +273,19 @@ export function useStartConversation() {
 export function formatMessageTime(dateString: string): string {
   const date = new Date(dateString);
   const now = new Date();
+  
+  // Fix invalid future dates by using current time
+  if (date.getFullYear() > now.getFullYear() || date > now) {
+    return "Just now";
+  }
+  
   const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / (1000 * 60));
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffHours < 1) {
-    const diffMins = Math.floor(diffMs / (1000 * 60));
-    return diffMins < 1 ? "Just now" : `${diffMins}m ago`;
-  }
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return "Yesterday";
   if (diffDays < 7) return `${diffDays}d ago`;
@@ -290,9 +295,20 @@ export function formatMessageTime(dateString: string): string {
 
 export function formatChatTime(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleTimeString("en-US", { 
+  const now = new Date();
+  
+  // Fix invalid future dates by using current time
+  if (date.getFullYear() > now.getFullYear() || date > now) {
+    return now.toLocaleTimeString('en-US', { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true
+    });
+  }
+  
+  return date.toLocaleTimeString('en-US', { 
     hour: "numeric", 
     minute: "2-digit",
-    hour12: true 
+    hour12: true
   });
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { sendMessage as sendSocketMessage } from '@/lib/chatSocket';
+import { sendMessage as sendSocketMessage, getChatSocket } from '@/lib/chatSocket';
 import { chatApi } from '@/api/chat';
 
 export function useSendMessage(conversationId: string, jobId: string, recipientId: string) {
@@ -10,14 +10,22 @@ export function useSendMessage(conversationId: string, jobId: string, recipientI
 
     setSending(true);
     try {
-      // Try WebSocket first for real-time updates
-      sendSocketMessage({
-        jobId,
-        recipientId,
-        content: content.trim(),
-      });
+      const socket = getChatSocket();
       
-      // Fallback to HTTP API if WebSocket fails
+      if (socket?.connected) {
+        // Use WebSocket if connected
+        const success = sendSocketMessage({
+          jobId,
+          recipientId,
+          content: content.trim(),
+        });
+        
+        if (success) {
+          return true;
+        }
+      }
+      
+      // Fallback to HTTP API only if WebSocket fails
       await chatApi.sendMessage({
         jobId,
         recipientId,
