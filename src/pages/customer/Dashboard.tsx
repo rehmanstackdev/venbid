@@ -57,10 +57,10 @@ export default function CustomerDashboard() {
               <Menu className="h-5 w-5" />
             </Button>
             <Link to="/" className="hidden lg:flex items-center w-64 pl-6 shrink-0">
-              <span className="text-3xl font-bold text-primary">Venbid</span>
+              <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-10" />
             </Link>
             <Link to="/" className="flex lg:hidden items-center pl-2">
-              <span className="text-2xl font-bold text-primary">Venbid</span>
+              <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-8" />
             </Link>
             <nav className="hidden sm:flex items-center gap-6 pl-6">
               <Link 
@@ -139,7 +139,7 @@ export default function CustomerDashboard() {
         <div className="fixed inset-0 z-50 lg:hidden pointer-events-none">
           <div className="fixed inset-y-0 left-0 w-64 bg-card border-r border-border pointer-events-auto">
             <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="text-xl font-bold text-primary">Venbid</span>
+              <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-8" />
               <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>

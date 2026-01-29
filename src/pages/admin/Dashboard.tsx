@@ -184,6 +184,7 @@ export default function AdminDashboard() {
           <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-8" />
           <div>
             <h1 className="text-lg font-semibold">Admin Dashboard</h1>
             <p className="text-xs text-muted-foreground">Vendor Verification Management</p>
