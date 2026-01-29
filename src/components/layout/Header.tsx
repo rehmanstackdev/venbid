@@ -51,7 +51,7 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
             </SheetTrigger>
             <SheetContent side="left" className="w-72 p-0">
               <div className="p-4 border-b border-border">
-                <span className="text-2xl font-bold text-primary">Venbid</span>
+                <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-8" />
               </div>
               <CategorySidebar 
                 selectedCategory={selectedCategory} 
@@ -61,11 +61,11 @@ export function Header({ selectedCategory, onSelectCategory }: HeaderProps) {
           </Sheet>
 
           <Link to="/" className="hidden lg:flex items-center w-64 pl-6 shrink-0">
-            <span className="text-3xl font-bold text-primary">Venbid</span>
+            <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-10" />
           </Link>
 
           <Link to="/" className="flex lg:hidden items-center pl-2">
-            <span className="text-2xl font-bold text-primary">Venbid</span>
+            <img src="/venbid-high-resolution-logo-transparent.png" alt="Venbid" className="h-8" />
           </Link>
 
           <nav className="hidden sm:flex items-center gap-6 pl-6">
