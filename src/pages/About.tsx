@@ -1,6 +1,21 @@
 import { Header } from "@/components/layout/Header";
 import { useState } from "react";
-import { Instagram, Linkedin, Music2, Twitter } from "lucide-react";
+import { Instagram, Linkedin, Music2 } from "lucide-react";
+
+const XIcon = ({ className, ...rest }: React.ComponentProps<"svg">) => (
+  <svg
+    viewBox="0 0 16.001 16.001"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+    {...rest}
+  >
+    <g transform="translate(0 0)">
+      <path d="M33.707,8,40.854.854a.5.5,0,0,0-.708-.708L33,7.293,25.854.146a.5.5,0,0,0-.708.708L32.293,8l-7.147,7.146a.5.5,0,0,0,.708.708L33,8.707l7.146,7.147a.5.5,0,0,0,.708-.708Z" transform="translate(-25 0)" />
+    </g>
+  </svg>
+);
 
 const socialLinks = [
   {
@@ -11,7 +26,7 @@ const socialLinks = [
   {
     name: "X",
     href: "https://x.com/Venbid_official",
-    Icon: Twitter,
+    Icon: XIcon,
   },
   {
     name: "LinkedIn",
@@ -145,9 +160,9 @@ const About = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={name}
-                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary/60 hover:text-foreground"
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-red-500 hover:text-red-500"
               >
-                <Icon className="h-5 w-5" aria-hidden="true" />
+                <Icon className="h-4 w-4" aria-hidden="true" />
                 <span className="sr-only">{name}</span>
               </a>
             ))}
