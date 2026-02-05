@@ -1,6 +1,44 @@
-import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { useState } from "react";
+import { Instagram, Linkedin, Music2 } from "lucide-react";
+
+const XIcon = ({ className, ...rest }: React.ComponentProps<"svg">) => (
+  <svg
+    viewBox="0 0 16.001 16.001"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+    {...rest}
+  >
+    <g transform="translate(0 0)">
+      <path d="M33.707,8,40.854.854a.5.5,0,0,0-.708-.708L33,7.293,25.854.146a.5.5,0,0,0-.708.708L32.293,8l-7.147,7.146a.5.5,0,0,0,.708.708L33,8.707l7.146,7.147a.5.5,0,0,0,.708-.708Z" transform="translate(-25 0)" />
+    </g>
+  </svg>
+);
+
+const socialLinks = [
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/venbid",
+    Icon: Instagram,
+  },
+  {
+    name: "X",
+    href: "https://x.com/Venbid_official",
+    Icon: XIcon,
+  },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/company/venbid",
+    Icon: Linkedin,
+  },
+  {
+    name: "TikTok",
+    href: "https://www.tiktok.com/@venbid_official",
+    Icon: Music2,
+  },
+];
 
 const About = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -110,6 +148,25 @@ const About = () => {
               <span>Verified vendors show a badge next to their name</span>
             </li>
           </ul>
+        </section>
+
+        <section className="border-t border-border pt-8 text-center">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Follow Venbid</h2>
+          <div className="flex flex-wrap justify-center gap-4">
+            {socialLinks.map(({ name, href, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-red-500 hover:text-red-500"
+              >
+                <Icon className="h-4 w-4" aria-hidden="true" />
+                <span className="sr-only">{name}</span>
+              </a>
+            ))}
+          </div>
         </section>
       </main>
     </div>
