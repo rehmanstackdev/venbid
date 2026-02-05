@@ -1,6 +1,29 @@
-import { Link } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { useState } from "react";
+import { Instagram, Linkedin, Music2, Twitter } from "lucide-react";
+
+const socialLinks = [
+  {
+    name: "Instagram",
+    href: "https://www.instagram.com/venbid",
+    Icon: Instagram,
+  },
+  {
+    name: "X",
+    href: "https://x.com/Venbid_official",
+    Icon: Twitter,
+  },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/company/venbid",
+    Icon: Linkedin,
+  },
+  {
+    name: "TikTok",
+    href: "https://www.tiktok.com/@venbid_official",
+    Icon: Music2,
+  },
+];
 
 const About = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
@@ -110,6 +133,25 @@ const About = () => {
               <span>Verified vendors show a badge next to their name</span>
             </li>
           </ul>
+        </section>
+
+        <section className="border-t border-border pt-8 text-center">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Follow Venbid</h2>
+          <div className="flex flex-wrap justify-center gap-4">
+            {socialLinks.map(({ name, href, Icon }) => (
+              <a
+                key={name}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={name}
+                className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-border text-muted-foreground transition hover:border-primary/60 hover:text-foreground"
+              >
+                <Icon className="h-5 w-5" aria-hidden="true" />
+                <span className="sr-only">{name}</span>
+              </a>
+            ))}
+          </div>
         </section>
       </main>
     </div>
