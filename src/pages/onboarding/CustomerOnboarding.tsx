@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { customerApi } from "@/api/customer";
 import { LocationSearchInput } from "@/components/location/LocationSearchInput";
+import { isValidUsZip } from "@/lib/validation";
 
 export default function CustomerOnboarding() {
   const navigate = useNavigate();
@@ -29,6 +30,15 @@ export default function CustomerOnboarding() {
     setIsLoading(true);
 
     try {
+      if (!isValidUsZip(formData.zipCode)) {
+        toast({
+          title: "Invalid ZIP code",
+          description: "Please enter a valid US ZIP code.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
       const { locationSearch, ...profileData } = formData;
       await customerApi.updateProfile(profileData);
       toast({ title: "Profile completed!", description: "Welcome to Venbid." });

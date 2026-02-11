@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { vendorApi } from "@/api/vendor";
 import { LocationSearchInput } from "@/components/location/LocationSearchInput";
 import { categories } from "@/data/categories";
+import { isValidUsZip } from "@/lib/validation";
 
 export default function VendorOnboarding() {
   const navigate = useNavigate();
@@ -52,6 +53,11 @@ export default function VendorOnboarding() {
     setIsLoading(true);
 
     try {
+      if (formData.zipCode.trim().length > 0 && !isValidUsZip(formData.zipCode)) {
+        toast.error("Please enter a valid US ZIP code.");
+        setIsLoading(false);
+        return;
+      }
       const { locationSearch, ...profileData } = formData;
       
       console.log('Onboarding - formData before send:', formData);

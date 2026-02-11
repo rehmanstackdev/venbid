@@ -47,6 +47,7 @@ export default function PostJob() {
     showExactAddress: false,
   });
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [cityValid, setCityValid] = useState<boolean | null>(null);
 
   // Load draft on mount
   useEffect(() => {
@@ -139,6 +140,10 @@ export default function PostJob() {
         } else if (!/^\d{5}(-\d{4})?$/.test(locationData.zip.trim())) {
           lErrors.zip = "Please enter a valid ZIP code";
           toast.error("Please enter a valid ZIP code (e.g., 12345 or 12345-6789)");
+        }
+        if (locationData.city.trim().length > 0 && cityValid === false) {
+          lErrors.city = "Please enter a valid US city";
+          toast.error("Please enter a valid US city");
         }
         if (!phone.trim()) {
           toast.error("Please fill the Phone Number field");
@@ -323,6 +328,7 @@ export default function PostJob() {
             phone={phone}
             onPhoneChange={setPhone}
             onCoordinatesChange={setCoordinates}
+            onCityValidationChange={setCityValid}
           />
         )}
 

@@ -289,7 +289,7 @@ export const zipCoordinates: Record<string, { lat: number; lng: number }> = {
 
 export function isValidIllinoisZip(zip: string): boolean {
   // Accept any valid ZIP code format (5 digits or 5+4 format)
-  return /^\d{5}(-\d{4})?$/.test(zip);
+  return /^\d{5}(-\d{4})?$/.test(zip.trim());
 }
 
 export function getZipCoordinates(zip: string): { lat: number; lng: number } {

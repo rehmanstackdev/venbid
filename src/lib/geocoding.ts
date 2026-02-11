@@ -1,4 +1,5 @@
 import { mapTilerConfig } from '@/config/maptiler';
+import { filterUsGeocodingFeatures } from '@/lib/geocodingUtils';
 
 const geocodeCache = new Map<string, { lat: number; lng: number }>();
 
@@ -23,9 +24,10 @@ export async function geocodeZipCode(zip: string): Promise<{ lat: number; lng: n
     }
 
     const data = await response.json();
+    const usFeatures = filterUsGeocodingFeatures(data?.features);
     
-    if (data?.features && data.features.length > 0) {
-      const [lng, lat] = data.features[0].center;
+    if (usFeatures.length > 0 && Array.isArray(usFeatures[0].center)) {
+      const [lng, lat] = usFeatures[0].center;
       const coords = { lat, lng };
       geocodeCache.set(zip, coords);
       return coords;

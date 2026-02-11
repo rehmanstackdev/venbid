@@ -148,7 +148,7 @@ export default function EditJob() {
         if (!location.zip.trim()) {
           lErrors.zip = "ZIP code is required";
         } else if (!isValidIllinoisZip(location.zip)) {
-          lErrors.zip = "Please enter a valid Illinois ZIP code";
+          lErrors.zip = "Please enter a valid US ZIP code";
         }
         if (!phone.trim()) {
           toast.error("Please fill the Phone Number field");
