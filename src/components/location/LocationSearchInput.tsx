@@ -5,12 +5,7 @@ import { MapPin, Loader2 } from 'lucide-react';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { mapTilerConfig } from '@/config/maptiler';
 import { geocodingCache } from '@/lib/geocodingCache';
-
-interface LocationResult {
-  id: string;
-  place_name: string;
-  center: [number, number];
-}
+import { filterUsGeocodingFeatures, GeocodingFeature } from '@/lib/geocodingUtils';
 
 interface LocationSearchInputProps {
   value: string;
@@ -30,7 +25,7 @@ export function LocationSearchInput({
   coordinates,
 }: LocationSearchInputProps) {
   const [inputValue, setInputValue] = useState(value || '');
-  const [results, setResults] = useState<LocationResult[]>([]);
+  const [results, setResults] = useState<GeocodingFeature[]>([]);
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -61,8 +56,9 @@ export function LocationSearchInput({
       )
         .then(res => res.json())
         .then(data => {
-          if (data?.features && data.features.length > 0) {
-            const placeName = data.features[0].place_name;
+          const usFeatures = filterUsGeocodingFeatures(data?.features);
+          if (usFeatures.length > 0 && usFeatures[0].place_name) {
+            const placeName = usFeatures[0].place_name;
             setInputValue(placeName);
             geocodingCache.set(cacheKey, placeName);
           }
@@ -86,8 +82,9 @@ export function LocationSearchInput({
         const cached = geocodingCache.get(cacheKey);
         
         if (cached) {
-          setResults(cached);
-          setShowResults(true);
+          const usCached = filterUsGeocodingFeatures(cached);
+          setResults(usCached);
+          setShowResults(usCached.length > 0);
           setLoading(false);
           return;
         }
@@ -101,9 +98,9 @@ export function LocationSearchInput({
         }
         
         const data = await response.json();
-        const features = data.features || [];
+        const features = filterUsGeocodingFeatures(data.features || []);
         setResults(features);
-        setShowResults(true);
+        setShowResults(features.length > 0);
         geocodingCache.set(cacheKey, features);
       } catch (error) {
         console.error('Geocoding error:', error);
@@ -117,7 +114,8 @@ export function LocationSearchInput({
     return () => clearTimeout(timer);
   }, [inputValue]);
 
-  const handleSelect = (result: LocationResult) => {
+  const handleSelect = (result: GeocodingFeature) => {
+    if (!result.place_name || !Array.isArray(result.center)) return;
     const address = result.place_name;
     const [lng, lat] = result.center;
     
@@ -172,9 +170,9 @@ export function LocationSearchInput({
               <Command className="pointer-events-auto max-h-[50vh] overflow-hidden rounded-md border bg-popover shadow-xl">
                 <CommandList className="max-h-[50vh] overflow-y-auto">
                   <CommandGroup>
-                    {results.map((result) => (
+                    {results.map((result, index) => (
                       <CommandItem
-                        key={result.id}
+                        key={result.id ?? result.place_name ?? index}
                         onSelect={() => handleSelect(result)}
                         onMouseDown={(e) => {
                           e.preventDefault();

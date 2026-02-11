@@ -5,6 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { LocationMap } from "@/components/map/LocationMap";
 import { MapPin, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { mapTilerConfig } from '@/config/maptiler';
+import { filterUsGeocodingFeatures } from '@/lib/geocodingUtils';
+import { US_ZIP_REGEX } from '@/lib/validation';
 
 export interface LocationDetails {
   street: string;
@@ -22,14 +24,17 @@ interface LocationStepProps {
   onPhoneChange?: (phone: string) => void;
   coordinates?: { lat: number; long: number };
   onCoordinatesChange?: (coords: { lat: number; long: number } | null) => void;
+  onCityValidationChange?: (isValid: boolean | null) => void;
 }
 
-export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange, coordinates: initialCoordinates, onCoordinatesChange }: LocationStepProps) {
+export function LocationStep({ location, onChange, errors, phone = '', onPhoneChange, coordinates: initialCoordinates, onCoordinatesChange, onCityValidationChange }: LocationStepProps) {
   const [zipValid, setZipValid] = useState<boolean | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(
     initialCoordinates ? { lat: initialCoordinates.lat, lng: initialCoordinates.long } : null
   );
   const [geocoding, setGeocoding] = useState(false);
+  const [cityValid, setCityValid] = useState<boolean | null>(null);
+  const [cityChecking, setCityChecking] = useState(false);
 
   const handleChange = <K extends keyof LocationDetails>(key: K, value: LocationDetails[K]) => {
     onChange({ ...location, [key]: value });
@@ -40,29 +45,43 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
   };
 
   useEffect(() => {
-    const zipPattern = /^\d{5}(-\d{4})?$/;
-    
-    if (location.zip.length >= 5 && zipPattern.test(location.zip)) {
-      setZipValid(true);
+    const zipValue = location.zip.trim();
+    if (zipValue.length >= 5 && US_ZIP_REGEX.test(zipValue)) {
+      setZipValid(null);
       setGeocoding(true);
       
       const searchQuery = location.city 
-        ? `${location.zip}, ${location.city}`
-        : location.zip;
+        ? `${zipValue}, ${location.city}`
+        : zipValue;
       
       fetch(
-        `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(searchQuery)}.json?key=${mapTilerConfig.apiKey}&limit=5`
+        `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(searchQuery)}.json?key=${mapTilerConfig.apiKey}&limit=5&country=us`
       )
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`Geocoding failed (${res.status})`);
+          }
+          return res.json();
+        })
         .then(data => {
-          if (data?.features && data.features.length > 0) {
-            const [lng, lat] = data.features[0].center;
+          if (!Array.isArray(data?.features)) {
+            setCoordinates(null);
+            onCoordinatesChange?.(null);
+            setZipValid(null);
+            setGeocoding(false);
+            return;
+          }
+          const usFeatures = filterUsGeocodingFeatures(data.features);
+          if (usFeatures.length > 0 && Array.isArray(usFeatures[0].center)) {
+            const [lng, lat] = usFeatures[0].center;
             const coords = { lat, lng };
             setCoordinates(coords);
             onCoordinatesChange?.({ lat, long: lng });
+            setZipValid(true);
           } else {
             setCoordinates(null);
             onCoordinatesChange?.(null);
+            setZipValid(false);
           }
           setGeocoding(false);
         })
@@ -70,9 +89,10 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
           console.error('Geocoding error:', err);
           setCoordinates(null);
           onCoordinatesChange?.(null);
+          setZipValid(null);
           setGeocoding(false);
         });
-    } else if (location.zip.length > 0) {
+    } else if (zipValue.length > 0) {
       setZipValid(false);
       setCoordinates(null);
       setGeocoding(false);
@@ -82,6 +102,55 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
       setGeocoding(false);
     }
   }, [location.zip, location.city]);
+
+  useEffect(() => {
+    const cityValue = location.city.trim();
+
+    if (!cityValue || cityValue.length < 3) {
+      setCityValid(null);
+      setCityChecking(false);
+      onCityValidationChange?.(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => {
+      setCityChecking(true);
+      fetch(
+        `${mapTilerConfig.geocodingUrl}/${encodeURIComponent(cityValue)}.json?key=${mapTilerConfig.apiKey}&limit=5&country=us`,
+        { signal: controller.signal }
+      )
+        .then(res => {
+          if (!res.ok) {
+            throw new Error(`Geocoding failed (${res.status})`);
+          }
+          return res.json();
+        })
+        .then(data => {
+          if (!Array.isArray(data?.features)) {
+            setCityValid(null);
+            onCityValidationChange?.(null);
+            return;
+          }
+          const usFeatures = filterUsGeocodingFeatures(data.features);
+          const isValid = usFeatures.length > 0;
+          setCityValid(isValid);
+          onCityValidationChange?.(isValid);
+        })
+        .catch(err => {
+          if (err?.name === 'AbortError') return;
+          console.error('City validation error:', err);
+          setCityValid(null);
+          onCityValidationChange?.(null);
+        })
+        .finally(() => setCityChecking(false));
+    }, 700);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [location.city, onCityValidationChange]);
 
   return (
     <div className="space-y-6">
@@ -142,10 +211,19 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
             placeholder="e.g., Chicago"
             value={location.city}
             onChange={(e) => handleChange("city", e.target.value)}
+            className={errors.city || cityValid === false ? "border-destructive" : undefined}
           />
-          <p className="text-xs text-muted-foreground">
-            Helps locate your ZIP code accurately
-          </p>
+          {errors.city ? (
+            <p className="text-xs text-destructive">{errors.city}</p>
+          ) : cityValid === false ? (
+            <p className="text-xs text-destructive">Please enter a valid US city</p>
+          ) : cityChecking ? (
+            <p className="text-xs text-muted-foreground">Validating city...</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Helps locate your ZIP code accurately
+            </p>
+          )}
         </div>
 
   
@@ -180,7 +258,7 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
             <p className="text-xs text-destructive">{errors.zip}</p>
           ) : zipValid === false ? (
             <p className="text-xs text-destructive">
-              Please enter a valid ZIP code
+              Please enter a valid US ZIP code
             </p>
           ) : (
             <p className="text-xs text-muted-foreground">

@@ -41,6 +41,7 @@ const PostJob = () => {
     zip: "",
     showExactAddress: false,
   });
+  const [cityValid, setCityValid] = useState<boolean | null>(null);
 
   // Validation errors
   const [detailErrors, setDetailErrors] = useState<Partial<Record<keyof JobDetails, string>>>({});
@@ -86,7 +87,10 @@ const PostJob = () => {
         if (!location.zip.trim()) {
           lErrors.zip = "ZIP code is required";
         } else if (!isValidIllinoisZip(location.zip)) {
-          lErrors.zip = "Please enter a valid Illinois ZIP code";
+          lErrors.zip = "Please enter a valid US ZIP code";
+        }
+        if (location.city.trim().length > 0 && cityValid === false) {
+          lErrors.city = "Please enter a valid US city";
         }
         setLocationErrors(lErrors);
         if (Object.keys(lErrors).length > 0) {
@@ -221,6 +225,7 @@ const PostJob = () => {
             location={location}
             onChange={setLocation}
             errors={locationErrors}
+            onCityValidationChange={setCityValid}
           />
         )}
 

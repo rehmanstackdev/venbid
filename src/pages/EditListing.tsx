@@ -105,7 +105,7 @@ const EditListing = () => {
         if (!location.zip.trim()) {
           lErrors.zip = "ZIP code is required";
         } else if (!isValidIllinoisZip(location.zip)) {
-          lErrors.zip = "Please enter a valid Illinois ZIP code";
+          lErrors.zip = "Please enter a valid US ZIP code";
         }
         setLocationErrors(lErrors);
         if (Object.keys(lErrors).length > 0) {
