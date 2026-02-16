@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { authApi } from "@/api/auth";
-import { loadDraft } from "@/lib/jobDraft";
+import { hasDraft } from "@/lib/jobDraft";
 
 const maskEmail = (email: string) => {
   const [localPart, domain] = email.split('@');
@@ -62,8 +62,7 @@ export default function VerifyEmail() {
         toast.success("Email verified successfully!");
         
         // Check if there's a job draft
-        const draft = loadDraft();
-        if (draft && role === "customer") {
+        if (hasDraft() && role === "customer") {
           // Redirect to post-job page to complete publishing
           window.location.href = "/post-job?step=4&autoPublish=true";
           return;
