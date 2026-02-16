@@ -271,7 +271,26 @@ export default function EditJob() {
       navigate("/customer/my-posts");
     } catch (error: any) {
       console.error('Update error:', error);
-      toast.error(error.response?.data?.message || "Failed to update job. Please try again.");
+
+      const status = error.response?.status;
+      const errMsg = (error.response?.data?.message || '').toLowerCase();
+
+      if (error.code === 'ECONNABORTED') {
+        toast.error('Upload timed out', {
+          description: 'The upload is taking too long. Try with fewer or smaller images.'
+        });
+      } else if (status === 413 || errMsg.includes('too large') || errMsg.includes('file size') || errMsg.includes('payload')) {
+        const totalMB = imageFiles.reduce((sum: number, f: File) => sum + f.size, 0) / (1024 * 1024);
+        toast.error('Images are too large to upload', {
+          description: `Total size: ${totalMB.toFixed(1)}MB. Please reduce image sizes or remove some images and try again.`
+        });
+      } else if (errMsg.includes('image') || errMsg.includes('upload')) {
+        toast.error('Image upload failed', {
+          description: error.response?.data?.message || 'There was a problem uploading your images. Try with smaller or fewer images.'
+        });
+      } else {
+        toast.error(error.response?.data?.message || "Failed to update job. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

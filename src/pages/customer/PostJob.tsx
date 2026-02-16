@@ -51,29 +51,37 @@ export default function PostJob() {
 
   // Load draft on mount
   useEffect(() => {
-    const draft = loadDraft();
-    if (draft) {
+    let cancelled = false;
+
+    const restoreDraft = async () => {
+      const draft = await loadDraft();
+      if (cancelled || !draft) return;
+
       setSelectedCategory(draft.selectedCategory);
       setDetails(draft.details);
       setLocationData(draft.location);
       if (draft.phone) setPhone(draft.phone);
       if (draft.coordinates) setCoordinates(draft.coordinates);
-      
+
       // Check for step and autoPublish in URL
       const params = new URLSearchParams(location.search);
       const step = params.get('step');
       const autoPublish = params.get('autoPublish');
-      
+
       if (step) {
         setCurrentStep(parseInt(step));
       }
-      
+
       if (autoPublish === 'true' && user) {
         toast.info('Your job is ready to publish!');
       } else {
         toast.info('Draft restored');
       }
-    }
+    };
+
+    restoreDraft();
+
+    return () => { cancelled = true; };
   }, [location.search, user]);
 
   // Auto-save draft
@@ -235,12 +243,27 @@ export default function PostJob() {
       navigate("/customer/my-posts");
     } catch (error: any) {
       console.error('Job creation error:', error);
+
+      const status = error.response?.status;
+      const message = (error.response?.data?.message || '').toLowerCase();
+
       if (error.code === 'ECONNABORTED') {
-        toast.error('Upload timeout', {
+        toast.error('Upload timed out', {
           description: 'The upload is taking too long. Try with fewer or smaller images.'
         });
+      } else if (status === 413 || message.includes('too large') || message.includes('file size') || message.includes('payload')) {
+        const totalMB = imageFiles.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024);
+        toast.error('Images are too large to upload', {
+          description: `Total size: ${totalMB.toFixed(1)}MB. Please reduce image sizes or remove some images and try again.`
+        });
+      } else if (message.includes('image') || message.includes('upload')) {
+        toast.error('Image upload failed', {
+          description: error.response?.data?.message || 'There was a problem uploading your images. Try with smaller or fewer images.'
+        });
       } else {
-        toast.error(error.response?.data?.message || "Failed to post your job");
+        toast.error(error.response?.data?.message || "Failed to post your job", {
+          description: 'Please check your details and try again.'
+        });
       }
     } finally {
       setIsSubmitting(false);

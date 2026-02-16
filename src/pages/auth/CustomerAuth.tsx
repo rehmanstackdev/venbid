@@ -11,6 +11,7 @@ import { authApi } from "@/api/auth";
 import { scheduleTokenRefresh } from "@/api/client";
 import { initChatSocket } from "@/lib/chatSocket";
 import { useAuth } from "@/hooks/useAuth";
+import { hasDraft } from "@/lib/jobDraft";
 
 export default function CustomerAuth() {
   const navigate = useNavigate();
@@ -57,9 +58,14 @@ export default function CustomerAuth() {
       
       // Handle return URL from state
       const returnTo = (location.state as any)?.returnTo;
-      
+
       if (returnTo) {
-        window.location.href = returnTo;
+        // If returning to post-job and a draft exists, go straight to preview
+        if (returnTo.includes('/post-job') && hasDraft()) {
+          window.location.href = '/post-job?step=4&autoPublish=true';
+        } else {
+          window.location.href = returnTo;
+        }
         return;
       }
       
