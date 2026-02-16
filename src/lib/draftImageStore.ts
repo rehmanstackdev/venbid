@@ -32,7 +32,7 @@ export async function saveImagesToIDB(images: StoredImage[]): Promise<void> {
     const tx = db.transaction(STORE_NAME, 'readwrite');
     const store = tx.objectStore(STORE_NAME);
 
-    // Clear old images first
+   
     store.clear();
 
     for (const img of images) {
