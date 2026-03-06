@@ -46,7 +46,7 @@ export default function PostJob() {
     zip: "",
     showExactAddress: false,
   });
-  const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordinates, setCoordinates] = useState<{ lat: number; long: number } | null>(null);
   const [cityValid, setCityValid] = useState<boolean | null>(null);
 
   // Load draft on mount
@@ -220,7 +220,7 @@ export default function PostJob() {
       if (coordinates) {
         jobData.coordinates = {
           lat: coordinates.lat,
-          long: coordinates.lng
+          long: coordinates.long
         };
       }
 
