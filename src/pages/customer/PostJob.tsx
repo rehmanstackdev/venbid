@@ -43,6 +43,7 @@ export default function PostJob() {
     street: "",
     crossStreet: "",
     city: "",
+    state: "",
     zip: "",
     showExactAddress: false,
   });
@@ -207,6 +208,7 @@ export default function PostJob() {
         category: category.slug as JobCategory,
         budget: parseFloat(details.budget.split('-')[0]),
         city: locationData.city,
+        state: locationData.state,
         zip: locationData.zip,
         street: locationData.street,
         crossStreet: locationData.crossStreet,

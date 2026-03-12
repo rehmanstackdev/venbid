@@ -38,6 +38,7 @@ export default function EditJob() {
     street: "",
     crossStreet: "",
     city: "",
+    state: "",
     zip: "",
     showExactAddress: false,
   });
@@ -82,6 +83,7 @@ export default function EditJob() {
           street: job.street || "",
           crossStreet: job.crossStreet || "",
           city: job.city || "",
+          state: job.state || "",
           zip: job.zip,
           showExactAddress: job.showExactAddress || false,
         };
@@ -228,6 +230,7 @@ export default function EditJob() {
         category: category.slug as JobCategory,
         budget: parseFloat(details.budget.split('-')[0]),
         city: location.city,
+        state: location.state,
         zip: location.zip,
         street: location.street,
         crossStreet: location.crossStreet,

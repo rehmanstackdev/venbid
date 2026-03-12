@@ -192,7 +192,7 @@ export default function CustomerMyPosts() {
         <div className="text-lg font-bold text-primary mb-3">${listing.budget}</div>
         
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-          <span className="truncate flex-1">{listing.city || listing.zip}</span>
+          <span className="truncate flex-1">{listing.city}, {listing.state ? `${listing.state}, ` : "- , "}{listing.zip}</span>
           <span>•</span>
           <span className="whitespace-nowrap">{formatTimeAgo(listing.createdAt)}</span>
         </div>

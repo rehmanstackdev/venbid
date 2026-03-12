@@ -12,6 +12,7 @@ interface JobDetailsDialogProps {
     budget: number;
     category: string;
     city?: string;
+    state?: string;
     zip: string;
     street?: string;
     crossStreet?: string;
@@ -155,7 +156,7 @@ export function JobDetailsDialog({ listing, open, onOpenChange }: JobDetailsDial
               <div className="text-muted-foreground space-y-1">
                 {listing.street && <p>{listing.street}</p>}
                 {listing.crossStreet && <p>Near {listing.crossStreet}</p>}
-                <p>{listing.city ? `${listing.city}, ` : ""}IL {listing.zip}</p>
+                <p>{listing.city ? `${listing.city}, ` : ""}{listing.state ? `${listing.state}, ` : "-, "}{listing.zip}</p>
               </div>
             </div>
 

@@ -12,6 +12,7 @@ export interface LocationDetails {
   street: string;
   crossStreet: string;
   city: string;
+  state: string;
   zip: string;
   showExactAddress: boolean;
 }

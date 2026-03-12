@@ -13,6 +13,7 @@ export interface Listing {
   categoryName: string;
   budget: string;
   city: string | null;
+  state: string | null;
   zip: string;
   lat: number;
   lng: number;
@@ -97,6 +98,7 @@ export function useListings() {
           categoryName: category?.name || job.category,
           budget: typeof job.budget === 'string' ? job.budget : job.budget.toString(),
           city: job.city,
+          state: job.state || null,
           zip: job.zip,
           lat: coords.lat,
           lng: coords.lng,

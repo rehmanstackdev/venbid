@@ -38,6 +38,7 @@ const PostJob = () => {
     street: "",
     crossStreet: "",
     city: "",
+    state: "",
     zip: "",
     showExactAddress: false,
   });

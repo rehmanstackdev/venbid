@@ -39,6 +39,7 @@ const EditListing = () => {
     street: "",
     crossStreet: "",
     city: "",
+    state: "",
     zip: "",
     showExactAddress: false,
   });

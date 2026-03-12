@@ -108,7 +108,7 @@ const ListingDetail = () => {
             <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <MapPin className="h-4 w-4 flex-shrink-0" />
-                <span className="break-words">{listing.city}, IL {listing.zip}</span>
+                <span className="break-words">{listing.city}, {listing.state ? `${listing.state}, ` : "- , "}{listing.zip}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Calendar className="h-4 w-4 flex-shrink-0" />

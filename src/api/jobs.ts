@@ -19,6 +19,7 @@ export interface CreateJobRequest {
   category: JobCategory;
   budget: number;
   city: string;
+  state: string;
   zip: string;
   street: string;
   crossStreet: string;
@@ -43,6 +44,7 @@ export interface Job {
   category: JobCategory | string;
   budget: number | string;
   city: string;
+  state: string;
   zip: string;
   street: string;
   crossStreet: string;
@@ -96,6 +98,7 @@ export const jobsApi = {
     formData.append('category', data.category);
     formData.append('budget', data.budget.toString());
     formData.append('city', data.city);
+    formData.append('state', data.state);
     formData.append('zip', data.zip);
     formData.append('street', data.street);
     formData.append('crossStreet', data.crossStreet);
@@ -105,7 +108,7 @@ export const jobsApi = {
     if (data.coordinates) {
       formData.append('coordinates', JSON.stringify(data.coordinates));
     }
-    
+
     if (data.images && data.images.length > 0) {
       data.images.forEach((image) => {
         if (image instanceof File) {
@@ -151,6 +154,7 @@ export const jobsApi = {
     if (data.category) formData.append('category', data.category);
     if (data.budget) formData.append('budget', data.budget.toString());
     if (data.city) formData.append('city', data.city);
+    if (data.state) formData.append('state', data.state);
     if (data.zip) formData.append('zip', data.zip);
     if (data.street) formData.append('street', data.street);
     if (data.crossStreet) formData.append('crossStreet', data.crossStreet);
