@@ -66,3 +66,35 @@ export function filterUsGeocodingFeatures(
   if (!Array.isArray(features)) return [];
   return features.filter(isUsGeocodingFeature);
 }
+
+/**
+ * Extract the US state name from a geocoding feature's context array.
+ * MapTiler returns region info with id starting with "region.".
+ */
+export function extractStateFromFeature(feature: GeocodingFeature | null | undefined): string {
+  if (!feature) return '';
+
+  if (Array.isArray(feature.context)) {
+    const regionContext = feature.context.find(
+      (entry) => typeof entry?.id === 'string' && entry.id.startsWith('region.')
+    );
+    if (regionContext?.text) {
+      return regionContext.text;
+    }
+  }
+
+  // Fallback: try to extract state from place_name (e.g., "88901, Nevada, United States")
+  if (typeof feature.place_name === 'string') {
+    const parts = feature.place_name.split(',').map(p => p.trim());
+    // Typically: [zip/city, state, country] or [city, state, zip, country]
+    if (parts.length >= 3) {
+      // The state is usually the second-to-last part (before "United States")
+      const candidate = parts[parts.length - 2];
+      if (candidate && !candidate.match(/^\d+$/) && candidate.toLowerCase() !== 'united states') {
+        return candidate;
+      }
+    }
+  }
+
+  return '';
+}

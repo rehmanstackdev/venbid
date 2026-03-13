@@ -149,7 +149,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
             <div className="flex items-center gap-1.5">
               <MapPin className="h-4 w-4" />
               <span>
-                {location.city || "City"}, {location.state ? `${location.state}, ` : "-, "}{location.zip}
+                {location.city || "City"}, {location.state ? `${location.state}, ` : ""}{location.zip}
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -177,7 +177,7 @@ export function PreviewStep({ categoryId, details, location, coordinates, onUpda
                 {location.street}
                 {location.crossStreet && ` (near ${location.crossStreet})`}
                 <br />
-                {location.city && `${location.city}, `}{location.state ? `${location.state}, ` : "-, "}{location.zip}
+                {location.city && `${location.city}, `}{location.state ? `${location.state}, ` : ""}{location.zip}
               </p>
             ) : (
               <p className="text-muted-foreground text-sm mb-3">

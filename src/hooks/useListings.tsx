@@ -62,6 +62,7 @@ export interface CreateListingData {
   categoryId: number;
   budget: string;
   city?: string;
+  state?: string;
   zip: string;
   street?: string;
   crossStreet?: string;
@@ -156,6 +157,7 @@ export function useCreateListing() {
         categoryName: category?.name || 'Unknown',
         budget: data.budget,
         city: data.city || null,
+        state: data.state || null,
         zip: data.zip,
         lat: coords.lat,
         lng: coords.lng,

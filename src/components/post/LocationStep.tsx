@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { LocationMap } from "@/components/map/LocationMap";
 import { MapPin, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { mapTilerConfig } from '@/config/maptiler';
-import { filterUsGeocodingFeatures } from '@/lib/geocodingUtils';
+import { filterUsGeocodingFeatures, extractStateFromFeature } from '@/lib/geocodingUtils';
 import { US_ZIP_REGEX } from '@/lib/validation';
 
 export interface LocationDetails {
@@ -79,6 +79,11 @@ export function LocationStep({ location, onChange, errors, phone = '', onPhoneCh
             setCoordinates(coords);
             onCoordinatesChange?.({ lat, long: lng });
             setZipValid(true);
+            // Extract state from geocoding result
+            const stateName = extractStateFromFeature(usFeatures[0]);
+            if (stateName) {
+              onChange({ ...location, state: stateName });
+            }
           } else {
             setCoordinates(null);
             onCoordinatesChange?.(null);

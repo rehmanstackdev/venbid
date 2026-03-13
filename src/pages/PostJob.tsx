@@ -130,6 +130,7 @@ const PostJob = () => {
       categoryId: selectedCategory,
       budget: details.budget,
       city: location.city,
+      state: location.state,
       zip: location.zip,
       street: location.street,
       crossStreet: location.crossStreet,
